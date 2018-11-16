@@ -1,0 +1,51 @@
+{
+  "commands": [
+    {
+      "name": "botStream",
+      "triggers": ["botStream", "botstream"],
+      "function": "botStream",
+      "helptext": "<b>/botStream</b>",
+      "description": "This will return all the chat that users have with the Bot, this could be of any type (IM/MIM and ROOMs)",
+      "param":"IM or ROOM or ALL",
+      "example":"/botStream im or /botStream all",
+      "category": "General Bot command",
+      "permission": "Bot Admin"
+    },
+    {
+      "name": "botMessageBlast",
+      "triggers": ["botMessageBlast", "botmessageblast", "botMessage", "botmessage"],
+      "function": "botMessageBlast",
+      "helptext": "<b>/botMessageBlast</b>",
+      "description": "Sends a message to all IM/MIM or ROOMs or even all Types with a specific message",
+      "param":"IM or ROOM or ALL + message",
+      "example":"/botMessageBlast IM The bot has been updated",
+      "category": "General Bot command",
+      "permission": "Bot Admin"
+    },
+    {
+      "name": "status",
+      "triggers": ["status", "poke", "check", "test", "ping"],
+      "function": "SendStatusCheck",
+      "helptext": "<b>/status</b>",
+      "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
+      "param":"None",
+      "example":"/ping",
+      "category": "General Bot command",
+      "permission": "All",
+      "immediate": true
+    },
+    {
+      "name": "help",
+      "triggers": ["help", "Help", "HELP"],
+      "function": "SymphonyZendeskBotHelp",
+      "helptext": "<b>/help</b>",
+      "description": "Tells you what the bot can do.",
+      "param":"more (optional)",
+      "example":"/help or /help more",
+      "category": "General Bot command",
+      "permission": "All"
+    }
+  ],
+  "hashcommands": [
+  ]
+}

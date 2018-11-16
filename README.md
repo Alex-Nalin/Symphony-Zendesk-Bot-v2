@@ -68,7 +68,7 @@ Installation of the bot is somewhat manual today.
 
 1. Clone the repo to your local environment 
 
-    * `git clone https://github.com/Alex-Nalin/Symphony-Zendesk-bot`
+    * `git clone https://github.com/Alex-Nalin/Symphony-Zendesk-bot-v2`
 
 2. Install and configure your Redis server. 
 3. Create new config file by copying the *.sample.json to *.json (e.g. config.sample.json -> config.json)
@@ -84,7 +84,7 @@ Installation of the bot is somewhat manual today.
 2. Start the Redis worker process
 
     * Open a new terminal session
-    * Change to the bot folder, e.g. `cd /bots/symphony/SymphonyZendeskBot/`
+    * Change to the bot folder, e.g. `cd /bots/symphony/SymphonyZendeskBotv2/`
     * Run the worker script: `python3 startWorker.py`
 
 3. Start the bot

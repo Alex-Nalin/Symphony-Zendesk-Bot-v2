@@ -19,17 +19,10 @@ These are the functions added for this to integrate to Zendesk Support Ticket Ma
 * Today call (`/today`) will show all the tickets raised today, you can also specify how many days back to go (`/today 5`) to get a bigger list of recently raised support issue from 5 days ago.
 * Ticket Update (`/ticketUpdate <ticketID>| comment| status| public/private`) will allow the caller to add a public or private update to an existing Support Ticket.
 * Assign Ticket (`assignTicket` <ticketID> <@mention user>) will assign the Zendesk ticket to the @mentioned Zendesk Agent who is also a Symphony user.
-* Whois Symphony User (`/whois @mentioned user`) allow to look up a user and get profile information
-* UIDcheck (`/uidCheck <UID>`) allows the caller to retrieve details from a given Symphony UID
-* streamCheck (`/streamCheck <streamID>`) allows the caller to retrieve details from a given Symphony StreamID also known as ConversationID
-
 
 * Add Access (`/addAccess <@mention user(s)>`) to the list of authorised users to communicate with the Bot to execute commands. It will also sort the list when adding new user. This is an Admin restricted function
 * Remove Access (`/removeAccess <@mention user>`) of the user to remove from the list of authorised users. This is an Admin restricted function
 * List All Access (`/listallaccess`) as its function states, this will return all the authorised user list. This is an Admin restricted function
-* Sends a Bot connection request (`/sendConnection @mention user`) to a Symphony user /sendConnection @mention(required) (the bot will auto send connection request). This is an Admin restricted function
-* Remove the Bot connection (`/removeConnection @mention user`) from a Symphony user. This is an Admin restricted function
-* List all the Bot connections (`/botConnection`) with their status. This is an Admin restricted function
 * Give a list of all the Bot Symphnony streams (`/botStream`) that exist with users, this include IM, MIM and ROOMs
 * Send Bot message (`/botMessage IM/ROOM/ALL <message>`) to IM/MIM/ROOMs where the bot is a member of to inform or an update or else.
 * Shutdown bot (`/shutdown IM/ROOM/ALL <message>(optional)`) with or without a message to IM/MIM or Rooms
@@ -97,88 +90,6 @@ Installation of the bot is somewhat manual today.
 
 SymphonyZendeskBot does not log messages, but will log other activity, including commands that are issued. Various logs can be found in ./SymphonyZendeskBot/logging
 
-## Usage
-
-Several functions are included by default with the bot. 
-
-**Note**: The bot user _must_ be in the room in which a command is issued. Symphony does not support global commands at this time. 
-
-### Google Translate:
-
-Autodetects and translates the provided sentence into English
-
-* Command: /translate "Hola. Como estas?"
-* Reply: I think you said "Hello how are you?" (es)
-* The two-letter language code for the auto-identified source language is included at the end of the reply
-
-### Stock Quotes (AlphaVantage)
-
-Pulls the most recent Open and Close prices for the given ticker symbol
-
-* Command: `/quote AAPL`
-* Reply: 
-
-    Quote for: AAPL
-    Date: 2017-09-04
-    Open: 164.7600
-    Close: 164.0400
-
-* Note: An AlphaVantage API token is required. This can be obtained for free: https://www.alphavantage.co/documentation/
-
-### Giphy
-
-Searches for and returns a gif
-
-* Command: `/gif Search Text`
-* Reply: [link to gif]
-* Note 1: /gif with no parameters produces a random gif
-* Note 2: Requires an API token for Giphy: https://developers.giphy.com/
-
-### Echo
-
-A simple test to verify the bot is working and Symphony's APIs are responding
-
-* Command: `/echo` [echo text]
-* Reply: [echo text]
-
-### Quote of the day
-
-`/quote`
-
-Retrieves the Quote of the day from quotes.rest and displays the author and the message in a card formatted text.
-
-### Weather forecast
-
-`/weather london 5`
-
-Give the weather forecast (from api.apixu.com) by location (city/postcode/zipcode) and for up to 7 days with various attributes such as average temperature, sunrise, moonset and with image.
-
-### Random Famous Quotes
-
-`/funQuote`
-
-Will return some movies or famous peoples Quote via the api.andrux.net
-
-### Random Jokes
-
-`/joke`
-
-Will return a funny joke from icanhazdadjoke.com
-
-### Add/Remove(sort), Search and List Acronyms (Jelena Kolomijec)
-
-`/addAcronym`
-`/removeAcronym`
-`/findAcronym`
-/`ListAllAcronym`
-
-Allows to add, remove and search for acroyms added to a custom dictionary
-
-### Wiki Search (Jelena Kolomijec)
-
-`/wikiSearch`
-
-Give the top three results from Wikipedia
 
 ## Plugins
 

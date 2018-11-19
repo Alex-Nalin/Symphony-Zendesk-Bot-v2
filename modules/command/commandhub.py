@@ -6,7 +6,7 @@ import modules.command.commandqueue as queue
 import modules.command.querk as querk
 from modules.symphony.tokenizer import CommandTypes
 
-# import modules.botlog as botlog
+import modules.botlog as botlog
 
 cmdloader.LoadAllCommands()
 
@@ -57,10 +57,11 @@ def RunSlashCommand(messageDetail):
                 else:
                     queue.AsyncCommand(func, messageDetail)
             else:
-                SendReply(messageDetail, "Apologies - I found a definition for that command, "
-                                         "but the developer forgot to build the function.")
+                #SendReply(messageDetail, "Apologies - I found a definition for that command, ""but the developer forgot to build the function.")
+                botlog.LogSymphonyInfo("Apologies - I found a definition for that command, ""but the developer forgot to build the function.")
     else:
-        SendReply(messageDetail, "I am sorry but I do not understand that command.")
+        #SendReply(messageDetail, "I am sorry but I do not understand that command.")
+        botlog.LogSymphonyInfo("I am sorry but I do not understand that command.")
 
 
 def RunHashCommand(messageDetail):
@@ -75,8 +76,8 @@ def RunHashCommand(messageDetail):
                 func = getattr(mod, command.Function)
                 func(messageDetail)
             else:
-                SendReply(messageDetail, "Sadly, I found triggers for those hashtags, "
-                                         "but the related function is incomplete or missing.")
+                #SendReply(messageDetail, "Sadly, I found triggers for those hashtags, ""but the related function is incomplete or missing.")
+                botlog.LogSymphonyInfo("Sadly, I found triggers for those hashtags, ""but the related function is incomplete or missing.")
             break
 
 def RunQuerk(messageDetail):

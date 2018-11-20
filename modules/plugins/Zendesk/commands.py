@@ -98,7 +98,10 @@ def searchMyTickets(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             try:
                 emailZendesk = str(d_org["users"][index_org]["emailAddress"])
@@ -468,7 +471,10 @@ def showZD (messageDetail):
             firstName = str(d_org["users"][index_org]["firstName"])
             lastName = str(d_org["users"][index_org]["lastName"])
             displayName = str(d_org["users"][index_org]["displayName"])
-            companyName = str(d_org["users"][index_org]["company"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             #################################################
@@ -911,7 +917,10 @@ def showTicketComments (messageDetail):
             firstName = str(d_org["users"][index_org]["firstName"])
             lastName = str(d_org["users"][index_org]["lastName"])
             displayName = str(d_org["users"][index_org]["displayName"])
-            companyName = str(d_org["users"][index_org]["company"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             #################################################
@@ -1365,7 +1374,10 @@ def userZD(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             #################################################
@@ -1652,7 +1664,10 @@ def userZD(messageDetail):
                 firstName = d_org["users"][index_org]["firstName"]
                 lastName = d_org["users"][index_org]["lastName"]
                 displayName = d_org["users"][index_org]["displayName"]
-                companyName = d_org["users"][index_org]["company"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
                 userID = str(d_org["users"][index_org]["id"])
 
                 #################################################
@@ -1944,7 +1959,10 @@ def recentZD(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             #################################################
@@ -2254,7 +2272,10 @@ def recentZD(messageDetail):
                 firstName = d_org["users"][index_org]["firstName"]
                 lastName = d_org["users"][index_org]["lastName"]
                 displayName = d_org["users"][index_org]["displayName"]
-                companyName = d_org["users"][index_org]["company"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
                 userID = str(d_org["users"][index_org]["id"])
 
                 #################################################
@@ -2570,7 +2591,10 @@ def TicketCreate(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             #emailAddress = str(d_org["users"][index_org]["emailAddress"])
 
@@ -2833,7 +2857,10 @@ def RequestCreate(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             try:
                 emailZendesk = str(d_org["users"][index_org]["emailAddress"])
@@ -3651,7 +3678,10 @@ def newTicketToday(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             ##############################
@@ -4070,7 +4100,10 @@ def newTicketToday(messageDetail):
                 firstName = d_org["users"][index_org]["firstName"]
                 lastName = d_org["users"][index_org]["lastName"]
                 displayName = d_org["users"][index_org]["displayName"]
-                companyName = d_org["users"][index_org]["company"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
                 userID = str(d_org["users"][index_org]["id"])
 
                 ##############################
@@ -4510,7 +4543,10 @@ def ticketUpdate(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             ##############################
@@ -5148,7 +5184,10 @@ def assignTicket(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             try:
@@ -5326,8 +5365,10 @@ def assignTicket(messageDetail):
                 #print(firstName)
                 lastName = d_org["users"][index_org]["lastName"]
                 #print(lastName)
-                company = d_org["users"][index_org]["company"]
-                #print(company)
+                #company = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                company = str(companyTemp)
                 # print(company)
                 try:
                     emailAddress = d_org["users"][index_org]["emailAddress"]
@@ -6073,7 +6114,10 @@ def addAccess(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -6133,7 +6177,11 @@ def addAccess(messageDetail):
                         firstName = d_org["users"][index_org]["firstName"]
                         lastName = d_org["users"][index_org]["lastName"]
                         displayName = d_org["users"][index_org]["displayName"]
-                        company = d_org["users"][index_org]["company"]
+                        #company = d_org["users"][index_org]["company"]
+                        #companyName = d_org["users"][index_org]["company"]
+                        companyNameTemp = d_org["users"][index_org]["company"]
+                        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        company = str(companyTemp)
                         userID = str(d_org["users"][index_org]["id"])
                         fullname = (firstName + " " + lastName)
 
@@ -6205,7 +6253,11 @@ def addAccess(messageDetail):
                             firstName = d_org["users"][index_org]["firstName"]
                             lastName = d_org["users"][index_org]["lastName"]
                             displayName = d_org["users"][index_org]["displayName"]
-                            company = d_org["users"][index_org]["company"]
+                            #company = d_org["users"][index_org]["company"]
+                            #companyName = d_org["users"][index_org]["company"]
+                            companyNameTemp = d_org["users"][index_org]["company"]
+                            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            company = str(companyTemp)
                             userID = str(d_org["users"][index_org]["id"])
                             fullname = (firstName + " " + lastName)
 
@@ -6290,7 +6342,10 @@ def removeAccess(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -6348,7 +6403,11 @@ def removeAccess(messageDetail):
                         firstName = d_org["users"][index_org]["firstName"]
                         lastName = d_org["users"][index_org]["lastName"]
                         displayName = d_org["users"][index_org]["displayName"]
-                        company = d_org["users"][index_org]["company"]
+                        #company = d_org["users"][index_org]["company"]
+                        #companyName = d_org["users"][index_org]["company"]
+                        companyNameTemp = d_org["users"][index_org]["company"]
+                        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        company = str(companyTemp)
                         userID = str(d_org["users"][index_org]["id"])
                         fullname = (firstName + " " + lastName)
 
@@ -6418,7 +6477,11 @@ def removeAccess(messageDetail):
                             firstName = d_org["users"][index_org]["firstName"]
                             lastName = d_org["users"][index_org]["lastName"]
                             displayName = d_org["users"][index_org]["displayName"]
-                            company = d_org["users"][index_org]["company"]
+                            #company = d_org["users"][index_org]["company"]
+                            #companyName = d_org["users"][index_org]["company"]
+                            companyNameTemp = d_org["users"][index_org]["company"]
+                            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            company = str(companyTemp)
                             userID = str(d_org["users"][index_org]["id"])
                             fullname = (firstName + " " + lastName)
 
@@ -6504,7 +6567,10 @@ def listAllAccess(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -6568,7 +6634,10 @@ def createZendeskUser(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -6615,7 +6684,10 @@ def createZendeskUser(messageDetail):
                     return messageDetail.ReplyToChat("This user is not yet connected with the Bot, please send a connection request, user accepts then try again please.")
                     #emailAddress = "N/A"
                 try:
-                    companyName = d_org["users"][index_org]["company"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
                 except:
                     companyName = "N/A"
             try:

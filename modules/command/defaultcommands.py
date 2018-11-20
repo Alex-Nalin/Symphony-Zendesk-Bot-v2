@@ -68,7 +68,10 @@ def SymphonyZendeskBotHelp(messageDetail):
         firstName = str(d_org["users"][index_org]["firstName"])
         lastName = str(d_org["users"][index_org]["lastName"])
         displayName = str(d_org["users"][index_org]["displayName"])
-        companyName = str(d_org["users"][index_org]["company"])
+        #companyName = d_org["users"][index_org]["company"]
+        companyNameTemp = d_org["users"][index_org]["company"]
+        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+        companyName = str(companyTemp)
         userID = str(d_org["users"][index_org]["id"])
 
 
@@ -216,7 +219,10 @@ def botStream(messageDetail):
                 firstName = str(d_org["users"][index_org]["firstName"])
                 lastName = str(d_org["users"][index_org]["lastName"])
                 displayName = str(d_org["users"][index_org]["displayName"])
-                companyName = str(d_org["users"][index_org]["company"])
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
                 userID = str(d_org["users"][index_org]["id"])
 
                 botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -327,7 +333,10 @@ def botStream(messageDetail):
                     firstName = str(d_org["users"][index_org]["firstName"])
                     lastName = str(d_org["users"][index_org]["lastName"])
                     displayName = str(d_org["users"][index_org]["displayName"])
-                    companyName = str(d_org["users"][index_org]["company"])
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
                     userID = str(d_org["users"][index_org]["id"])
 
                     botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(
@@ -449,7 +458,10 @@ def botMessageBlast(messageDetail):
                 firstName = str(d_org["users"][index_org]["firstName"])
                 lastName = str(d_org["users"][index_org]["lastName"])
                 displayName = str(d_org["users"][index_org]["displayName"])
-                companyName = str(d_org["users"][index_org]["company"])
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
                 userID = str(d_org["users"][index_org]["id"])
 
                 botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -532,7 +544,10 @@ def botMessageBlast(messageDetail):
 #                 firstName = d_org["users"][index_org]["firstName"]
 #                 lastName = d_org["users"][index_org]["lastName"]
 #                 displayName = d_org["users"][index_org]["displayName"]
-#                 companyName = d_org["users"][index_org]["company"]
+#                 #companyName = d_org["users"][index_org]["company"]
+#                 companyNameTemp = d_org["users"][index_org]["company"]
+#                 companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                 companyName = str(companyTemp)
 #                 userID = str(d_org["users"][index_org]["id"])
 #
 #                 botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -619,7 +634,10 @@ def SendStatusCheck(messageDetail):
         firstName = str(d_org["users"][index_org]["firstName"])
         lastName = str(d_org["users"][index_org]["lastName"])
         displayName = str(d_org["users"][index_org]["displayName"])
-        companyName = str(d_org["users"][index_org]["company"])
+        #companyName = d_org["users"][index_org]["company"]
+        companyNameTemp = d_org["users"][index_org]["company"]
+        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+        companyName = str(companyTemp)
         userID = str(d_org["users"][index_org]["id"])
 
     if companyName in _configDef['AuthCompany']['PodList']:
@@ -674,7 +692,10 @@ def SendSymphonyEchoV2(messageDetail):
             firstName = str(d_org["users"][index_org]["firstName"])
             lastName = str(d_org["users"][index_org]["lastName"])
             displayName = str(d_org["users"][index_org]["displayName"])
-            companyName = str(d_org["users"][index_org]["company"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
         botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -713,7 +734,10 @@ def GetGoogleTranslation(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             #emailAddress = str(d_org["users"][index_org]["emailAddress"])
 
@@ -790,7 +814,10 @@ def GetAlphaVantageStockQuote(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             #emailAddress = str(d_org["users"][index_org]["emailAddress"])
 
@@ -830,37 +857,37 @@ def GetAlphaVantageStockQuote(messageDetail):
         botlog.LogSymphonyInfo("AlphaQupte did not work entirely")
 
 #Original
-def GetGiphyImageOld(messageDetail):
-    try:
-        giphyAPIKey = botconfig.GetCommandSetting('giphy')['apikey']
-
-        giphyText = messageDetail.Command.MessageText
-
-        paramList = giphyText.split()
-
-        isRandom = len(paramList) == 0 or paramList[0] == 'random'
-
-        if isRandom:
-            ep = "http://api.giphy.com/v1/gifs/random"
-            payload = {"apikey": giphyAPIKey}
-        else:
-            ep = "http://api.giphy.com/v1/gifs/translate"
-            payload = {"apikey": giphyAPIKey, "s": giphyText}
-
-        response = requests.get(ep, params=payload).json()
-
-        if isRandom:
-            msg = "<a href='" + response['data']['image_original_url'] + "'/>"
-        else:
-            msg = "<a href='" + response['data']['images']['original']['url'] + "'/>"
-
-        messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
-
-    except Exception as ex:
-        errorStr = "Symphony REST Exception (system): {}".format(ex)
-        botlog.LogSystemError(errorStr)
-        msg = "Sorry, I could not return a GIF right now."
-        messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
+# def GetGiphyImageOld(messageDetail):
+#     try:
+#         giphyAPIKey = botconfig.GetCommandSetting('giphy')['apikey']
+#
+#         giphyText = messageDetail.Command.MessageText
+#
+#         paramList = giphyText.split()
+#
+#         isRandom = len(paramList) == 0 or paramList[0] == 'random'
+#
+#         if isRandom:
+#             ep = "http://api.giphy.com/v1/gifs/random"
+#             payload = {"apikey": giphyAPIKey}
+#         else:
+#             ep = "http://api.giphy.com/v1/gifs/translate"
+#             payload = {"apikey": giphyAPIKey, "s": giphyText}
+#
+#         response = requests.get(ep, params=payload).json()
+#
+#         if isRandom:
+#             msg = "<a href='" + response['data']['image_original_url'] + "'/>"
+#         else:
+#             msg = "<a href='" + response['data']['images']['original']['url'] + "'/>"
+#
+#         messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
+#
+#     except Exception as ex:
+#         errorStr = "Symphony REST Exception (system): {}".format(ex)
+#         botlog.LogSystemError(errorStr)
+#         msg = "Sorry, I could not return a GIF right now."
+#         messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
 
 #Fixed with Card
 def GetGiphyImage(messageDetail):
@@ -883,7 +910,10 @@ def GetGiphyImage(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             #emailAddress = str(d_org["users"][index_org]["emailAddress"])
 
@@ -997,7 +1027,10 @@ def QoD (messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
             #emailAddress = str(d_org["users"][index_org]["emailAddress"])
 
@@ -1123,7 +1156,10 @@ def weather(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
         botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -1712,7 +1748,10 @@ def funQuote(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
         botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -1800,7 +1839,10 @@ def joke(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
         botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -1899,7 +1941,10 @@ def addAcronym(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -1958,7 +2003,10 @@ def removeAcronym(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
@@ -2020,7 +2068,10 @@ def findAcronym(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(
@@ -2074,7 +2125,10 @@ def listAllAcronyms(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(
@@ -2145,7 +2199,10 @@ def wikiSearch(messageDetail):
             firstName = d_org["users"][index_org]["firstName"]
             lastName = d_org["users"][index_org]["lastName"]
             displayName = d_org["users"][index_org]["displayName"]
-            companyName = d_org["users"][index_org]["company"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
             userID = str(d_org["users"][index_org]["id"])
 
             botlog.LogSymphonyInfo(
@@ -2216,8 +2273,8 @@ def wikiSearch(messageDetail):
 
                     table_body += "<tr>" \
                                   "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \
-                                                                                "<td>" + result["snippet"] + "</td>" \
-                                                                                                             "</tr>"
+                                  "<td>" + result["snippet"] + "</td>" \
+                                  "</tr>"
 
                 table_body += "</tbody></table>"
 
@@ -2228,3 +2285,697 @@ def wikiSearch(messageDetail):
                 return messageDetail.ReplyToChat("Please make sure to use /wiki <data>")
         except:
             botlog.LogSymphonyInfo("WikiSearch did not work entirely")
+
+##############
+## Functions taken from Symp
+
+def whois(messageDetail):
+    botlog.LogSymphonyInfo("Bot Call: Whois")
+
+    try:
+        # try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
+
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
+        }
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = d_org["users"][index_org]["firstName"]
+            lastName = d_org["users"][index_org]["lastName"]
+            displayName = d_org["users"][index_org]["displayName"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        # except:
+        #     return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+            try:
+
+                try:
+                    flat = messageDetail.Command.MessageFlattened.split("_u_")
+                    #UID = flat[1][:14]
+                    UID = flat[1][:int(_configDef['UID'])]
+                    botlog.LogSymphonyInfo("User UI: " + UID)
+                except:
+                    return messageDetail.ReplyToChat("Please use @mention")
+
+                connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                table_body = ""
+                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='max-width:20%'>ID</td>" \
+                               "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
+                               "<td style='max-width:20%'>FIRST NAME</td>" \
+                               "<td style='max-width:20%'>LAST NAME</td>" \
+                               "<td style='max-width:20%'>DISPLAY NAME</td>" \
+                               "<td style='max-width:20%'>TITLE</td>" \
+                               "<td style='max-width:20%'>COMPANY</td>" \
+                               "<td style='max-width:20%'>LOCATION</td>" \
+                               "</tr></thead><tbody>"
+
+                for index_org in range(len(d_org["users"])):
+
+                    try:
+                        try:
+                            firstName = d_org["users"][index_org]["firstName"]
+                            lastName = d_org["users"][index_org]["lastName"]
+                        except:
+                            return messageDetail.ReplyToChat("I am a Top Secret Agent Bot, I do no share my info :)")
+                        displayName = d_org["users"][index_org]["displayName"]
+                        try:
+                            title = d_org["users"][index_org]["title"]
+                        except:
+                            title = "N/A"
+                        try:
+                            companyName = d_org["users"][index_org]["company"]
+                        except:
+                            companyName = "N/A"
+                        userID = str(d_org["users"][index_org]["id"])
+                        try:
+                            emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                        except:
+                            emailAddress = "N/A"
+                        try:
+                            location = str(d_org["users"][index_org]["location"])
+                        except:
+                            location = "N/A"
+                    except:
+                        return messageDetail.ReplyToChat("Cannot find user info for Whois command")
+
+                    table_body += "<tr>" \
+                                  "<td>" + str(userID) + "</td>" \
+                                  "<td>" + str(emailAddress) + "</td>" \
+                                  "<td>" + str(firstName) + "</td>" \
+                                  "<td>" + str(lastName) + "</td>" \
+                                  "<td>" + str(displayName) + "</td>" \
+                                  "<td>" + str(title) + "</td>" \
+                                  "<td>" + str(companyName) + "</td>" \
+                                  "<td>" + str(location) + "</td>" \
+                                  "</tr>"
+
+                    table_body += "</tbody></table>"
+
+                reply = table_header + table_body
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            # else:
+            #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+            except:
+                botlog.LogSymphonyInfo("Whois did not work")
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for Whois")
+            try:
+                flat = messageDetail.Command.MessageFlattened.split("_u_")
+                #UID = flat[1][:14]
+                UID = flat[1][:int(_configDef['UID'])]
+                botlog.LogSymphonyInfo("User UI: " + UID)
+            except:
+                return messageDetail.ReplyToChat("Please use @mention")
+
+            connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            table_body = ""
+            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                           "<td style='max-width:20%'>ID</td>" \
+                           "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
+                           "<td style='max-width:20%'>FIRST NAME</td>" \
+                           "<td style='max-width:20%'>LAST NAME</td>" \
+                           "<td style='max-width:20%'>DISPLAY NAME</td>" \
+                           "<td style='max-width:20%'>TITLE</td>" \
+                           "<td style='max-width:20%'>COMPANY</td>" \
+                           "<td style='max-width:20%'>LOCATION</td>" \
+                           "</tr></thead><tbody>"
+
+            for index_org in range(len(d_org["users"])):
+
+                try:
+                    try:
+                        firstName = d_org["users"][index_org]["firstName"]
+                        lastName = d_org["users"][index_org]["lastName"]
+                    except:
+                        return messageDetail.ReplyToChat("I am a Top Secret Agent Bot, I do no share my info :)")
+                    displayName = d_org["users"][index_org]["displayName"]
+                    try:
+                        title = d_org["users"][index_org]["title"]
+                    except:
+                        title = "N/A"
+                    try:
+                        companyName = d_org["users"][index_org]["company"]
+                    except:
+                        companyName = "N/A"
+                    userID = str(d_org["users"][index_org]["id"])
+                    try:
+                        emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    except:
+                        emailAddress = "N/A"
+                    try:
+                        location = str(d_org["users"][index_org]["location"])
+                    except:
+                        location = "N/A"
+                except:
+                    return messageDetail.ReplyToChat("Cannot find user info for Whois command")
+
+                table_body += "<tr>" \
+                              "<td>" + str(userID) + "</td>" \
+                              "<td>" + str(emailAddress) + "</td>" \
+                              "<td>" + str(firstName) + "</td>" \
+                              "<td>" + str(lastName) + "</td>" \
+                              "<td>" + str(displayName) + "</td>" \
+                              "<td>" + str(title) + "</td>" \
+                              "<td>" + str(companyName) + "</td>" \
+                              "<td>" + str(location) + "</td>" \
+                              "</tr>"
+
+                table_body += "</tbody></table>"
+
+            reply = table_header + table_body
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            # else:
+            #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        except:
+            botlog.LogSymphonyInfo("Whois did not work entirely")
+
+
+def streamCheck(messageDetail):
+
+    botlog.LogSymphonyInfo("Bot Call: streamCheck")
+
+    try:
+        # try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
+
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
+        }
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = d_org["users"][index_org]["firstName"]
+            lastName = d_org["users"][index_org]["lastName"]
+            displayName = d_org["users"][index_org]["displayName"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        # except:
+        #     return messageDetail.ReplyToChat("Cannot validate user access")
+
+
+        if callerCheck in AccessFile:
+            try:
+
+                try:
+                    stream_raw = messageDetail.Command.MessageFlattened.split(" ")
+                    stream_split = str(stream_raw).split(",")
+                    stream_split_Data = stream_split[1].replace("'", "").replace("]","")
+                    streamID = str(stream_split_Data).replace(" ","")
+                except:
+                    return messageDetail.ReplyToChatV2("Please a valid stream ID converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
+
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v2/streams/" + streamID + "/info", headers=headersCompany)
+
+                res = connComp.getresponse()
+                data = res.read().decode("utf-8")
+                print(data)
+
+                invalidStreamID = "{\"code\":400,\"message\":\"Invalid stream ID\"}"
+
+                if data == invalidStreamID:
+                    return messageDetail.ReplyToChatV2("Please enter a valid StreamID/ConversationID, converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
+
+                data_raw = str(data).split(",\"")
+
+                try:
+                    stream_id_raw = data_raw[0]
+                    stream_id_split = str(stream_id_raw).split(":")
+                    stream_id = str(stream_id_split[1]).replace("\"","")
+                except:
+                    return messageDetail.ReplyToChat("Cannot find stream Id")
+
+                try:
+                    xpod_raw = data_raw[1]
+                    xpod_split = str(xpod_raw).split(":")
+                    xpod = str(xpod_split[1])
+                except:
+                    return messageDetail.ReplyToChat("Cannot find Xpod info")
+
+                try:
+                    active_raw = data_raw[3]
+                    active_split = str(active_raw).split(":")
+                    active = str(active_split[1])
+                except:
+                    return messageDetail.ReplyToChat("Cannot find Active info")
+
+                try:
+                    last_msg_raw = data_raw[4]
+                    last_msg_split = str(last_msg_raw).split(":")
+                    last_msg = str(last_msg_split[1])
+                except:
+                    return messageDetail.ReplyToChat("Cannot find Last Message time")
+
+                try:
+                    streamType_raw = data_raw[5]
+                    streamType_split = str(streamType_raw).split(":{")
+                    streamType = str(streamType_split[1]).replace("\"","").replace("type:","").replace("}","")
+                except:
+                    return messageDetail.ReplyToChat("Cannot find stream type")
+
+                try:
+                    attribute_raw = data_raw[6]
+                    attribute_split = str(attribute_raw).split(":")
+                    attribute = str(attribute_split[2]).replace("\"","").replace("}","").replace("'","").replace("[","").replace("]","")
+                except:
+                    return messageDetail.ReplyToChat("Cannot find stream attributes")
+
+
+                table_body = ""
+                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='max-width:20%'>ID</td>" \
+                               "<td style='max-width:20%'>CROSS POD</td>" \
+                               "<td style='max-width:20%'>ACTIVE</td>" \
+                               "<td style='max-width:20%'>LAST MSG</td>" \
+                               "<td style='max-width:20%'>STREAM TYPE</td>" \
+                               "<td style='max-width:20%'>ATTRIBUTES</td>" \
+                               "</tr></thead><tbody>"
+
+                table_body += "<tr>" \
+                              "<td>" + str(stream_id) + "</td>" \
+                              "<td>" + str(xpod) + "</td>" \
+                              "<td>" + str(active) + "</td>" \
+                              "<td>" + str(last_msg) + "</td>" \
+                              "<td>" + str(streamType) + "</td>" \
+                              "<td>" + str(attribute) + "</td>" \
+                              "</tr>"
+
+                table_body += "</tbody></table>"
+
+                reply = table_header + table_body
+                return messageDetail.ReplyToChatV2_noBotLog(
+                    "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+            # else:
+            #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+            except:
+                botlog.LogSymphonyInfo("StreamCheck did not work")
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for StreamCheck")
+            try:
+                stream_raw = messageDetail.Command.MessageFlattened.split(" ")
+                stream_split = str(stream_raw).split(",")
+                stream_split_Data = stream_split[1].replace("'", "").replace("]","")
+                streamID = str(stream_split_Data).replace(" ","")
+            except:
+                return messageDetail.ReplyToChatV2("Please a valid stream ID converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v2/streams/" + streamID + "/info", headers=headersCompany)
+
+            res = connComp.getresponse()
+            data = res.read().decode("utf-8")
+
+            invalidStreamID = "{\"code\":400,\"message\":\"Invalid stream ID\"}"
+
+            if data == invalidStreamID:
+                return messageDetail.ReplyToChatV2("Please enter a valid StreamID/ConversationID, converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
+
+            data_raw = str(data).split(",\"")
+
+            try:
+                stream_id_raw = data_raw[0]
+                stream_id_split = str(stream_id_raw).split(":")
+                stream_id = str(stream_id_split[1]).replace("\"","")
+            except:
+                return messageDetail.ReplyToChat("Cannot find stream Id")
+
+            try:
+                xpod_raw = data_raw[1]
+                xpod_split = str(xpod_raw).split(":")
+                xpod = str(xpod_split[1])
+            except:
+                return messageDetail.ReplyToChat("Cannot find Xpod info")
+
+            try:
+                active_raw = data_raw[3]
+                active_split = str(active_raw).split(":")
+                active = str(active_split[1])
+            except:
+                return messageDetail.ReplyToChat("Cannot find Active info")
+
+            try:
+                last_msg_raw = data_raw[4]
+                last_msg_split = str(last_msg_raw).split(":")
+                last_msg = str(last_msg_split[1])
+            except:
+                return messageDetail.ReplyToChat("Cannot find Last Message time")
+
+            try:
+                streamType_raw = data_raw[5]
+                streamType_split = str(streamType_raw).split(":")
+                streamType = str(streamType_split[1]).replace("\"","").replace("type:","").replace("}","")
+            except:
+                return messageDetail.ReplyToChat("Cannot find stream type")
+
+            try:
+                attribute_raw = data_raw[6]
+                attribute_split = str(attribute_raw).split(":")
+                attribute = str(attribute_split[2]).replace("\"","").replace("}","").replace("'","").replace("[","").replace("]","")
+            except:
+                return messageDetail.ReplyToChat("Cannot find stream attributes")
+
+
+            table_body = ""
+            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                           "<td style='max-width:20%'>ID</td>" \
+                           "<td style='max-width:20%'>CROSS POD</td>" \
+                           "<td style='max-width:20%'>ACTIVE</td>" \
+                           "<td style='max-width:20%'>LAST MSG</td>" \
+                           "<td style='max-width:20%'>STREAM TYPE</td>" \
+                           "<td style='max-width:20%'>ATTRIBUTES</td>" \
+                           "</tr></thead><tbody>"
+
+            table_body += "<tr>" \
+                          "<td>" + str(stream_id) + "</td>" \
+                          "<td>" + str(xpod) + "</td>" \
+                          "<td>" + str(active) + "</td>" \
+                          "<td>" + str(last_msg) + "</td>" \
+                          "<td>" + str(streamType) + "</td>" \
+                          "<td>" + str(attribute) + "</td>" \
+                          "</tr>"
+
+            table_body += "</tbody></table>"
+
+            reply = table_header + table_body
+            return messageDetail.ReplyToChatV2_noBotLog(
+                "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+            # else:
+            #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        except:
+            botlog.LogSymphonyInfo("StreamCheck did not work entirely")
+
+def UIDCheck(messageDetail):
+    botlog.LogSymphonyInfo("Bot Call: UIDCheck")
+    try:
+        # try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
+
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
+        }
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = d_org["users"][index_org]["firstName"]
+            lastName = d_org["users"][index_org]["lastName"]
+            displayName = d_org["users"][index_org]["displayName"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+        # except:
+        #     return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+            try:
+
+                try:
+                    UID_raw = messageDetail.Command.MessageText
+                    UID = str(UID_raw).replace(" ", "")
+                    UID_lenght = len(str(UID))
+                except:
+                    return messageDetail.ReplyToChat("Please use enter UID of the Symphony user to lookup")
+
+                # if str(UID_lenght) != "14":
+                if str(UID_lenght) != _configDef['UID']:
+                    return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
+
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                notValidUI = "{'code': 400, 'message': 'At least one query paramemer (uid or email) needs to be present.'}"
+                notValidUID = "{'code': 400, 'message': 'All uids are invalid.'}"
+
+                if str(d_org).startswith(notValidUI):
+                    return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+                if str(d_org).startswith(notValidUID):
+                    return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+
+                table_body = ""
+                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='max-width:20%'>ID</td>" \
+                               "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
+                               "<td style='max-width:20%'>FIRST NAME</td>" \
+                               "<td style='max-width:20%'>LAST NAME</td>" \
+                               "<td style='max-width:20%'>DISPLAY NAME</td>" \
+                               "<td style='max-width:20%'>TITLE</td>" \
+                               "<td style='max-width:20%'>COMPANY</td>" \
+                               "<td style='max-width:20%'>LOCATION</td>" \
+                               "</tr></thead><tbody>"
+
+                for index_org in range(len(d_org["users"])):
+                    try:
+                        firstName = d_org["users"][index_org]["firstName"]
+                        lastName = d_org["users"][index_org]["lastName"]
+                    except:
+                        return messageDetail.ReplyToChat("I am a Top Secret Agent Bot, I do no share my info :)")
+                    displayName = d_org["users"][index_org]["displayName"]
+                    try:
+                        title = d_org["users"][index_org]["title"]
+                    except:
+                        title = "N/A"
+                    try:
+                        #companyName = d_org["users"][index_org]["company"]
+                        companyNameTemp = d_org["users"][index_org]["company"]
+                        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        companyName = str(companyTemp)
+                    except:
+                        companyName = "N/A"
+                    userID = str(d_org["users"][index_org]["id"])
+                    try:
+                        emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    except:
+                        emailAddress = "N/A"
+                    try:
+                        location = str(d_org["users"][index_org]["location"])
+                    except:
+                        location = "N/A"
+
+                    table_body += "<tr>" \
+                                  "<td>" + str(userID) + "</td>" \
+                                  "<td>" + str(emailAddress) + "</td>" \
+                                  "<td>" + str(firstName) + "</td>" \
+                                  "<td>" + str(lastName) + "</td>" \
+                                  "<td>" + str(displayName) + "</td>" \
+                                  "<td>" + str(title) + "</td>" \
+                                  "<td>" + str(companyName) + "</td>" \
+                                  "<td>" + str(location) + "</td>" \
+                                  "</tr>"
+
+                    table_body += "</tbody></table>"
+
+                reply = table_header + table_body
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+        # else:
+        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+            except:
+                botlog.LogSymphonyInfo("UIDCheck did not work")
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for UIDCheck")
+            try:
+                UID_raw = messageDetail.Command.MessageText
+                UID = str(UID_raw).replace(" ", "")
+                UID_lenght = len(str(UID))
+            except:
+                return messageDetail.ReplyToChat("Please use enter UID of the Symphony user to lookup")
+
+            # if str(UID_lenght) != "14":
+            if str(UID_lenght) != _configDef['UID']:
+                return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            notValidUI = "{'code': 400, 'message': 'At least one query paramemer (uid or email) needs to be present.'}"
+            notValidUID = "{'code': 400, 'message': 'All uids are invalid.'}"
+
+            if str(d_org).startswith(notValidUI):
+                return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+            if str(d_org).startswith(notValidUID):
+                return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+
+            table_body = ""
+            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                           "<td style='max-width:20%'>ID</td>" \
+                           "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
+                           "<td style='max-width:20%'>FIRST NAME</td>" \
+                           "<td style='max-width:20%'>LAST NAME</td>" \
+                           "<td style='max-width:20%'>DISPLAY NAME</td>" \
+                           "<td style='max-width:20%'>TITLE</td>" \
+                           "<td style='max-width:20%'>COMPANY</td>" \
+                           "<td style='max-width:20%'>LOCATION</td>" \
+                           "</tr></thead><tbody>"
+
+            for index_org in range(len(d_org["users"])):
+                try:
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                except:
+                    return messageDetail.ReplyToChat("I am a Top Secret Agent Bot, I do no share my info :)")
+                displayName = d_org["users"][index_org]["displayName"]
+                try:
+                    title = d_org["users"][index_org]["title"]
+                except:
+                    title = "N/A"
+                try:
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                except:
+                    companyName = "N/A"
+                userID = str(d_org["users"][index_org]["id"])
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                except:
+                    emailAddress = "N/A"
+                try:
+                    location = str(d_org["users"][index_org]["location"])
+                except:
+                    location = "N/A"
+
+                table_body += "<tr>" \
+                              "<td>" + str(userID) + "</td>" \
+                              "<td>" + str(emailAddress) + "</td>" \
+                              "<td>" + str(firstName) + "</td>" \
+                              "<td>" + str(lastName) + "</td>" \
+                              "<td>" + str(displayName) + "</td>" \
+                              "<td>" + str(title) + "</td>" \
+                              "<td>" + str(companyName) + "</td>" \
+                              "<td>" + str(location) + "</td>" \
+                              "</tr>"
+
+                table_body += "</tbody></table>"
+
+            reply = table_header + table_body
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+        # else:
+        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        except:
+            botlog.LogSymphonyInfo("UIDCheck did not work entirely")

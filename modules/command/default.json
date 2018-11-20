@@ -188,6 +188,36 @@
       "example":"/wikiSearch Symphony Communication",
       "category": "Miscellaneous Bot command",
       "permission": "All"
+    },
+    {
+      "triggers": ["whois"],
+      "function": "whois",
+      "description": "Give details about the @mentioned Symphony user",
+      "helptext": "<b>/whois</b>",
+      "param": "@mentioned user",
+      "example": "/whois @alex nalin",
+      "category": "Zendesk/General",
+      "permission": "Authorised List"
+    },
+    {
+      "triggers": ["UIDCheck", "uidCheck", "UID", "uid"],
+      "function": "UIDCheck",
+      "description": "Finds details about the given UID and retrieves the Symphony user information",
+      "helptext": "<b>/UIDCheck</b>",
+      "param": "UID",
+      "example": "/UIDCheck 71811853189765",
+      "category": "Zendesk/General",
+      "permission": "Authorised List"
+    },
+    {
+      "triggers": ["streamCheck", "streamcheck", "stream"],
+      "function": "streamCheck",
+      "description": "Finds details about the given Stream and retrieves the Symphony stream information for IM/MIM/ROOMS and give detail for each",
+      "helptext": "<b>/streamCheck</b>",
+      "param": "streamID",
+      "example": "/streamCheck 5fEubxc6pMHqioicBamPZ3___qN3RFcKdA",
+      "category": "Zendesk/General",
+      "permission": "Authorised List"
     }
   ],
   "hashcommands": [

@@ -27,7 +27,6 @@ def LoadAllCommands():
     LoadDefaultCommands()
     LoadPluginCommands()
 
-
 def LoadDefaultCommands():
     global DefaultCommands
     global HashCommands

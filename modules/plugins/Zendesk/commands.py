@@ -276,7 +276,7 @@ def searchMyTickets(messageDetail):
                     assignee_flag = False
                     # strip out conflicting HTML tags in descriptions
                     description_temp = str(result["description"])
-                    description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n", "<br/>")
+                    description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
                     ticketid = str(result["id"])
 
                     # Getting IDs of requesters to be processed
@@ -661,7 +661,7 @@ def showZD (messageDetail):
                         requestsubject_temp = str(d["ticket"]["subject"])
                         requestsubject = str(requestsubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         requestdescription_temps = str(d["ticket"]["description"])
-                        requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n", "<br/>")
+                        requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
                         requestorganization_id = str(d["ticket"]["organization_id"])
                         requestrequester_id = str(d["ticket"]["requester_id"])
                         requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")

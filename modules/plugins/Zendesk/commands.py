@@ -4616,14 +4616,18 @@ def newTicketToday(messageDetail):
 
                 # Checking for unique words (Tokens)
                 UniqueToken = len(set(table_header.split()))
-                print("UniqueToken: " + str(UniqueToken))
+                #print("UniqueToken: " + str(UniqueToken))
 
                 dataLenght = len(str(table_header))
-                print(str(dataLenght))
+                #print(str(dataLenght))
                 #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
 
+                # if dataLenght >= 80000:
+                #     print("Exeeded the limite")
+                #     #index = (len(d_tick["results"])) - 1
+
                 limitReached = False
-                if dataLenght >= 55000 or UniqueToken >= 1500:
+                if dataLenght >= 45000 or UniqueToken >= 850:
                     #messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most recent tickets")
                     #break
                     limitReached = True

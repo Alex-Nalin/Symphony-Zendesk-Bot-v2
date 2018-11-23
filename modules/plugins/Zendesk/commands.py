@@ -1451,6 +1451,7 @@ def showTicketComments (messageDetail):
     counter = True
     notPrivate = True
     messageSent = False
+    limitMessageNeeded = True
     isAllowed = ""
     table_bodyFull = ""
     table_header = ""
@@ -1736,7 +1737,7 @@ def showTicketComments (messageDetail):
             #if commentLenght >= 70000:
             if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                 limitReached = True
-                if privateComment:
+                if privateComment and limitMessageNeeded:
                     prvCom = True
                     messageSent = True
                     messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
@@ -1747,6 +1748,7 @@ def showTicketComments (messageDetail):
             #break
 
             if limitReached and prvCom:
+                limitMessageNeeded = False
                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -1758,6 +1760,7 @@ def showTicketComments (messageDetail):
                 notPrivate = False
 
             if limitReached and notPrivate:
+                limitMessageNeeded = False
                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -1768,8 +1771,10 @@ def showTicketComments (messageDetail):
                 counter = False
 
         if table_header == "":
-            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
+            botlog.LogSymphonyInfo("There is no result for this search")
+            #limitMessageNeeded = False
         else:
+            #limitMessageNeeded = False
             if privateComment and prvCom:
                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
@@ -1847,6 +1852,11 @@ def showTicketComments (messageDetail):
             return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
 
         messageDetail.ReplyToChatV2("You are not a <b>Zendesk Agent</b> or not part of the Bot <b>Zendesk Agent List</b>, the following will show all <b>public updates</b>. Rendering the comments for Zendesk Ticket: <b>" + ticketID + "</b> as an <b>End-User</b>, please wait.")
+
+
+        ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
+
+        messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
 
         table_body = ""
 
@@ -1935,20 +1945,39 @@ def showTicketComments (messageDetail):
                            "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
                            "</tr></thead><tbody></tbody></table>"
 
+            # Checking for unique words (Tokens)
+            UniqueToken = len(set(table_header.split()))
+
             commentLenght = len(str(table_body))
             #print(str(commentLenght))
 
-            if commentLenght >= 70000:
-                messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show only the latest update/comment")
-                break
+            limitReached = False
+            #if commentLenght >= 70000:
+            if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                limitReached = True
+                if limitMessageNeeded:
+                    messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                #break
 
-            table_bodyFull = ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments below</header><body>" + str(table_header) + "</body></card>")
+            if limitReached:
+                limitMessageNeeded = False
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                commentLenght = ""
+                table_header = ""
+                UniqueToken = ""
+                table_bodyFull = ""
+                counter = False
 
+        if table_header == "":
+            limitMessageNeeded = False
+            botlog.LogSymphonyInfo("There is no result for this search")
+        else:
+            limitMessageNeeded = False
+            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
             reply = str(table_bodyFull)
-
-        # return messageDetail.ReplyToChatV2_noBotLog(
-        #     "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments below</header><body>" + reply + "</body></card>")
-        return messageDetail.ReplyToChatV2_noBotLog(str(reply ))
+            return messageDetail.ReplyToChatV2_noBotLog(str(reply))
     else:
         return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
     # except:

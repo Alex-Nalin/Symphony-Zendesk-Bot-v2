@@ -1445,241 +1445,227 @@ def showTicketComments (messageDetail):
     botlog.LogSymphonyInfo("Bot Call: Show Zendesk ticket comments")
     botlog.LogSymphonyInfo("######################################")
 
-    #try:
-    privateComment = False
-    prvCom = False
-    counter = True
-    notPrivate = True
-    messageSent = False
-    limitMessageNeeded = True
-    isAllowed = ""
-    table_bodyFull = ""
-    table_header = ""
-    commentLenght = ""
-    table_header = ""
-    UniqueToken = ""
-    commandCallerUID = messageDetail.FromUserId
+    try:
+        privateComment = False
+        prvCom = False
+        counter = True
+        notPrivate = True
+        messageSent = False
+        limitMessageNeeded = True
+        isAllowed = ""
+        table_bodyFull = ""
+        table_header = ""
+        commentLenght = ""
+        table_header = ""
+        UniqueToken = ""
+        commandCallerUID = messageDetail.FromUserId
 
-    connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-    sessionTok = callout.GetSessionToken()
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
 
-    headersCompany = {
-        'sessiontoken': sessionTok,
-        'cache-control': "no-cache"
-    }
-
-    connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-    resComp = connComp.getresponse()
-    dataComp = resComp.read()
-    data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
-
-    dataRender = json.dumps(data_dict, indent=2)
-    d_org = json.loads(str(dataRender))
-
-    for index_org in range(len(d_org["users"])):
-        firstName = str(d_org["users"][index_org]["firstName"])
-        lastName = str(d_org["users"][index_org]["lastName"])
-        displayName = str(d_org["users"][index_org]["displayName"])
-        #companyName = d_org["users"][index_org]["company"]
-        companyNameTemp = d_org["users"][index_org]["company"]
-        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-        companyName = str(companyTemp)
-        userID = str(d_org["users"][index_org]["id"])
-
-        #################################################
-
-        try:
-            emailAddress = str(d_org["users"][index_org]["emailAddress"])
-            #print("User is connected: " + emailAddress)
-            emailZendesk = emailAddress
-            connectionRequired = False
-        except:
-            connectionRequired = True
-
-    #if connectionRequired:
-
-        data_lenght = len(dataComp)
-
-        if data_lenght > 450:
-            try:
-                query = "type:user " + emailAddress
-            except:
-                query = "type:user " + firstName + " " + lastName
-            botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
-        elif data_lenght < 450:
-            try:
-                #query = "type:user " + emailAddress + " organization:" + companyName
-                query = "type:user " + emailAddress
-            except:
-                #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                query = "type:user " + firstName + " " + lastName
-            botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
-        else:
-            return messageDetail.ReplyToChat("No user information available")
-
-            botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
-        results = zendesk.search(query=query)
-        #print(results)
-
-        if str(results).startswith(
-                "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-            return messageDetail.ReplyToChat(
-                "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
-        elif str(results).startswith(
-                "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-            return messageDetail.ReplyToChat(
-                "This organisation/company does not exist in Zendesk or name is misspelled.")
-        else:
-
-            data = json.dumps(results, indent=2)
-            d = json.loads(data)
-
-            for index in range(len(d["results"])):
-                #name = d["results"][index]["name"]
-                #email = str(d["results"][index]["email"])
-                role = str(d["results"][index]["role"])
-                #print(role)
-                #botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
-
-                if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                    isAllowed = True
-                    #print(role)
-                    botlog.LogSymphonyInfo("Role of the calling user: " + role)
-
-        #################################################
-
-    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-    callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
-
-    if callerCheck in AccessFile and isAllowed:
-        botlog.LogSymphonyInfo("Inside access list: User has Agent access with the bot and is " + role + " on Zendesk")
-
-        showRequest = (messageDetail.Command.MessageText)
-        message_split = str(showRequest).split()
-        try:
-            ticketID = str(message_split[0])
-        except:
-            return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
-
-        ## Calling user is Agent on Zendesk and also added to the Bot list as Agent
-
-        # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-        # base64Enc = (base64Encoded.decode("utf-8"))
-        # #print(str(base64Enc))
-        # base = ("Basic " + base64Enc)
-        # #print(str(base))
-        #
-        # headers = {
-        #     'email_address': emailZendesk + "/token",
-        #     'password': (_configDef['zdesk_config']['zdesk_password']),
-        #     'authorization': base,
-        #     'cache-control': "no-cache",
-        #     'content-type': "application/json"
-        # }
-
-        ###############################
-
-        ## Not sure yet why but some tickets cannot be viewed as Agent but need Admin access on Zendesk
-        ## If access is only given as agent, this will not work (555) and return a forbidden message but work for some ticket ids (560)
-        headers = {
-            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
-            'password': _configDef['zdesk_config']['zdesk_password'],
-            'authorization': _configDef['zdesk_config']['zdesk_auth'],
-            'cache-control': "no-cache",
-            'Content-Type': 'application/json',
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
         }
 
-        url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/tickets/" + ticketID + "/comments?sort_order=desc"
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        response = requests.request("GET", url, headers=headers)
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
 
-        data = response.json()
-        #print(data)
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(str(dataRender))
 
-        invalidTicket = "{'error': 'RecordNotFound', 'description': 'Not found'}"
-        invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
-        forbidden = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
+        for index_org in range(len(d_org["users"])):
+            firstName = str(d_org["users"][index_org]["firstName"])
+            lastName = str(d_org["users"][index_org]["lastName"])
+            displayName = str(d_org["users"][index_org]["displayName"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
 
-        if str(data).startswith(invalidTicket):
-            return messageDetail.ReplyToChatV2("This Ticket ID, " + ticketID + " does not exist on Zendesk")
-
-        if str(data).startswith(invalid):
-            return messageDetail.ReplyToChatV2("Please use this format: <b>/showTicketComments ticketid</b>")
-
-        if str(data).startswith(forbidden):
-            return messageDetail.ReplyToChatV2("To view the comments on this ticket, you need to be Zendesk Admin, not yet sure why")
-
-        ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
-
-        messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
-
-        file = ""
-        full_file =""
-        hasFile = True
-        for result in data['comments']:
-            author_id = str(result["author_id"])
-            body = str(result["body"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-            #print(str(body))
-            privacy = str(result["public"])
-
-            if str(privacy) == "False":
-                privateComment = True
-                prvCom = False
-                public = "Private"
-            else:
-                #privateComment = False
-                public = "Public"
-
-            attachments = str(result["attachments"])
-
-            ####################################
-
-            data_dict = ast.literal_eval(attachments)
-            dataRender = json.dumps(data_dict, indent=2)
-            d = json.loads(dataRender)
-            #print("d: " + str(d))
-
-            if str(d) == "[]":
-                full_file = "No Attachment"
-                hasFile = False
-
-            else:
-                full_file = ""
-                for index in range(len(d)):
-
-                    if hasFile:
-                        botlog.LogSymphonyInfo("This comment has no attachment")
-                    else:
-                        file_name = d[index]["file_name"]
-                        #print(str(file_name))
-                        content_url = d[index]["content_url"]
-                        #print(str(content_url))
-                        sizefile = d[index]["size"]
-                        file = "<a href=\"" + str(content_url) + "\">" + str(file_name) + "</a> (" + size(sizefile) + ")"
-                        full_file += file + " "
-                        #print(full_file)
-
-            ####################################
-
-            created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
+            #################################################
 
             try:
-                # To get the name of the requester given the requesterID
-                conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
-                res = conn.getresponse()
-                userRequesterId = res.read()
-                tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
-                req_name = str(d["user"]["name"])
-                author_id = req_name
+                emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                #print("User is connected: " + emailAddress)
+                emailZendesk = emailAddress
+                connectionRequired = False
             except:
+                connectionRequired = True
+
+        #if connectionRequired:
+
+            data_lenght = len(dataComp)
+
+            if data_lenght > 450:
                 try:
-                    botlog.LogSymphonyInfo("inside second try for requester name value inside showTicketComments")
+                    query = "type:user " + emailAddress
+                except:
+                    query = "type:user " + firstName + " " + lastName
+                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
+            elif data_lenght < 450:
+                try:
+                    #query = "type:user " + emailAddress + " organization:" + companyName
+                    query = "type:user " + emailAddress
+                except:
+                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                    query = "type:user " + firstName + " " + lastName
+                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
+            else:
+                return messageDetail.ReplyToChat("No user information available")
+
+                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + query)
+            results = zendesk.search(query=query)
+            #print(results)
+
+            if str(results).startswith(
+                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+            elif str(results).startswith(
+                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+            else:
+
+                data = json.dumps(results, indent=2)
+                d = json.loads(data)
+
+                for index in range(len(d["results"])):
+                    #name = d["results"][index]["name"]
+                    #email = str(d["results"][index]["email"])
+                    role = str(d["results"][index]["role"])
+                    #print(role)
+                    #botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                    if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                        isAllowed = True
+                        #print(role)
+                        botlog.LogSymphonyInfo("Role of the calling user: " + role)
+
+            #################################################
+
+        botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+        callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+
+        if callerCheck in AccessFile and isAllowed:
+            botlog.LogSymphonyInfo("Inside access list: User has Agent access with the bot and is " + role + " on Zendesk")
+
+            showRequest = (messageDetail.Command.MessageText)
+            message_split = str(showRequest).split()
+            try:
+                ticketID = str(message_split[0])
+            except:
+                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+
+            ## Calling user is Agent on Zendesk and also added to the Bot list as Agent
+
+            # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+            # base64Enc = (base64Encoded.decode("utf-8"))
+            # #print(str(base64Enc))
+            # base = ("Basic " + base64Enc)
+            # #print(str(base))
+            #
+            # headers = {
+            #     'email_address': emailZendesk + "/token",
+            #     'password': (_configDef['zdesk_config']['zdesk_password']),
+            #     'authorization': base,
+            #     'cache-control': "no-cache",
+            #     'content-type': "application/json"
+            # }
+
+            ###############################
+
+            ## Not sure yet why but some tickets cannot be viewed as Agent but need Admin access on Zendesk
+            ## If access is only given as agent, this will not work (555) and return a forbidden message but work for some ticket ids (560)
+            headers = {
+                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                'password': _configDef['zdesk_config']['zdesk_password'],
+                'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                'cache-control': "no-cache",
+                'Content-Type': 'application/json',
+            }
+
+            url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/tickets/" + ticketID + "/comments?sort_order=desc"
+
+            response = requests.request("GET", url, headers=headers)
+
+            data = response.json()
+            #print(data)
+
+            invalidTicket = "{'error': 'RecordNotFound', 'description': 'Not found'}"
+            invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
+            forbidden = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
+
+            if str(data).startswith(invalidTicket):
+                return messageDetail.ReplyToChatV2("This Ticket ID, " + ticketID + " does not exist on Zendesk")
+
+            if str(data).startswith(invalid):
+                return messageDetail.ReplyToChatV2("Please use this format: <b>/showTicketComments ticketid</b>")
+
+            if str(data).startswith(forbidden):
+                return messageDetail.ReplyToChatV2("To view the comments on this ticket, you need to be Zendesk Admin, not yet sure why")
+
+            ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
+
+            messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
+
+            file = ""
+            full_file =""
+            hasFile = True
+            for result in data['comments']:
+                author_id = str(result["author_id"])
+                body = str(result["body"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                #print(str(body))
+                privacy = str(result["public"])
+
+                if str(privacy) == "False":
+                    privateComment = True
+                    prvCom = False
+                    public = "Private"
+                else:
+                    #privateComment = False
+                    public = "Public"
+
+                attachments = str(result["attachments"])
+
+                ####################################
+
+                data_dict = ast.literal_eval(attachments)
+                dataRender = json.dumps(data_dict, indent=2)
+                d = json.loads(dataRender)
+                #print("d: " + str(d))
+
+                if str(d) == "[]":
+                    full_file = "No Attachment"
+                    hasFile = False
+
+                else:
+                    full_file = ""
+                    for index in range(len(d)):
+
+                        if hasFile:
+                            botlog.LogSymphonyInfo("This comment has no attachment")
+                        else:
+                            file_name = d[index]["file_name"]
+                            #print(str(file_name))
+                            content_url = d[index]["content_url"]
+                            #print(str(content_url))
+                            sizefile = d[index]["size"]
+                            file = "<a href=\"" + str(content_url) + "\">" + str(file_name) + "</a> (" + size(sizefile) + ")"
+                            full_file += file + " "
+                            #print(full_file)
+
+                ####################################
+
+                created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
+
+                try:
                     # To get the name of the requester given the requesterID
                     conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
                     res = conn.getresponse()
@@ -1692,12 +1678,259 @@ def showTicketComments (messageDetail):
                     req_name = str(d["user"]["name"])
                     author_id = req_name
                 except:
-                    author_id = "N/A"
+                    try:
+                        botlog.LogSymphonyInfo("inside second try for requester name value inside showTicketComments")
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        req_name = str(d["user"]["name"])
+                        author_id = req_name
+                    except:
+                        author_id = "N/A"
 
 
-                #messageDetail.ReplyToChat("Cannot get requester info")
+                    #messageDetail.ReplyToChat("Cannot get requester info")
 
-            if public == "Public":
+                if public == "Public":
+
+                    table_body = ""
+                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                                   "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(body) + "</td></tr><tr>" \
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
+                                   "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(public) + "</td></tr><tr>" \
+                                   "<td style='width:10%;border:1px solid blue;border-bottom: double blue;text-align:center'>ATTACHMENT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(full_file) + "</td></tr><tr>"\
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED AT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
+                                   "</tr></thead><tbody></tbody></table>"
+
+                if public == "Private":
+
+                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                                   "<td class=\"tempo-bg-color--yellow tempo-text-color--black\" colspan=\"2\">" + str(body) + "</td></tr><tr>" \
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
+                                   "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(public) + "</td></tr><tr>" \
+                                   "<td style='width:10%;border:1px solid blue;border-bottom: double blue;text-align:center'>ATTACHMENT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(full_file) + "</td></tr><tr>"\
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED AT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
+                                   "</tr></thead><tbody></tbody></table>"
+
+                # Checking for unique words (Tokens)
+                UniqueToken = len(set(table_header.split()))
+                print(UniqueToken)
+
+                commentLenght = len(str(table_header))
+                print(commentLenght)
+
+                limitReached = False
+                #if commentLenght >= 70000:
+                if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                    limitReached = True
+                    if privateComment and limitMessageNeeded:
+                        prvCom = True
+                        messageSent = True
+                        messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    if counter and prvCom:
+                        messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                    elif counter and prvCom is False:
+                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                #break
+
+                if limitReached and prvCom:
+                    limitMessageNeeded = False
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                    commentLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    counter = False
+                    notPrivate = False
+
+                if limitReached and notPrivate:
+                    limitMessageNeeded = False
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    commentLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    counter = False
+
+            if table_header == "":
+                botlog.LogSymphonyInfo("There is no result for this search")
+                #limitMessageNeeded = False
+            else:
+                #limitMessageNeeded = False
+                if privateComment and prvCom:
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif privateComment and prvCom is False and messageSent is False:
+                    messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif privateComment and prvCom is False and messageSent:
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                else:
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+
+        #else:
+        elif companyName in _configDef['AuthCompany']['PodList']:
+
+            botlog.LogSymphonyInfo("The calling user is either not added to the Zendesk Agent List or he/she is not an Agent on the Zendesk Instance.")
+            showRequest = (messageDetail.Command.MessageText)
+            message_split = str(showRequest).split()
+            try:
+                ticketID = str(message_split[0])
+            except:
+                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+
+    ########################
+
+            ## if using _configDef['ZendeskBot'] need to add it to the configDef part in main config.json:
+            ##   "ZendeskBot": "ZendeskBot@ZendeskBot.com",
+
+            ## This is used to simulate an agent call as end user, this user is not in the Bot Agent List (access file)
+            #base64Encoded = base64.b64encode(bytes((_configDef['ZendeskBot'] + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+            # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+            # base64Enc = (base64Encoded.decode("utf-8"))
+            # print(str(base64Enc))
+            # base = ("Basic " + base64Enc)
+            # print(str(base))
+            #
+            # headers = {
+            #     'email_address': emailZendesk + "/token",
+            #     'password': (_configDef['zdesk_config']['zdesk_password']),
+            #     'authorization': base,
+            #     'cache-control': "no-cache",
+            #     'content-type': "application/json"
+            # }
+    #######################
+
+            headers = {
+                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                'password': _configDef['zdesk_config']['zdesk_password'],
+                'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                'cache-control': "no-cache",
+                'Content-Type': 'application/json',
+            }
+
+            url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/requests/" + ticketID + "/comments"
+
+            response = requests.request("GET", url, headers=headers)
+
+            data = response.json()
+            #print(data)
+
+            invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
+
+            invalidReq = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
+
+            if str(data).startswith(invalid):
+                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+
+            if str(data).startswith(invalidReq):
+                return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
+
+            messageDetail.ReplyToChatV2("You are not a <b>Zendesk Agent</b> or not part of the Bot <b>Zendesk Agent List</b>, the following will show all <b>public updates</b>. Rendering the comments for Zendesk Ticket: <b>" + ticketID + "</b> as an <b>End-User</b>, please wait.")
+
+
+            ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
+
+            messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
+
+            table_body = ""
+
+            file = ""
+            full_file =""
+            hasFile = True
+            for result in data['comments']:
+                author_id = str(result["author_id"])
+                body = str(result["body"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n","<br/><br/>").replace("\n", "<br/>")
+                #print(str(body))
+                public = str(result["public"])
+                attachments = str(result["attachments"])
+
+                ####################################
+
+                data_dict = ast.literal_eval(attachments)
+                dataRender = json.dumps(data_dict, indent=2)
+                d = json.loads(dataRender)
+                #print("d: " + str(d))
+
+                if str(d) == "[]":
+                    full_file = "No Attachment"
+                    hasFile = False
+
+                else:
+                    full_file = ""
+                    for index in range(len(d)):
+
+                        if hasFile:
+                            botlog.LogSymphonyInfo("No attachment")
+                        else:
+                            file_name = d[index]["file_name"]
+                            #print(str(file_name))
+                            content_url = d[index]["content_url"]
+                            #print(str(content_url))
+                            sizefile = d[index]["size"]
+                            file = "<a href=\"" + str(content_url) + "\">" + str(file_name) + "</a> (" + size(sizefile)+")"
+                            full_file += file + " "
+                            #print(full_file)
+
+                ####################################
+
+                created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
+
+                try:
+                    # To get the name of the requester given the requesterID
+                    conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
+                    res = conn.getresponse()
+                    userRequesterId = res.read()
+                    tempUserRequester = str(userRequesterId.decode('utf-8'))
+
+                    data = json.dumps(tempUserRequester, indent=2)
+                    data_dict = ast.literal_eval(data)
+                    d = json.loads(data_dict)
+                    req_name = str(d["user"]["name"])
+                    author_id = req_name
+                except:
+                    try:
+                        botlog.LogSymphonyInfo("Inside second try for author name value in showTicketComments")
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        req_name = str(d["user"]["name"])
+                        author_id = req_name
+                    except:
+                        author_id = "N/A"
+
+                    # messageDetail.ReplyToChat("Cannot get requester info")
 
                 table_body = ""
                 table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
@@ -1712,276 +1945,43 @@ def showTicketComments (messageDetail):
                                "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
                                "</tr></thead><tbody></tbody></table>"
 
-            if public == "Private":
+                # Checking for unique words (Tokens)
+                UniqueToken = len(set(table_header.split()))
 
-                table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td class=\"tempo-bg-color--yellow tempo-text-color--black\" colspan=\"2\">" + str(body) + "</td></tr><tr>" \
-                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
-                               "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
-                               "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
-                               "<td style='border:1px solid black;text-align:center'>" + str(public) + "</td></tr><tr>" \
-                               "<td style='width:10%;border:1px solid blue;border-bottom: double blue;text-align:center'>ATTACHMENT</td>" \
-                               "<td style='border:1px solid black;text-align:center'>" + str(full_file) + "</td></tr><tr>"\
-                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED AT</td>" \
-                               "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
-                               "</tr></thead><tbody></tbody></table>"
+                commentLenght = len(str(table_body))
+                #print(str(commentLenght))
 
-            # Checking for unique words (Tokens)
-            UniqueToken = len(set(table_header.split()))
-            print(UniqueToken)
+                limitReached = False
+                #if commentLenght >= 70000:
+                if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                    limitReached = True
+                    if limitMessageNeeded:
+                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                    #break
 
-            commentLenght = len(str(table_header))
-            print(commentLenght)
+                if limitReached:
+                    limitMessageNeeded = False
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    commentLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    counter = False
 
-            limitReached = False
-            #if commentLenght >= 70000:
-            if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
-                limitReached = True
-                if privateComment and limitMessageNeeded:
-                    prvCom = True
-                    messageSent = True
-                    messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
-                if counter and prvCom:
-                    messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
-                elif counter and prvCom is False:
-                    messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
-            #break
-
-            if limitReached and prvCom:
+            if table_header == "":
                 limitMessageNeeded = False
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                commentLenght = ""
-                table_header = ""
-                UniqueToken = ""
-                table_bodyFull = ""
-                counter = False
-                notPrivate = False
-
-            if limitReached and notPrivate:
-                limitMessageNeeded = False
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                commentLenght = ""
-                table_header = ""
-                UniqueToken = ""
-                table_bodyFull = ""
-                counter = False
-
-        if table_header == "":
-            botlog.LogSymphonyInfo("There is no result for this search")
-            #limitMessageNeeded = False
-        else:
-            #limitMessageNeeded = False
-            if privateComment and prvCom:
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-            elif privateComment and prvCom is False and messageSent is False:
-                messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-            elif privateComment and prvCom is False and messageSent:
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                botlog.LogSymphonyInfo("There is no result for this search")
             else:
+                limitMessageNeeded = False
                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
                 return messageDetail.ReplyToChatV2_noBotLog(str(reply))
-
-    #else:
-    elif companyName in _configDef['AuthCompany']['PodList']:
-
-        botlog.LogSymphonyInfo("The calling user is either not added to the Zendesk Agent List or he/she is not an Agent on the Zendesk Instance.")
-        showRequest = (messageDetail.Command.MessageText)
-        message_split = str(showRequest).split()
-        try:
-            ticketID = str(message_split[0])
-        except:
-            return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
-
-########################
-
-        ## if using _configDef['ZendeskBot'] need to add it to the configDef part in main config.json:
-        ##   "ZendeskBot": "ZendeskBot@ZendeskBot.com",
-
-        ## This is used to simulate an agent call as end user, this user is not in the Bot Agent List (access file)
-        #base64Encoded = base64.b64encode(bytes((_configDef['ZendeskBot'] + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-        # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-        # base64Enc = (base64Encoded.decode("utf-8"))
-        # print(str(base64Enc))
-        # base = ("Basic " + base64Enc)
-        # print(str(base))
-        #
-        # headers = {
-        #     'email_address': emailZendesk + "/token",
-        #     'password': (_configDef['zdesk_config']['zdesk_password']),
-        #     'authorization': base,
-        #     'cache-control': "no-cache",
-        #     'content-type': "application/json"
-        # }
-#######################
-
-        headers = {
-            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
-            'password': _configDef['zdesk_config']['zdesk_password'],
-            'authorization': _configDef['zdesk_config']['zdesk_auth'],
-            'cache-control': "no-cache",
-            'Content-Type': 'application/json',
-        }
-
-        url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/requests/" + ticketID + "/comments"
-
-        response = requests.request("GET", url, headers=headers)
-
-        data = response.json()
-        #print(data)
-
-        invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
-
-        invalidReq = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
-
-        if str(data).startswith(invalid):
-            return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
-
-        if str(data).startswith(invalidReq):
-            return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
-
-        messageDetail.ReplyToChatV2("You are not a <b>Zendesk Agent</b> or not part of the Bot <b>Zendesk Agent List</b>, the following will show all <b>public updates</b>. Rendering the comments for Zendesk Ticket: <b>" + ticketID + "</b> as an <b>End-User</b>, please wait.")
-
-
-        ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
-
-        messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
-
-        table_body = ""
-
-        file = ""
-        full_file =""
-        hasFile = True
-        for result in data['comments']:
-            author_id = str(result["author_id"])
-            body = str(result["body"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n", "<br/><br/>").replace("\n\n","<br/><br/>").replace("\n", "<br/>")
-            #print(str(body))
-            public = str(result["public"])
-            attachments = str(result["attachments"])
-
-            ####################################
-
-            data_dict = ast.literal_eval(attachments)
-            dataRender = json.dumps(data_dict, indent=2)
-            d = json.loads(dataRender)
-            #print("d: " + str(d))
-
-            if str(d) == "[]":
-                full_file = "No Attachment"
-                hasFile = False
-
-            else:
-                full_file = ""
-                for index in range(len(d)):
-
-                    if hasFile:
-                        botlog.LogSymphonyInfo("No attachment")
-                    else:
-                        file_name = d[index]["file_name"]
-                        #print(str(file_name))
-                        content_url = d[index]["content_url"]
-                        #print(str(content_url))
-                        sizefile = d[index]["size"]
-                        file = "<a href=\"" + str(content_url) + "\">" + str(file_name) + "</a> (" + size(sizefile)+")"
-                        full_file += file + " "
-                        #print(full_file)
-
-            ####################################
-
-            created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
-
-            try:
-                # To get the name of the requester given the requesterID
-                conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
-                res = conn.getresponse()
-                userRequesterId = res.read()
-                tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
-                req_name = str(d["user"]["name"])
-                author_id = req_name
-            except:
-                try:
-                    botlog.LogSymphonyInfo("Inside second try for author name value in showTicketComments")
-                    # To get the name of the requester given the requesterID
-                    conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
-                    res = conn.getresponse()
-                    userRequesterId = res.read()
-                    tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
-                    req_name = str(d["user"]["name"])
-                    author_id = req_name
-                except:
-                    author_id = "N/A"
-
-                # messageDetail.ReplyToChat("Cannot get requester info")
-
-            table_body = ""
-            table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                           "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(body) + "</td></tr><tr>" \
-                           "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
-                           "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + str(public) + "</td></tr><tr>" \
-                           "<td style='width:10%;border:1px solid blue;border-bottom: double blue;text-align:center'>ATTACHMENT</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + str(full_file) + "</td></tr><tr>"\
-                           "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED AT</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
-                           "</tr></thead><tbody></tbody></table>"
-
-            # Checking for unique words (Tokens)
-            UniqueToken = len(set(table_header.split()))
-
-            commentLenght = len(str(table_body))
-            #print(str(commentLenght))
-
-            limitReached = False
-            #if commentLenght >= 70000:
-            if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
-                limitReached = True
-                if limitMessageNeeded:
-                    messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
-                #break
-
-            if limitReached:
-                limitMessageNeeded = False
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-                reply = str(table_bodyFull)
-                messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                commentLenght = ""
-                table_header = ""
-                UniqueToken = ""
-                table_bodyFull = ""
-                counter = False
-
-        if table_header == "":
-            limitMessageNeeded = False
-            botlog.LogSymphonyInfo("There is no result for this search")
         else:
-            limitMessageNeeded = False
-            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
-            reply = str(table_bodyFull)
-            return messageDetail.ReplyToChatV2_noBotLog(str(reply))
-    else:
-        return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
-    # except:
-    #     return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+            botlog.LogSymphonyInfo("You aren't authorised to use this command. Please consult Symphony Support team")
+    except:
+        return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 
 
 #############################
@@ -2576,7 +2576,10 @@ def recentZD(messageDetail):
 
     try:
         table_bodyFull = ""
+        table_header = ""
+        allTicket = ""
         isAllowed = False
+        counter = True
         commandCallerUID = messageDetail.FromUserId
 
         try:
@@ -2714,21 +2717,6 @@ def recentZD(messageDetail):
             if str(d).startswith(noRecentTicket):
                 return messageDetail.ReplyToChat("There is no recently viewed ticket to show")
 
-            # table_body = ""
-            # table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-            #                "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-            #                "<td style='width:40%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
-            #                "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-            #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-            #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-            #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-            #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-            #                "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-            #                "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-            #                "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-            #                "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-            #                "</tr></thead><tbody>"
-
             for index in range(len(d["tickets"])):
                 ticketid = str(d["tickets"][index]["id"])
                 subject_temp = d["tickets"][index]["subject"]
@@ -2842,8 +2830,8 @@ def recentZD(messageDetail):
                 table_body = ""
 
                 if noAssignee:
-
-                    table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                    assigned = str(assigneeName)
+                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                            "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
                            "<td style='border:1px solid black;text-align:left'>" + subject + "</td></tr><tr>" \
                            "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + description + "</td></tr><tr>" \
@@ -2862,63 +2850,81 @@ def recentZD(messageDetail):
                            "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
                            "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + organization + "</a></td></tr><tr>" \
                            "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + str(assigneeName) + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(assigned) + "</td></tr><tr>" \
                            "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
                            "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
                            "</tr></thead><tbody></tbody></table>"
 
                 else:
-
-                    table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                    assigned = "<a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a>"
+                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                            "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                           "<td style='border:1px solid black;text-align:left'>" + subject + "</td></tr><tr>" \
-                           "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + description + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:left'>" + str(subject) + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
                            "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
                            "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
                            "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + priority + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(priority) + "</td></tr><tr>" \
                            "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + status + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(status) + "</td></tr><tr>" \
                            "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + created_at + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
                            "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                           "<td style='border:1px solid black;text-align:center'>" + updated_at + "</td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(updated_at) + "</td></tr><tr>" \
                            "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                           "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
                            "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                           "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + organization + "</a></td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(organization) + "</a></td></tr><tr>" \
                            "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                           "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td></tr><tr>" \
+                           "<td style='border:1px solid black;text-align:center'>" + str(assigned) + "</td></tr><tr>" \
                            "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
                            "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
                            "</tr></thead><tbody></tbody></table>"
 
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(organization) + ")</a> " + str(subject) + "</header><body>" + table_header + "</body></card>")
-                    reply = table_bodyFull
+                allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: " + str(status) + ") <br/>"
 
-                    # dataLenght = len(str(table_body))
-                    dataLenght = len(str(table_header))
-                    #print(str(dataLenght))
+                UniqueToken = len(set(table_header.split()))
+                #print(UniqueToken)
 
-                    if dataLenght >= 70000:
-                        messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most rerent tickets")
-                        break
+                # dataLenght = len(str(table_body))
+                dataLenght = len(str(table_header))
+                #print(str(dataLenght))
 
-            #table_body += "</tbody></table>"
+                limitReached = False
+                #if dataLenght >= 70000:
+                if dataLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                    limitReached = True
+                    if counter:
+                        messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
 
-            # reply = table_header + table_body
-            #reply = table_header
-            #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below Zendesk ticket recently opened or viewed by the Zendesk Agents</header><body>" + reply + "</body></card>")
-            return messageDetail.ReplyToChatV2_noBotLog(reply)
+                if limitReached:
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + allTicket + "</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    dataLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    allTicket = ""
+                    counter = False
 
+            if table_header == "":
+                return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
+            else:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                return messageDetail.ReplyToChatV2_noBotLog(str(reply))
         else:
-            botlog.LogSymphonyInfo("The calling using is an end user, cannot call the function /recent")
-            #return messageDetail.ReplyToChat("You aren't authorised to use this command. If required, please contact your Zendesk Admin to review your role")
+            botlog.LogSymphonyInfo("The calling user is an end user, cannot call the function /recent")
+        #return messageDetail.ReplyToChat("You aren't authorised to use this command. If required, please contact your Zendesk Admin to review your role")
     except:
         try:
             botlog.LogSymphonyInfo("Inside second try for recent")
             table_bodyFull = ""
+            table_header = ""
+            allTicket = ""
             isAllowed = False
+            counter = True
             commandCallerUID = messageDetail.FromUserId
 
             try:
@@ -3016,7 +3022,7 @@ def recentZD(messageDetail):
             if callerCheck in AccessFile and isAllowed:
 
                 botlog.LogSymphonyInfo("Calling user is added to the bot as Agent and also on Zendesk as Admin or Agent")
-                #if messageDetail.Sender.Name in AccessFile:
+            #if messageDetail.Sender.Name in AccessFile:
 
                 # noAssignee = False
                 messageDetail.ReplyToChat("Pulling the data from Zendesk and rendering it now, please wait...")
@@ -3038,11 +3044,11 @@ def recentZD(messageDetail):
                 #print(str(base))
 
                 headers = {
-                    'email_address': emailZendesk +"/token",
-                    'password': (_configDef['zdesk_config']['zdesk_password']),
-                    'authorization': base,
-                    'cache-control': "no-cache",
-                    'content-type': "application/json"
+                            'email_address': emailZendesk +"/token",
+                            'password': (_configDef['zdesk_config']['zdesk_password']),
+                            'authorization': base,
+                            'cache-control': "no-cache",
+                            'content-type': "application/json"
                 }
 
                 conn.request("GET", "/api/v2/tickets/recent.json?include=users", headers=headers)
@@ -3055,21 +3061,6 @@ def recentZD(messageDetail):
                 noRecentTicket = "{'tickets': [], 'users': [], 'next_page': None, 'previous_page': None, 'count': 0}"
                 if str(d).startswith(noRecentTicket):
                     return messageDetail.ReplyToChat("There is no recently viewed ticket to show")
-
-                # table_body = ""
-                # table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                #                "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                #                "<td style='width:40%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
-                #                "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                #                "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                #                "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                #                "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                #                "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                #                "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                #                "</tr></thead><tbody>"
 
                 for index in range(len(d["tickets"])):
                     ticketid = str(d["tickets"][index]["id"])
@@ -3184,77 +3175,92 @@ def recentZD(messageDetail):
                     table_body = ""
 
                     if noAssignee:
-
-                        table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                       "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                       "<td style='border:1px solid black;text-align:left'>" + subject + "</td></tr><tr>" \
-                                       "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + description + "</td></tr><tr>" \
-                                       "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + priority + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + status + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + created_at + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + updated_at + "</td></tr><tr>" \
-                                       "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                       "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + organization + "</a></td></tr><tr>" \
-                                       "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + str(assigneeName) + "</td></tr><tr>" \
-                                       "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
-                                       "</tr></thead><tbody></tbody></table>"
+                        assigned = str(assigneeName)
+                        table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                               "<td style='border:1px solid black;text-align:left'>" + subject + "</td></tr><tr>" \
+                               "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + description + "</td></tr><tr>" \
+                               "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + priority + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + status + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + created_at + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + updated_at + "</td></tr><tr>" \
+                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + organization + "</a></td></tr><tr>" \
+                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(assigned) + "</td></tr><tr>" \
+                               "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
+                               "</tr></thead><tbody></tbody></table>"
 
                     else:
+                        assigned = "<a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a>"
+                        table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                               "<td style='border:1px solid black;text-align:left'>" + str(subject) + "</td></tr><tr>" \
+                               "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                               "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(priority) + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(status) + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(updated_at) + "</td></tr><tr>" \
+                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(organization) + "</a></td></tr><tr>" \
+                               "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(assigned) + "</td></tr><tr>" \
+                               "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
+                               "</tr></thead><tbody></tbody></table>"
 
-                        table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                       "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                       "<td style='border:1px solid black;text-align:left'>" + subject + "</td></tr><tr>" \
-                                       "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + description + "</td></tr><tr>" \
-                                       "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + priority + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + status + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + created_at + "</td></tr><tr>" \
-                                       "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + updated_at + "</td></tr><tr>" \
-                                       "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                       "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + organization + "</a></td></tr><tr>" \
-                                       "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td></tr><tr>" \
-                                       "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                       "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
-                                       "</tr></thead><tbody></tbody></table>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: " + str(status) + ") <br/>"
 
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(organization) + ")</a> " + str(subject) + "</header><body>" + table_header + "</body></card>")
-                        reply = table_bodyFull
+                    UniqueToken = len(set(table_header.split()))
+                    #print(UniqueToken)
 
-                        # dataLenght = len(str(table_body))
-                        dataLenght = len(str(table_header))
-                        #print(str(dataLenght))
+                    # dataLenght = len(str(table_body))
+                    dataLenght = len(str(table_header))
+                    #print(str(dataLenght))
 
-                        if dataLenght >= 70000:
-                            messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most rerent tickets")
-                            break
+                    limitReached = False
+                    #if dataLenght >= 70000:
+                    if dataLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                        limitReached = True
+                        if counter:
+                            messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
 
-                #table_body += "</tbody></table>"
+                    if limitReached:
+                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        dataLenght = ""
+                        table_header = ""
+                        UniqueToken = ""
+                        table_bodyFull = ""
+                        allTicket = ""
+                        counter = False
 
-                # reply = table_header + table_body
-                #reply = table_header
-                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below Zendesk ticket recently opened or viewed by the Zendesk Agents</header><body>" + reply + "</body></card>")
-                return messageDetail.ReplyToChatV2_noBotLog(reply)
-
+                if table_header == "":
+                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
+                else:
+                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
             else:
-                botlog.LogSymphonyInfo("The calling using is an end user, cannot call the function /recent")
+                botlog.LogSymphonyInfo("The calling user is an end user, cannot call the function /recent")
         except:
             return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 

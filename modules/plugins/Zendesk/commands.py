@@ -472,7 +472,9 @@ def searchMyTickets(messageDetail):
             #print(str(myTicketLenght))
 
             limitReached = False
-            if myTicketLenght >= 70000 or UniqueToken >= 850:
+            #if myTicketLenght >= 80000 or UniqueToken >= 2500:
+            if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+
                 limitReached = True
                 if counter:
                     messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
@@ -959,7 +961,8 @@ def showZD (messageDetail):
                     reply = table_bodyFull
                     characterLimit = len(str(table_bodyFull))
 
-                if characterLimit >= 70000:
+                #if characterLimit >= 70000:
+                if characterLimit >= int(_configDef['limit']['character']):
                     messageDetail.ReplyToChatV2("You have reached a character limitation. Ticket(s) from ID " + str(request_id) + " is/are not showing, please check against your given ticket list")
                     return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     break
@@ -1418,7 +1421,8 @@ def showZD (messageDetail):
                         reply = table_bodyFull
                         characterLimit = len(str(table_bodyFull))
 
-                    if characterLimit >= 70000:
+                    #if characterLimit >= 70000:
+                    if characterLimit >= int(_configDef['limit']['character']):
                         messageDetail.ReplyToChatV2("You have reached a character limitation. Ticket(s) from ID " + str(request_id) + " is/are not showing, please check against your given ticket list")
                         return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         break
@@ -1443,9 +1447,16 @@ def showTicketComments (messageDetail):
 
     #try:
     privateComment = False
+    prvCom = False
+    counter = True
+    notPrivate = True
+    messageSent = False
     isAllowed = ""
     table_bodyFull = ""
     table_header = ""
+    commentLenght = ""
+    table_header = ""
+    UniqueToken = ""
     commandCallerUID = messageDetail.FromUserId
 
     connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
@@ -1599,7 +1610,9 @@ def showTicketComments (messageDetail):
         if str(data).startswith(forbidden):
             return messageDetail.ReplyToChatV2("To view the comments on this ticket, you need to be Zendesk Admin, not yet sure why")
 
-        messageDetail.ReplyToChat("Rendering all the comments/updates for Zendesk Ticket: <b>" + ticketID + "</b>, please wait.")
+        ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
+
+        messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
 
         file = ""
         full_file =""
@@ -1612,6 +1625,7 @@ def showTicketComments (messageDetail):
 
             if str(privacy) == "False":
                 privateComment = True
+                prvCom = False
                 public = "Private"
             else:
                 #privateComment = False
@@ -1700,7 +1714,7 @@ def showTicketComments (messageDetail):
             if public == "Private":
 
                 table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td class=\"tempo-bg-color--yellow tempo-text-color--white\" colspan=\"2\">" + str(body) + "</td></tr><tr>" \
+                               "<td class=\"tempo-bg-color--yellow tempo-text-color--black\" colspan=\"2\">" + str(body) + "</td></tr><tr>" \
                                "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
                                "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
                                "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
@@ -1711,25 +1725,68 @@ def showTicketComments (messageDetail):
                                "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
                                "</tr></thead><tbody></tbody></table>"
 
+            # Checking for unique words (Tokens)
+            UniqueToken = len(set(table_header.split()))
+            print(UniqueToken)
+
             commentLenght = len(str(table_header))
-            #print(commentLenght)
+            print(commentLenght)
 
-            if commentLenght >= 70000:
-                messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show only the latest update/comment")
-                break
+            limitReached = False
+            #if commentLenght >= 70000:
+            if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                limitReached = True
+                if privateComment:
+                    prvCom = True
+                    messageSent = True
+                    messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                if counter and prvCom:
+                    messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                elif counter and prvCom is False:
+                    messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+            #break
 
-            table_bodyFull = ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments below</header><body>" + str(table_header) + "</body></card>")
+            if limitReached and prvCom:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                commentLenght = ""
+                table_header = ""
+                UniqueToken = ""
+                table_bodyFull = ""
+                counter = False
+                notPrivate = False
 
-            reply = str(table_bodyFull)
+            if limitReached and notPrivate:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                commentLenght = ""
+                table_header = ""
+                UniqueToken = ""
+                table_bodyFull = ""
+                counter = False
 
-        if privateComment:
-            messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
-            # return messageDetail.ReplyToSenderv2_noBotLog(
-            #     "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments below</header><body>" + str(reply) + "</body></card>")
-            return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+        if table_header == "":
+            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
         else:
-            # return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments below</header><body>" + reply + "</body></card>")
-            return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+            if privateComment and prvCom:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+            elif privateComment and prvCom is False and messageSent is False:
+                messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+            elif privateComment and prvCom is False and messageSent:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+            else:
+                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                return messageDetail.ReplyToChatV2_noBotLog(str(reply))
 
     #else:
     elif companyName in _configDef['AuthCompany']['PodList']:

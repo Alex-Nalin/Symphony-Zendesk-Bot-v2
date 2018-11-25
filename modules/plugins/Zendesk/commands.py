@@ -2709,7 +2709,8 @@ def recentZD(messageDetail):
             conn.request("GET", "/api/v2/tickets/recent.json?include=users", headers=headers)
 
             res = conn.getresponse()
-            tickets = res.read().decode("utf-8")
+            tickets_raw = res.read()
+            tickets = remove_emoji(tickets_raw)
             d = json.loads(tickets)
             #print(d)
 
@@ -3054,7 +3055,8 @@ def recentZD(messageDetail):
                 conn.request("GET", "/api/v2/tickets/recent.json?include=users", headers=headers)
 
                 res = conn.getresponse()
-                tickets = res.read().decode("utf-8")
+                tickets_raw = res.read()
+                tickets = remove_emoji(tickets_raw)
                 d = json.loads(tickets)
                 #print(d)
 
@@ -7386,7 +7388,8 @@ def searchKb(messageDetail):
         callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
 
-    if callerCheck in AccessFile:
+    #if callerCheck in AccessFile:
+    if companyName in _configDef['AuthCompany']['PodList']:
 
         try:
             kb_query_raw = (messageDetail.Command.MessageText)

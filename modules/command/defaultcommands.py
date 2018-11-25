@@ -1784,7 +1784,7 @@ def funQuote(messageDetail):
                 except:
                     return messageDetail.ReplyToChat("Please try FunQuote later.")
 
-                return messageDetail.ReplyToChat(category + " quote from " + author + ": " + quote)
+                return messageDetail.ReplyToChatV2_noBotLog(category + " quote from <b>" + author + "</b>: <b>" + quote + "</b>")
             except:
                 botlog.LogSymphonyInfo("Fun Quote did not work")
     except:
@@ -1813,7 +1813,7 @@ def funQuote(messageDetail):
                 except:
                     return messageDetail.ReplyToChat("Please try FunQuote later.")
 
-                return messageDetail.ReplyToChat(category + " quote from " + author + ": " + quote)
+                return messageDetail.ReplyToChat(category + " quote from <b>" + author + "</b>: <b>" + quote + "</b>")
             except:
                 botlog.LogSymphonyInfo("Fun Quote did not work")
         except:
@@ -1875,7 +1875,7 @@ def joke(messageDetail):
                 except:
                     return messageDetail.ReplyToChat("Please try Joke later.")
 
-                return messageDetail.ReplyToChat("Here's a joke for you" + jokeData)
+                return messageDetail.ReplyToChatV2_noBotLog("Here's a joke for you <b> " + jokeData + "</b>")
             except:
                 botlog.LogSymphonyInfo("Joke did not work")
     except:
@@ -1903,7 +1903,7 @@ def joke(messageDetail):
                 except:
                     return messageDetail.ReplyToChat("Please try Joke later.")
 
-                return messageDetail.ReplyToChat("Here's a joke for you" + jokeData)
+                return messageDetail.ReplyToChatV2_noBotLog("Here's a joke for you <b> " + jokeData + "</b>")
             except:
                 botlog.LogSymphonyInfo("Joke did not work")
         except:

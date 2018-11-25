@@ -222,14 +222,48 @@
   ],
   "hashcommands": [
     {
-      "name": "gif",
-      "triggers": ["gif", "giphy" ],
-      "function": "GetGiphyImage",
-      "helptext": "<b>/gif</b>",
-      "description": "Searches and brings a funny gif from Giphy. If search text is blank this command will return a random GIF. (using Card)",
-      "param":"Text (optional)",
-      "example":"/gif Symphony",
+      "name": "status",
+      "triggers": ["status", "poke", "check", "test", "ping"],
+      "function": "SendStatusCheck",
+      "helptext": "<b>/status</b>",
+      "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
+      "param":"None",
+      "example":"/ping",
       "category": "General Bot command",
+      "permission": "All",
+      "immediate": true
+    },
+    {
+      "name": "Quote of the Day",
+      "triggers": ["QuoteOfTheDay","qod", "QoD", "QOD"],
+      "function": "QoD",
+      "helptext": "<b>/qod</b>",
+      "description": "Retrieves a Quote of the Day to ponder on. /qod .",
+      "param":"None",
+      "example":"/qod",
+      "category": "Miscellaneous Bot command",
+      "permission": "All"
+    },
+    {
+      "name": "Fun Quote",
+      "triggers": ["funQuote", "funquote", "fun"],
+      "function": "funQuote",
+      "helptext": "<b>/funQuote</b>",
+      "description": "Displays quotes from famous movies and person.",
+      "param":"None",
+      "example":"/funQuote",
+      "category": "Miscellaneous Bot command",
+      "permission": "All"
+    },
+    {
+      "name": "Joke",
+      "triggers": ["Joke", "joke", "jokes"],
+      "function": "joke",
+      "helptext": "<b>/joke</b>",
+      "description": "Displays random joke",
+      "param":"None",
+      "example":"/joke",
+      "category": "Miscellaneous Bot command",
       "permission": "All"
     }
   ]

@@ -2182,7 +2182,6 @@ def sortDict(messageDetail):
 def wikiSearch(messageDetail):
 
     try:
-
         commandCallerUID = messageDetail.FromUserId
 
         connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
@@ -2208,83 +2207,89 @@ def wikiSearch(messageDetail):
             botlog.LogSymphonyInfo(
                 firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
             callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-        # except:
-        #     return messageDetail.ReplyToChat("Cannot validate user access")
-
-        if callerCheck in AccessFile:
-
-            botlog.LogSymphonyInfo("Bot Call: Wiki Search")
-            try:
-
-                request = (messageDetail.Command.MessageText)
-
-                my_api_key = _configDef['Wiki']['API_Key']
-                my_cse_id = _configDef['Wiki']['token']
-
-                service = build("customsearch", "v1", developerKey=my_api_key)
-                res = service.cse().list(q=request, cx=my_cse_id, num=3).execute()
-                results = res['items']
-
-                table_body = ""
-                table_header = "<table style='max-width:95%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td style='max-width:10%'>Link</td>" \
-                               "<td>Information</td>" \
-                               "</tr></thead><tbody>"
-
-                for result in results:
-                    link_raw = result["link"]
-                    link = str(link_raw).replace(_configDef['Wiki']['replace'], "")
-
-                    table_body += "<tr>" \
-                                  "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \
-                                                                                "<td>" + result["snippet"] + "</td>" \
-                                                                                                             "</tr>"
-
-                table_body += "</tbody></table>"
-
-                reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog(reply)
-
-            except:
-                return messageDetail.ReplyToChat("Please make sure to use /wiki <data>")
     except:
+        return messageDetail.ReplyToChat("Cannot validate user access")
+
+    if callerCheck in AccessFile:
+
+        botlog.LogSymphonyInfo("Bot Call: Wiki Search")
         try:
-            botlog.LogSymphonyInfo("Inside Second Wiki")
+            request_raw = (messageDetail.Command.MessageText)
+            request = str(request_raw).split()
+
+            my_api_key = _configDef['Wiki']['API_Key']
+            my_cse_id = _configDef['Wiki']['token']
+
             try:
-
-                request = (messageDetail.Command.MessageText)
-
-                my_api_key = _configDef['Wiki']['API_Key']
-                my_cse_id = _configDef['Wiki']['token']
-
                 service = build("customsearch", "v1", developerKey=my_api_key)
                 res = service.cse().list(q=request, cx=my_cse_id, num=3).execute()
                 results = res['items']
-
-                table_body = ""
-                table_header = "<table style='max-width:95%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td style='max-width:10%'>Link</td>" \
-                               "<td>Information</td>" \
-                               "</tr></thead><tbody>"
-
-                for result in results:
-                    link_raw = result["link"]
-                    link = str(link_raw).replace(_configDef['Wiki']['replace'], "")
-
-                    table_body += "<tr>" \
-                                  "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \
-                                  "<td>" + result["snippet"] + "</td>" \
-                                  "</tr>"
-
-                table_body += "</tbody></table>"
-
-                reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog(reply)
-
+                #print(str(results))
             except:
-                return messageDetail.ReplyToChat("Please make sure to use /wiki <data>")
+                return messageDetail.ReplyToChat("Please use a valid search")
+
+            table_body = ""
+            table_header = "<table style='max-width:95%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                           "<td style='max-width:10%'>Link</td>" \
+                           "<td>Information</td>" \
+                           "</tr></thead><tbody>"
+
+            for result in results:
+                link_raw = result["link"]
+                link = str(link_raw).replace(_configDef['Wiki']['replace'], "")
+
+                table_body += "<tr>" \
+                              "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \
+                              "<td>" + str(result["snippet"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;") + "</td>" \
+                              "</tr>"
+
+            table_body += "</tbody></table>"
+
+            reply = table_header + table_body
+            return messageDetail.ReplyToChatV2_noBotLog(reply)
+
         except:
-            botlog.LogSymphonyInfo("WikiSearch did not work entirely")
+            try:
+                botlog.LogSymphonyInfo("Inside Second Wiki")
+                try:
+                    request_raw = (messageDetail.Command.MessageText)
+                    request = str(request_raw).split()
+
+                    my_api_key = _configDef['Wiki']['API_Key']
+                    my_cse_id = _configDef['Wiki']['token']
+
+                    try:
+                        service = build("customsearch", "v1", developerKey=my_api_key)
+                        res = service.cse().list(q=request, cx=my_cse_id, num=3).execute()
+                        results = res['items']
+                        #print(str(results))
+                    except:
+                        return messageDetail.ReplyToChat("Please use a valid search")
+
+                    table_body = ""
+                    table_header = "<table style='max-width:95%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                                   "<td style='max-width:10%'>Link</td>" \
+                                   "<td>Information</td>" \
+                                   "</tr></thead><tbody>"
+
+                    for result in results:
+                        link_raw = result["link"]
+                        link = str(link_raw).replace(_configDef['Wiki']['replace'], "")
+
+                        table_body += "<tr>" \
+                                      "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \
+                                      "<td>" + str(result["snippet"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;") + "</td>" \
+                                      "</tr>"
+
+                    table_body += "</tbody></table>"
+
+                    reply = table_header + table_body
+                    return messageDetail.ReplyToChatV2_noBotLog(reply)
+
+                except:
+                    return messageDetail.ReplyToChat("Please make sure to use /wiki <data>")
+            except:
+                botlog.LogSymphonyInfo("WikiSearch did not work entirely")
 
 ##############
 ## Functions taken from Symp

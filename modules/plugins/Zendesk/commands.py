@@ -7425,6 +7425,8 @@ def searchKb(messageDetail):
             if str(kb).startswith(noResult):
                 return messageDetail.ReplyToChatV2_noBotLog("There is no results for this search, maybe you can add to our Knowledge Articles")
 
+            messageDetail.ReplyToChatV2_noBotLog("Please wait, searching Knowledge Base for this enquiry")
+
             headers = {
                 'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
                 'password': _configDef['zdesk_config']['zdesk_password'],
@@ -7485,7 +7487,7 @@ def searchKb(messageDetail):
             table_body += "</tbody></table>"
 
             reply = table_header + table_body
-            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
 
     # else:
     #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")

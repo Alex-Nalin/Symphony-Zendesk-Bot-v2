@@ -7346,3 +7346,149 @@ def createZendeskUser(messageDetail):
 
     except:
         return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+def searchKb(messageDetail):
+    botlog.LogSymphonyInfo("#################################")
+    botlog.LogSymphonyInfo("Bot Call: Search Knowledge Base")
+    botlog.LogSymphonyInfo("#################################")
+
+    # try:
+    commandCallerUID = messageDetail.FromUserId
+
+    connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+    sessionTok = callout.GetSessionToken()
+
+    headersCompany = {
+        'sessiontoken': sessionTok,
+        'cache-control': "no-cache"
+    }
+
+    connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+    resComp = connComp.getresponse()
+    dataComp = resComp.read()
+    data_raw = str(dataComp.decode('utf-8'))
+    data_dict = ast.literal_eval(data_raw)
+
+    dataRender = json.dumps(data_dict, indent=2)
+    d_org = json.loads(dataRender)
+
+    for index_org in range(len(d_org["users"])):
+        firstName = d_org["users"][index_org]["firstName"]
+        lastName = d_org["users"][index_org]["lastName"]
+        displayName = d_org["users"][index_org]["displayName"]
+        companyName = d_org["users"][index_org]["company"]
+        userID = str(d_org["users"][index_org]["id"])
+
+
+        botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+        callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+
+    if callerCheck in AccessFile:
+
+        try:
+            kb_query_raw = (messageDetail.Command.MessageText)
+            kb_query = str(kb_query_raw).strip()
+            #print(kb_query)
+        except:
+            return messageDetail.ReplyToChatV2_noBotLog("You did not enter a valid search")
+
+        if kb_query == "":
+            return messageDetail.ReplyToChatV2_noBotLog("Please enter a Knowledge base Article search query. e.g /KB RSA")
+        else:
+
+            url = (_configDef['zdesk_config']['zdesk_url'] + "/api/v2/help_center/articles/search.json?")
+
+            # headers = {
+            #     'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+            #     'password': _configDef['zdesk_config']['zdesk_password'],
+            #     'authorization': _configDef['zdesk_config']['zdesk_auth'],
+            #     'cache-control': "no-cache",
+            #     'Content-Type': "application/json"
+            # }
+
+            headers = {
+                'cache-control': "no-cache"
+            }
+
+            querystring = {"query": kb_query}
+
+            #response = requests.request("GET", url, headers=headers, params=querystring)
+            response = requests.request("GET", url, headers=headers, params=querystring)
+            kb = response.json()
+            #print(str(kb))
+
+            noResult = "{'count': 0, 'next_page': None, 'page': 1, 'page_count': 0, 'per_page': 25, 'previous_page': None, 'results': []}"
+
+            if str(kb).startswith(noResult):
+                return messageDetail.ReplyToChatV2_noBotLog("There is no results for this search, maybe you can add to our Knowledge Articles")
+
+            headers = {
+                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                'password': _configDef['zdesk_config']['zdesk_password'],
+                'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                'cache-control': "no-cache",
+                'Content-Type': 'application/json',
+            }
+
+            conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
+            table_body = ""
+            table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                           "<td style='border:1px solid blue;border-bottom: double blue;width:80%;text-align:center'>KNOWLEDGE BASE ARTICLE TITLE</td>" \
+                           "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>AUTHOR</td>" \
+                           "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>EDITED</td>" \
+                           "</tr></thead><tbody>"
+
+            for index_kb in range(len(kb["results"])):
+                kb_html_url = kb["results"][index_kb]["html_url"]
+                kb_title = kb["results"][index_kb]["title"]
+                kb_author_id = kb["results"][index_kb]["author_id"]
+                kb_edited_at = kb["results"][index_kb]["edited_at"]
+
+                try:
+                    # To get the name of the requester given the requesterID
+                    conn.request("GET", "/api/v2/users/" + str(kb_author_id), headers=headers)
+                    res = conn.getresponse()
+                    userRequesterId = res.read()
+                    tempUserRequester = str(userRequesterId.decode('utf-8'))
+                    data = json.dumps(tempUserRequester, indent=2)
+                    data_dict = ast.literal_eval(data)
+                    d_req = json.loads(data_dict)
+                    req_name = str(d_req["user"]["name"])
+                    kb_author_name = req_name
+                except:
+                    try:
+                        botlog.LogSymphonyInfo("Inside second try for requester name value")
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + str(kb_author_id), headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d_req = json.loads(data_dict)
+                        req_name = str(d_req["user"]["name"])
+                        kb_author_name = req_name
+                    except:
+                        kb_author_name = "N/A"
+                        botlog.LogSymphonyInfo("Cannot get KB Author info")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'><a href=\"" + str(kb_html_url) + "\">" + str(kb_title) + "</a></td>" \
+                              "<td style='border:1px solid black;text-align:center'>" + str(kb_author_name) + "</td>" \
+                              "<td style='border:1px solid black;text-align:center'>" + str(kb_edited_at).replace("T", "").replace("Z","") + "</td>" \
+                              "</tr>"
+
+            table_body += "</tbody></table>"
+
+            reply = table_header + table_body
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+
+    # else:
+    #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+
+    # except:
+    #     return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")

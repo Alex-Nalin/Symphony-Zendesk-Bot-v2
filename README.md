@@ -27,7 +27,7 @@ These are the functions added for this to integrate to Zendesk Support Ticket Ma
 * Send Bot message (`/botMessage IM/ROOM/ALL <message>`) to IM/MIM/ROOMs where the bot is a member of to inform or an update or else.
 * Shutdown bot (`/shutdown IM/ROOM/ALL <message>(optional)`) with or without a message to IM/MIM or Rooms
 * Create a Zendesk user (`/createZendeskUser @mention`) by @mentioning the Symphony User, the user needs to be connected with the bot in order to do this a it requires the email address.
-
+* Knowledge Base Article search (`/kb <search query> `) will return the list of article with that text query
 
 ## Requirements
 

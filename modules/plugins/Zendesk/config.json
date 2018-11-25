@@ -31,6 +31,16 @@
       "permission": "All"
     },
     {
+      "triggers": ["<b>/searchKb</b>", "searchkb", "KB", "kb"],
+      "function": "searchKb",
+      "description": "Will display any Knowledge Base article found with that search_term",
+      "helptext": "<b>/searchKB</b> search_term",
+      "param": "search_term",
+      "example": "/searchKB search_term",
+      "category": "Zendesk",
+      "permission": "All"
+    },
+    {
       "triggers": ["<b>/createTicket</b>", "createTicket", "createticket", "ticketCreate", "ticketcreate" ,"newticket", "newTicket"],
       "function": "TicketCreate",
       "description": "Create a Zendesk ticket as an Zendesk Agent with a subject and description (must be separated by | in between each)",

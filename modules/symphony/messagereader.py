@@ -28,7 +28,7 @@ def GetSymphonyMessages(endpoint):
     messageItems = []
     if response.Success:
         for respItem in response.ResponseData:
-            # Hopefully this will
+            #Hopefully this will
             try:
                 if respItem.v2messageType and respItem.v2messageType == 'V2Message':
                     detail = msg.MessageDetail(respItem)
@@ -46,7 +46,7 @@ def GetSymphonyMessages(endpoint):
                     botlog.LogConsoleInfo('Non-chat Message Type: unknown')
 
             except SystemExit:
-                botlog.LogConsoleInfo('Exiting Support Bot.')
+                botlog.LogConsoleInfo('Exiting Symphony Zendesk Bot.')
             except Exception as ex:
                 errorStr = "Symphony REST Exception (system): " + str(ex)
                 # stackTrace = 'Stack Trace: ' + ''.join(traceback.format_stack())

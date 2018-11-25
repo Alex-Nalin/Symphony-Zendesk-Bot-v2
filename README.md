@@ -9,14 +9,14 @@ The main purpose of Symphony Zendesk Bot is to assist the Support team with thei
 
 These are the functions added for this to integrate to Zendesk Support Ticket Management:
 
-* searchMyTickets (`/searchMyTickets <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket or (`/searchMyTickets <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket by status.
+* searchUserTickets (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket or (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket by status.
 * Show Zendesk Comments (`/showComments <ticket_id>`) will show the updates made to a ticket and its author. This will show attachments and their respective size
 * Create Zendesk Ticket (`/createTicket subject| description`) as an agent and, this will use the agent as the ticket requester with default values.
 * Create Zendesk Request (`/createRequest <@mention user>| <subject>| <description>`) by @mentioning a Symphony user, the bot will cross check the user on Zendesk and once validated, it will create a Zendesk ticket with the provided title and description of the issue/problem.
 * Recent Zendesk ticket (`/recentZD`), this will show all the recent ticket the agents have reviewed.
 * User (`/user alex| Symphony`) will return all the users named Alex on the Symphony Zendesk account. (`/user alex nalin| symphony`) will return all users name Alex Nalin on the Symphony Zendesk account. If you want to get the full list of users on a given account use this method (`/user | symphony`) (to look for all users on the Symphony Zendesk account)
 * Show Zendesk  (`/show <ticketid>`) is a call to display a given Zendesk ticket by its ID.
-* Today call (`/today`) will show all the tickets raised today, you can also specify how many days back to go (`/today 5`) to get a bigger list of recently raised support issue from 5 days ago.
+* Today call (`/today`) will show all the tickets raised today, you can also specify how many days back to go (`/today 1`) to get a bigger list of recently raised support issue from 5 days ago.
 * Ticket Update (`/ticketUpdate <ticketID>| comment| status| public/private`) will allow the caller to add a public or private update to an existing Support Ticket.
 * Assign Ticket (`assignTicket` <ticketID> <@mention user>) will assign the Zendesk ticket to the @mentioned Zendesk Agent who is also a Symphony user.
 

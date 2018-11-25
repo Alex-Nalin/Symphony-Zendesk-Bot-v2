@@ -221,5 +221,16 @@
     }
   ],
   "hashcommands": [
+    {
+      "name": "gif",
+      "triggers": ["gif", "giphy" ],
+      "function": "GetGiphyImage",
+      "helptext": "<b>/gif</b>",
+      "description": "Searches and brings a funny gif from Giphy. If search text is blank this command will return a random GIF. (using Card)",
+      "param":"Text (optional)",
+      "example":"/gif Symphony",
+      "category": "General Bot command",
+      "permission": "All"
+    }
   ]
 }

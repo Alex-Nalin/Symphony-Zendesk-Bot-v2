@@ -3,10 +3,10 @@
     {
       "triggers": ["<b>/searchCompanyTickets</b>", "searchCompanyTickets" , "searchcompanytickets", "searchcompanyticket" , "companyTicket", "companyticket", "companytickets"],
       "function": "searchCompanyTickets",
-      "description": "This function allows you to search Zendesk tickets by Company and status. USe <b>/search companyName</b> for all raised issues or use following filters before companyName. .",
-      "helptext": "<b>/searchCompanyTickets</b> [o/n/p/s/c/u](filter optional) [companyName]",
-      "param":"open or o, new or n, pending or p, solved or s and closed or c or, unresolved or u + companyName",
-      "example":"/searchCompanyTickets open symphony or /searchCompanyTickets o symphony",
+      "description": "This function allows you to search Zendesk tickets by Company and status. Use <b>/search companyName</b> for all raised issues or use following filters after companyName.",
+      "helptext": "<b>/searchCompanyTickets</b> [companyName][open/new/pending/solved/closed/unresolved/all](filter optional)",
+      "param":"companyName + open or new or pending or solved or closed or unresolved or all",
+      "example":"/searchCompanyTicket symphony solved or /searchCompanyTickets symphony",
       "category": "Zendesk",
       "permission": "All"
     },

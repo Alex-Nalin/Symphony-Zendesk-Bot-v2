@@ -8,7 +8,7 @@ Symphony Zendesk Bot is an example of a multi-function command and chat-bot for 
 The main purpose of Symphony Zendesk Bot is to assist the Support team and other Symphony Teams with their daily work
 
 These are the functions added for this to integrate to Zendesk Support Ticket Management:
-
+* searchCompanyTickets (`/searchCompanyTickets company <open/new/pending/solved/closed/unresolved/all> (optional)`) to get a list of Zendesk tickets for a given company and filtered by status, if needed.
 * searchUserTickets (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket or (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket by status.
 * Show Zendesk Comments (`/showComments <ticket_id>`) will show the updates made to a ticket and its author. This will show attachments and their respective size
 * Create Zendesk Ticket (`/createTicket subject| description`) as an agent and, this will use the agent as the ticket requester with default values.

@@ -1214,58 +1214,57 @@ def weather(messageDetail):
 
 
                 conn = http.client.HTTPSConnection("api.apixu.com")
-
                 headers = {
                     'cache-control': "no-cache",
                 }
-
                 conn.request("GET", "/v1/forecast.json?key=" + _configDef['weather']['API_Key'] + "&q=" + location + "&days=" + days + "", headers=headers)
-
                 res = conn.getresponse()
                 data = res.read()
+                request_raw = data.decode('utf-8')
+                data = json.dumps(request_raw, indent=2)
+                data_dict = ast.literal_eval(data)
+                d = json.loads(data_dict)
+                #print(str(d))
 
                 # Checking for location validation
-                notmatchingLocation = "{error:{code:1006,message:No matching location found.}}"
-                tempWeather = str(data.decode("utf-8")).replace("\"", "")
+                notmatchingLocation = "{'error': {'code': 1006, 'message': 'No matching location found.'}}"
+                #tempWeather = str(data.decode("utf-8")).replace("\"", "")
+                tempWeather = str(d).replace("\'", "")
                 #print("tempWeather: " + str(tempWeather))
 
-                if tempWeather == notmatchingLocation:
+                if str(d).startswith(notmatchingLocation):
                     return messageDetail.ReplyToChat("The location entered is not valid, please try again.")
                 else:
 
-                    try:
-                        # Main weather info - to display regardless of days selected
-                        weatherRaw = tempWeather.split(":")
-                        LocationName = weatherRaw[2][:-7]
-                        Region = weatherRaw[3][:-8]
-                        Country = weatherRaw[4][:-4]
-                        LastUpdated = weatherRaw[13][11:] + ":" + weatherRaw[14][:-7]
-                        TempC = weatherRaw[15][:-7]
-                        TempF = weatherRaw[16][:-7]
-                        Condition = weatherRaw[19][:-5]
-                        CurrentURL = weatherRaw[20][:-5]
+                    # try:
+                    # # Main weather info - to display regardless of days selected
+                    weatherRaw = tempWeather.split(":")
+                    LocationName = str(d["location"]["name"])
+                    Region = str(d["location"]["region"])
+                    Country = str(d["location"]["country"])
+                    LastUpdated = str(d["current"]["last_updated"])
+                    TempC = str(d["current"]["temp_c"])
+                    TempF = str(d["current"]["temp_f"])
+                    Condition = str(d["current"]["condition"]["text"])
+                    CurrentURL = str(d["current"]["condition"]["icon"])
 
-                        day1date = weatherRaw[38][:-11]
-                        day1maxtemp = weatherRaw[41][:-10] + " C / " + weatherRaw[42][:-10] + " F"
-                        day1mintemp = weatherRaw[43][:-10] + " C / " + weatherRaw[44][:-10] + " F"
-                        day1avgtemp = weatherRaw[45][:-10] + " C / " + weatherRaw[46][:-12] + " F"
-                        day1maxwind = weatherRaw[47][:-12] + " mph / " + weatherRaw[48][:-15] + " kph"
-                        day1totalprecip = weatherRaw[49][:-15] + "mm / " + weatherRaw[50][:-10] + "in"
-                        day1avghumidity = weatherRaw[53][:-10]
-                        day1condition = weatherRaw[55][:-5]
-                        day1icon = weatherRaw[56][:-5]
-                        day1sunrise = weatherRaw[60] + ":" + weatherRaw[61][:-7]
-                        day1sunset = weatherRaw[62] + ":" + weatherRaw[63][:-9]
-                        day1moonrise = weatherRaw[64] + ":" + weatherRaw[65][:-8]
-                    except:
-                        return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
+                    day1date = str(d["forecast"]["forecastday"][0]["date"])
+                    day1maxtemp = str(d["forecast"]["forecastday"][0]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][0]["day"]["maxtemp_f"]) + " F"
+                    day1mintemp = str(d["forecast"]["forecastday"][0]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][0]["day"]["mintemp_f"]) + " F"
+                    day1avgtemp = str(d["forecast"]["forecastday"][0]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][0]["day"]["avgtemp_f"]) + " F"
+                    day1maxwind = str(d["forecast"]["forecastday"][0]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][0]["day"]["maxwind_kph"]) + " kph"
+                    day1totalprecip = str(d["forecast"]["forecastday"][0]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][0]["day"]["totalprecip_in"]) + "in"
+                    day1avghumidity = str(d["forecast"]["forecastday"][0]["day"]["avghumidity"])
+                    day1condition = str(d["forecast"]["forecastday"][0]["day"]["condition"]["text"])
+                    day1icon = str(d["forecast"]["forecastday"][0]["day"]["condition"]["icon"])
+                    day1sunrise = str(d["forecast"]["forecastday"][0]["astro"]["sunrise"])
+                    day1sunset = str(d["forecast"]["forecastday"][0]["astro"]["sunset"])
+                    day1moonrise = str(d["forecast"]["forecastday"][0]["astro"]["moonrise"])
+                    day1moonset = str(d["forecast"]["forecastday"][0]["astro"]["moonset"])
+                    # except:
+                    #     return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
-                    if days == 0 or days == 1:
-                        day1moonset = weatherRaw[66] + ":" + weatherRaw[67][:-5]
-                    else:
-                        day1moonset = weatherRaw[66] + ":" + weatherRaw[67][:-8]
-
-                    table_body = "<table style='table-layout:fixed;width:100%'>" \
+                    table_body = "<table style='table-layout:auto;width:100%'>" \
                                  "<thead>" \
                                  "<tr class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                  "<td>Date</td>" \
@@ -1284,25 +1283,39 @@ def weather(messageDetail):
                                  "</tr>" \
                                  "</thead><tbody>"
 
-                    table_body += "<tr><td>" + day1date + "</td><td>" + day1maxtemp + "</td><td>" + day1mintemp + "</td><td>" + day1avgtemp + "</td><td>" + day1maxwind + "</td><td>" + day1totalprecip + "</td><td>" + day1avghumidity + "</td><td>" + day1condition + "</td><td><img src=\"" + day1icon + "\"/></td><td>" + day1sunrise + "</td><td>" + day1sunset + "</td><td>" + day1moonrise + "</td><td>" + day1moonset + "</td></tr>"
+                    table_body += "<tr>" \
+                                  "<td>" + day1date + "</td>" \
+                                  "<td>" + day1maxtemp + "</td>" \
+                                  "<td>" + day1mintemp + "</td>" \
+                                  "<td>" + day1avgtemp + "</td>" \
+                                  "<td>" + day1maxwind + "</td>" \
+                                  "<td>" + day1totalprecip + "</td>" \
+                                  "<td>" + day1avghumidity + "</td>" \
+                                  "<td>" + day1condition + "</td>" \
+                                  "<td><img src=\"" + day1icon + "\"/></td>" \
+                                  "<td>" + day1sunrise + "</td>" \
+                                  "<td>" + day1sunset + "</td>" \
+                                  "<td>" + day1moonrise + "</td>" \
+                                  "<td>" + day1moonset + "</td>" \
+                                  "</tr>"
 
                     if days == two:
 
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-5]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1312,19 +1325,19 @@ def weather(messageDetail):
 
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-8]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1332,19 +1345,19 @@ def weather(messageDetail):
 
                         try:
                             #print("3 days")
-                            day3date = weatherRaw[68+30][:-11]
-                            day3maxtemp = weatherRaw[71+30][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day3mintemp = weatherRaw[73+30][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day3avgtemp = weatherRaw[75+30][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day3maxwind = weatherRaw[77+30][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day3totalprecip = weatherRaw[79+30][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day3avghumidity = weatherRaw[83+30][:-10]
-                            day3condition = weatherRaw[85+30][:-5]
-                            day3icon = weatherRaw[86+30][:-5]
-                            day3sunrise = weatherRaw[90+30] + ":" + weatherRaw[91][:-7]
-                            day3sunset = weatherRaw[92+30] + ":" + weatherRaw[93][:-9]
-                            day3moonrise = weatherRaw[94+30] + ":" + weatherRaw[95][:-8]
-                            day3moonset = weatherRaw[96+30] + ":" + weatherRaw[97][:-8]
+                            day3date = str(d["forecast"]["forecastday"][2]["date"])
+                            day3maxtemp = str(d["forecast"]["forecastday"][2]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["maxtemp_f"]) + " F"
+                            day3mintemp = str(d["forecast"]["forecastday"][2]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["mintemp_f"]) + " F"
+                            day3avgtemp = str(d["forecast"]["forecastday"][2]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["avgtemp_f"]) + " F"
+                            day3maxwind = str(d["forecast"]["forecastday"][2]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][2]["day"]["maxwind_kph"]) + " kph"
+                            day3totalprecip = str(d["forecast"]["forecastday"][2]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][2]["day"]["totalprecip_in"]) + "in"
+                            day3avghumidity = str(d["forecast"]["forecastday"][2]["day"]["avghumidity"])
+                            day3condition = str(d["forecast"]["forecastday"][2]["day"]["condition"]["text"])
+                            day3icon = str(d["forecast"]["forecastday"][2]["day"]["condition"]["icon"])
+                            day3sunrise = str(d["forecast"]["forecastday"][2]["astro"]["sunrise"])
+                            day3sunset = str(d["forecast"]["forecastday"][2]["astro"]["sunset"])
+                            day3moonrise = str(d["forecast"]["forecastday"][2]["astro"]["moonrise"])
+                            day3moonset = str(d["forecast"]["forecastday"][2]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1355,19 +1368,19 @@ def weather(messageDetail):
 
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-8]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1375,19 +1388,19 @@ def weather(messageDetail):
 
                         try:
                             #print("3 days")
-                            day3date = weatherRaw[68+30][:-11]
-                            day3maxtemp = weatherRaw[71+30][:-10] + " C / " + weatherRaw[72+30][:-10] + " F"
-                            day3mintemp = weatherRaw[73+30][:-10] + " C / " + weatherRaw[74+30][:-10] + " F"
-                            day3avgtemp = weatherRaw[75+30][:-10] + " C / " + weatherRaw[76+30][:-12] + " F"
-                            day3maxwind = weatherRaw[77+30][:-12] + " mph / " + weatherRaw[78+30][:-15] + " kph"
-                            day3totalprecip = weatherRaw[79+30][:-15] + "mm / " + weatherRaw[80+30][:-10] + "in"
-                            day3avghumidity = weatherRaw[83+30][:-10]
-                            day3condition = weatherRaw[85+30][:-5]
-                            day3icon = weatherRaw[86+30][:-5]
-                            day3sunrise = weatherRaw[90+30] + ":" + weatherRaw[91+30][:-7]
-                            day3sunset = weatherRaw[92+30] + ":" + weatherRaw[93+30][:-9]
-                            day3moonrise = weatherRaw[94+30] + ":" + weatherRaw[95+30][:-8]
-                            day3moonset = weatherRaw[96+30] + ":" + weatherRaw[97+30][:-8]
+                            day3date = str(d["forecast"]["forecastday"][2]["date"])
+                            day3maxtemp = str(d["forecast"]["forecastday"][2]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["maxtemp_f"]) + " F"
+                            day3mintemp = str(d["forecast"]["forecastday"][2]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["mintemp_f"]) + " F"
+                            day3avgtemp = str(d["forecast"]["forecastday"][2]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["avgtemp_f"]) + " F"
+                            day3maxwind = str(d["forecast"]["forecastday"][2]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][2]["day"]["maxwind_kph"]) + " kph"
+                            day3totalprecip = str(d["forecast"]["forecastday"][2]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][2]["day"]["totalprecip_in"]) + "in"
+                            day3avghumidity = str(d["forecast"]["forecastday"][2]["day"]["avghumidity"])
+                            day3condition = str(d["forecast"]["forecastday"][2]["day"]["condition"]["text"])
+                            day3icon = str(d["forecast"]["forecastday"][2]["day"]["condition"]["icon"])
+                            day3sunrise = str(d["forecast"]["forecastday"][2]["astro"]["sunrise"])
+                            day3sunset = str(d["forecast"]["forecastday"][2]["astro"]["sunset"])
+                            day3moonrise = str(d["forecast"]["forecastday"][2]["astro"]["moonrise"])
+                            day3moonset = str(d["forecast"]["forecastday"][2]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1395,19 +1408,19 @@ def weather(messageDetail):
 
                         try:
                             #print("4 days")
-                            day4date = weatherRaw[68+60][:-11]
-                            day4maxtemp = weatherRaw[71+60][:-10] + " C / " + weatherRaw[72+60][:-10] + " F"
-                            day4mintemp = weatherRaw[73+60][:-10] + " C / " + weatherRaw[74+60][:-10] + " F"
-                            day4avgtemp = weatherRaw[75+60][:-10] + " C / " + weatherRaw[76+60][:-12] + " F"
-                            day4maxwind = weatherRaw[77+60][:-12] + " mph / " + weatherRaw[78+60][:-15] + " kph"
-                            day4totalprecip = weatherRaw[79+60][:-15] + "mm / " + weatherRaw[80+60][:-10] + "in"
-                            day4avghumidity = weatherRaw[83+60][:-10]
-                            day4condition = weatherRaw[85+60][:-5]
-                            day4icon = weatherRaw[86+60][:-5]
-                            day4sunrise = weatherRaw[90+60] + ":" + weatherRaw[91+60][:-7]
-                            day4sunset = weatherRaw[92+60] + ":" + weatherRaw[93+60][:-9]
-                            day4moonrise = weatherRaw[94+60] + ":" + weatherRaw[95+60][:-8]
-                            day4moonset = weatherRaw[96+60] + ":" + weatherRaw[97+60][:-5]
+                            day4date = str(d["forecast"]["forecastday"][3]["date"])
+                            day4maxtemp = str(d["forecast"]["forecastday"][3]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["maxtemp_f"]) + " F"
+                            day4mintemp = str(d["forecast"]["forecastday"][3]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["mintemp_f"]) + " F"
+                            day4avgtemp = str(d["forecast"]["forecastday"][3]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["avgtemp_f"]) + " F"
+                            day4maxwind = str(d["forecast"]["forecastday"][3]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][3]["day"]["maxwind_kph"]) + " kph"
+                            day4totalprecip = str(d["forecast"]["forecastday"][3]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][3]["day"]["totalprecip_in"]) + "in"
+                            day4avghumidity = str(d["forecast"]["forecastday"][3]["day"]["avghumidity"])
+                            day4condition = str(d["forecast"]["forecastday"][3]["day"]["condition"]["text"])
+                            day4icon = str(d["forecast"]["forecastday"][3]["day"]["condition"]["icon"])
+                            day4sunrise = str(d["forecast"]["forecastday"][3]["astro"]["sunrise"])
+                            day4sunset = str(d["forecast"]["forecastday"][3]["astro"]["sunset"])
+                            day4moonrise = str(d["forecast"]["forecastday"][3]["astro"]["moonrise"])
+                            day4moonset = str(d["forecast"]["forecastday"][3]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1416,19 +1429,19 @@ def weather(messageDetail):
                     if days == five:
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-8]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1436,19 +1449,19 @@ def weather(messageDetail):
 
                         try:
                             #print("3 days")
-                            day3date = weatherRaw[68+30][:-11]
-                            day3maxtemp = weatherRaw[71+30][:-10] + " C / " + weatherRaw[72+30][:-10] + " F"
-                            day3mintemp = weatherRaw[73+30][:-10] + " C / " + weatherRaw[74+30][:-10] + " F"
-                            day3avgtemp = weatherRaw[75+30][:-10] + " C / " + weatherRaw[76+30][:-12] + " F"
-                            day3maxwind = weatherRaw[77+30][:-12] + " mph / " + weatherRaw[78+30][:-15] + " kph"
-                            day3totalprecip = weatherRaw[79+30][:-15] + "mm / " + weatherRaw[80+30][:-10] + "in"
-                            day3avghumidity = weatherRaw[83+30][:-10]
-                            day3condition = weatherRaw[85+30][:-5]
-                            day3icon = weatherRaw[86+30][:-5]
-                            day3sunrise = weatherRaw[90+30] + ":" + weatherRaw[91+30][:-7]
-                            day3sunset = weatherRaw[92+30] + ":" + weatherRaw[93+30][:-9]
-                            day3moonrise = weatherRaw[94+30] + ":" + weatherRaw[95+30][:-8]
-                            day3moonset = weatherRaw[96+30] + ":" + weatherRaw[97+30][:-8]
+                            day3date = str(d["forecast"]["forecastday"][2]["date"])
+                            day3maxtemp = str(d["forecast"]["forecastday"][2]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["maxtemp_f"]) + " F"
+                            day3mintemp = str(d["forecast"]["forecastday"][2]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["mintemp_f"]) + " F"
+                            day3avgtemp = str(d["forecast"]["forecastday"][2]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["avgtemp_f"]) + " F"
+                            day3maxwind = str(d["forecast"]["forecastday"][2]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][2]["day"]["maxwind_kph"]) + " kph"
+                            day3totalprecip = str(d["forecast"]["forecastday"][2]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][2]["day"]["totalprecip_in"]) + "in"
+                            day3avghumidity = str(d["forecast"]["forecastday"][2]["day"]["avghumidity"])
+                            day3condition = str(d["forecast"]["forecastday"][2]["day"]["condition"]["text"])
+                            day3icon = str(d["forecast"]["forecastday"][2]["day"]["condition"]["icon"])
+                            day3sunrise = str(d["forecast"]["forecastday"][2]["astro"]["sunrise"])
+                            day3sunset = str(d["forecast"]["forecastday"][2]["astro"]["sunset"])
+                            day3moonrise = str(d["forecast"]["forecastday"][2]["astro"]["moonrise"])
+                            day3moonset = str(d["forecast"]["forecastday"][2]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1456,19 +1469,19 @@ def weather(messageDetail):
 
                         try:
                             #print("4 days")
-                            day4date = weatherRaw[68+60][:-11]
-                            day4maxtemp = weatherRaw[71+60][:-10] + " C / " + weatherRaw[72+60][:-10] + " F"
-                            day4mintemp = weatherRaw[73+60][:-10] + " C / " + weatherRaw[74+60][:-10] + " F"
-                            day4avgtemp = weatherRaw[75+60][:-10] + " C / " + weatherRaw[76+60][:-12] + " F"
-                            day4maxwind = weatherRaw[77+60][:-12] + " mph / " + weatherRaw[78+60][:-15] + " kph"
-                            day4totalprecip = weatherRaw[79+60][:-15] + "mm / " + weatherRaw[80+60][:-10] + "in"
-                            day4avghumidity = weatherRaw[83+60][:-10]
-                            day4condition = weatherRaw[85+60][:-5]
-                            day4icon = weatherRaw[86+60][:-5]
-                            day4sunrise = weatherRaw[90+60] + ":" + weatherRaw[91+60][:-7]
-                            day4sunset = weatherRaw[92+60] + ":" + weatherRaw[93+60][:-9]
-                            day4moonrise = weatherRaw[94+60] + ":" + weatherRaw[95+60][:-8]
-                            day4moonset = weatherRaw[96+60] + ":" + weatherRaw[97+60][:-8]
+                            day4date = str(d["forecast"]["forecastday"][3]["date"])
+                            day4maxtemp = str(d["forecast"]["forecastday"][3]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["maxtemp_f"]) + " F"
+                            day4mintemp = str(d["forecast"]["forecastday"][3]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["mintemp_f"]) + " F"
+                            day4avgtemp = str(d["forecast"]["forecastday"][3]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["avgtemp_f"]) + " F"
+                            day4maxwind = str(d["forecast"]["forecastday"][3]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][3]["day"]["maxwind_kph"]) + " kph"
+                            day4totalprecip = str(d["forecast"]["forecastday"][3]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][3]["day"]["totalprecip_in"]) + "in"
+                            day4avghumidity = str(d["forecast"]["forecastday"][3]["day"]["avghumidity"])
+                            day4condition = str(d["forecast"]["forecastday"][3]["day"]["condition"]["text"])
+                            day4icon = str(d["forecast"]["forecastday"][3]["day"]["condition"]["icon"])
+                            day4sunrise = str(d["forecast"]["forecastday"][3]["astro"]["sunrise"])
+                            day4sunset = str(d["forecast"]["forecastday"][3]["astro"]["sunset"])
+                            day4moonrise = str(d["forecast"]["forecastday"][3]["astro"]["moonrise"])
+                            day4moonset = str(d["forecast"]["forecastday"][3]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1476,19 +1489,19 @@ def weather(messageDetail):
 
                         try:
                             #print("5 days")
-                            day5date = weatherRaw[68+90][:-11]
-                            day5maxtemp = weatherRaw[71+90][:-10] + " C / " + weatherRaw[72+90][:-10] + " F"
-                            day5mintemp = weatherRaw[73+90][:-10] + " C / " + weatherRaw[74+90][:-10] + " F"
-                            day5avgtemp = weatherRaw[75+90][:-10] + " C / " + weatherRaw[76+90][:-12] + " F"
-                            day5maxwind = weatherRaw[77+90][:-12] + " mph / " + weatherRaw[78+90][:-15] + " kph"
-                            day5totalprecip = weatherRaw[79+90][:-15] + "mm / " + weatherRaw[80+90][:-10] + "in"
-                            day5avghumidity = weatherRaw[83+90][:-10]
-                            day5condition = weatherRaw[85+90][:-5]
-                            day5icon = weatherRaw[86+90][:-5]
-                            day5sunrise = weatherRaw[90+90] + ":" + weatherRaw[91+90][:-7]
-                            day5sunset = weatherRaw[92+90] + ":" + weatherRaw[93+90][:-9]
-                            day5moonrise = weatherRaw[94+90] + ":" + weatherRaw[95+90][:-8]
-                            day5moonset = weatherRaw[96+90] + ":" + weatherRaw[97+90][:-5]
+                            day5date = str(d["forecast"]["forecastday"][4]["date"])
+                            day5maxtemp = str(d["forecast"]["forecastday"][4]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["maxtemp_f"]) + " F"
+                            day5mintemp = str(d["forecast"]["forecastday"][4]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["mintemp_f"]) + " F"
+                            day5avgtemp = str(d["forecast"]["forecastday"][4]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["avgtemp_f"]) + " F"
+                            day5maxwind = str(d["forecast"]["forecastday"][4]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][4]["day"]["maxwind_kph"]) + " kph"
+                            day5totalprecip = str(d["forecast"]["forecastday"][4]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][4]["day"]["totalprecip_in"]) + "in"
+                            day5avghumidity = str(d["forecast"]["forecastday"][4]["day"]["avghumidity"])
+                            day5condition = str(d["forecast"]["forecastday"][4]["day"]["condition"]["text"])
+                            day5icon = str(d["forecast"]["forecastday"][4]["day"]["condition"]["icon"])
+                            day5sunrise = str(d["forecast"]["forecastday"][4]["astro"]["sunrise"])
+                            day5sunset = str(d["forecast"]["forecastday"][4]["astro"]["sunset"])
+                            day5moonrise = str(d["forecast"]["forecastday"][4]["astro"]["moonrise"])
+                            day5moonset = str(d["forecast"]["forecastday"][4]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1498,19 +1511,19 @@ def weather(messageDetail):
 
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-8]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1518,19 +1531,19 @@ def weather(messageDetail):
 
                         try:
                             #print("3 days")
-                            day3date = weatherRaw[68+30][:-11]
-                            day3maxtemp = weatherRaw[71+30][:-10] + " C / " + weatherRaw[72+30][:-10] + " F"
-                            day3mintemp = weatherRaw[73+30][:-10] + " C / " + weatherRaw[74+30][:-10] + " F"
-                            day3avgtemp = weatherRaw[75+30][:-10] + " C / " + weatherRaw[76+30][:-12] + " F"
-                            day3maxwind = weatherRaw[77+30][:-12] + " mph / " + weatherRaw[78+30][:-15] + " kph"
-                            day3totalprecip = weatherRaw[79+30][:-15] + "mm / " + weatherRaw[80+30][:-10] + "in"
-                            day3avghumidity = weatherRaw[83+30][:-10]
-                            day3condition = weatherRaw[85+30][:-5]
-                            day3icon = weatherRaw[86+30][:-5]
-                            day3sunrise = weatherRaw[90+30] + ":" + weatherRaw[91+30][:-7]
-                            day3sunset = weatherRaw[92+30] + ":" + weatherRaw[93+30][:-9]
-                            day3moonrise = weatherRaw[94+30] + ":" + weatherRaw[95+30][:-8]
-                            day3moonset = weatherRaw[96+30] + ":" + weatherRaw[97+30][:-8]
+                            day3date = str(d["forecast"]["forecastday"][2]["date"])
+                            day3maxtemp = str(d["forecast"]["forecastday"][2]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["maxtemp_f"]) + " F"
+                            day3mintemp = str(d["forecast"]["forecastday"][2]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["mintemp_f"]) + " F"
+                            day3avgtemp = str(d["forecast"]["forecastday"][2]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["avgtemp_f"]) + " F"
+                            day3maxwind = str(d["forecast"]["forecastday"][2]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][2]["day"]["maxwind_kph"]) + " kph"
+                            day3totalprecip = str(d["forecast"]["forecastday"][2]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][2]["day"]["totalprecip_in"]) + "in"
+                            day3avghumidity = str(d["forecast"]["forecastday"][2]["day"]["avghumidity"])
+                            day3condition = str(d["forecast"]["forecastday"][2]["day"]["condition"]["text"])
+                            day3icon = str(d["forecast"]["forecastday"][2]["day"]["condition"]["icon"])
+                            day3sunrise = str(d["forecast"]["forecastday"][2]["astro"]["sunrise"])
+                            day3sunset = str(d["forecast"]["forecastday"][2]["astro"]["sunset"])
+                            day3moonrise = str(d["forecast"]["forecastday"][2]["astro"]["moonrise"])
+                            day3moonset = str(d["forecast"]["forecastday"][2]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1538,19 +1551,19 @@ def weather(messageDetail):
 
                         try:
                             #print("4 days")
-                            day4date = weatherRaw[68+60][:-11]
-                            day4maxtemp = weatherRaw[71+60][:-10] + " C / " + weatherRaw[72+60][:-10] + " F"
-                            day4mintemp = weatherRaw[73+60][:-10] + " C / " + weatherRaw[74+60][:-10] + " F"
-                            day4avgtemp = weatherRaw[75+60][:-10] + " C / " + weatherRaw[76+60][:-12] + " F"
-                            day4maxwind = weatherRaw[77+60][:-12] + " mph / " + weatherRaw[78+60][:-15] + " kph"
-                            day4totalprecip = weatherRaw[79+60][:-15] + "mm / " + weatherRaw[80+60][:-10] + "in"
-                            day4avghumidity = weatherRaw[83+60][:-10]
-                            day4condition = weatherRaw[85+60][:-5]
-                            day4icon = weatherRaw[86+60][:-5]
-                            day4sunrise = weatherRaw[90+60] + ":" + weatherRaw[91+60][:-7]
-                            day4sunset = weatherRaw[92+60] + ":" + weatherRaw[93+60][:-9]
-                            day4moonrise = weatherRaw[94+60] + ":" + weatherRaw[95+60][:-8]
-                            day4moonset = weatherRaw[96+60] + ":" + weatherRaw[97+60][:-8]
+                            day4date = str(d["forecast"]["forecastday"][3]["date"])
+                            day4maxtemp = str(d["forecast"]["forecastday"][3]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["maxtemp_f"]) + " F"
+                            day4mintemp = str(d["forecast"]["forecastday"][3]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["mintemp_f"]) + " F"
+                            day4avgtemp = str(d["forecast"]["forecastday"][3]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["avgtemp_f"]) + " F"
+                            day4maxwind = str(d["forecast"]["forecastday"][3]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][3]["day"]["maxwind_kph"]) + " kph"
+                            day4totalprecip = str(d["forecast"]["forecastday"][3]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][3]["day"]["totalprecip_in"]) + "in"
+                            day4avghumidity = str(d["forecast"]["forecastday"][3]["day"]["avghumidity"])
+                            day4condition = str(d["forecast"]["forecastday"][3]["day"]["condition"]["text"])
+                            day4icon = str(d["forecast"]["forecastday"][3]["day"]["condition"]["icon"])
+                            day4sunrise = str(d["forecast"]["forecastday"][3]["astro"]["sunrise"])
+                            day4sunset = str(d["forecast"]["forecastday"][3]["astro"]["sunset"])
+                            day4moonrise = str(d["forecast"]["forecastday"][3]["astro"]["moonrise"])
+                            day4moonset = str(d["forecast"]["forecastday"][3]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1558,19 +1571,19 @@ def weather(messageDetail):
 
                         try:
                             #print("5 days")
-                            day5date = weatherRaw[68+90][:-11]
-                            day5maxtemp = weatherRaw[71+90][:-10] + " C / " + weatherRaw[72+90][:-10] + " F"
-                            day5mintemp = weatherRaw[73+90][:-10] + " C / " + weatherRaw[74+90][:-10] + " F"
-                            day5avgtemp = weatherRaw[75+90][:-10] + " C / " + weatherRaw[76+90][:-12] + " F"
-                            day5maxwind = weatherRaw[77+90][:-12] + " mph / " + weatherRaw[78+90][:-15] + " kph"
-                            day5totalprecip = weatherRaw[79+90][:-15] + "mm / " + weatherRaw[80+90][:-10] + "in"
-                            day5avghumidity = weatherRaw[83+90][:-10]
-                            day5condition = weatherRaw[85+90][:-5]
-                            day5icon = weatherRaw[86+90][:-5]
-                            day5sunrise = weatherRaw[90+90] + ":" + weatherRaw[91+90][:-7]
-                            day5sunset = weatherRaw[92+90] + ":" + weatherRaw[93+90][:-9]
-                            day5moonrise = weatherRaw[94+90] + ":" + weatherRaw[95+90][:-8]
-                            day5moonset = weatherRaw[96+90] + ":" + weatherRaw[97+90][:-8]
+                            day5date = str(d["forecast"]["forecastday"][4]["date"])
+                            day5maxtemp = str(d["forecast"]["forecastday"][4]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["maxtemp_f"]) + " F"
+                            day5mintemp = str(d["forecast"]["forecastday"][4]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["mintemp_f"]) + " F"
+                            day5avgtemp = str(d["forecast"]["forecastday"][4]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["avgtemp_f"]) + " F"
+                            day5maxwind = str(d["forecast"]["forecastday"][4]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][4]["day"]["maxwind_kph"]) + " kph"
+                            day5totalprecip = str(d["forecast"]["forecastday"][4]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][4]["day"]["totalprecip_in"]) + "in"
+                            day5avghumidity = str(d["forecast"]["forecastday"][4]["day"]["avghumidity"])
+                            day5condition = str(d["forecast"]["forecastday"][4]["day"]["condition"]["text"])
+                            day5icon = str(d["forecast"]["forecastday"][4]["day"]["condition"]["icon"])
+                            day5sunrise = str(d["forecast"]["forecastday"][4]["astro"]["sunrise"])
+                            day5sunset = str(d["forecast"]["forecastday"][4]["astro"]["sunset"])
+                            day5moonrise = str(d["forecast"]["forecastday"][4]["astro"]["moonrise"])
+                            day5moonset = str(d["forecast"]["forecastday"][4]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1578,19 +1591,19 @@ def weather(messageDetail):
 
                         try:
                             #print("6 days")
-                            day6date = weatherRaw[68+120][:-11]
-                            day6maxtemp = weatherRaw[71+120][:-10] + " C / " + weatherRaw[72+120][:-10] + " F"
-                            day6mintemp = weatherRaw[73+120][:-10] + " C / " + weatherRaw[74+120][:-10] + " F"
-                            day6avgtemp = weatherRaw[75+120][:-10] + " C / " + weatherRaw[76+120][:-12] + " F"
-                            day6maxwind = weatherRaw[77+120][:-12] + " mph / " + weatherRaw[78+120][:-15] + " kph"
-                            day6totalprecip = weatherRaw[79+120][:-15] + "mm / " + weatherRaw[80+120][:-10] + "in"
-                            day6avghumidity = weatherRaw[83+120][:-10]
-                            day6condition = weatherRaw[85+120][:-5]
-                            day6icon = weatherRaw[86+120][:-5]
-                            day6sunrise = weatherRaw[90+120] + ":" + weatherRaw[91+120][:-7]
-                            day6sunset = weatherRaw[92+120] + ":" + weatherRaw[93+120][:-9]
-                            day6moonrise = weatherRaw[94+120] + ":" + weatherRaw[95+120][:-8]
-                            day6moonset = weatherRaw[96+120] + ":" + weatherRaw[97+120][:-5]
+                            day6date = str(d["forecast"]["forecastday"][5]["date"])
+                            day6maxtemp = str(d["forecast"]["forecastday"][5]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["maxtemp_f"]) + " F"
+                            day6mintemp = str(d["forecast"]["forecastday"][5]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["mintemp_f"]) + " F"
+                            day6avgtemp = str(d["forecast"]["forecastday"][5]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["avgtemp_f"]) + " F"
+                            day6maxwind = str(d["forecast"]["forecastday"][5]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][5]["day"]["maxwind_kph"]) + " kph"
+                            day6totalprecip = str(d["forecast"]["forecastday"][5]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][5]["day"]["totalprecip_in"]) + "in"
+                            day6avghumidity = str(d["forecast"]["forecastday"][5]["day"]["avghumidity"])
+                            day6condition = str(d["forecast"]["forecastday"][5]["day"]["condition"]["text"])
+                            day6icon = str(d["forecast"]["forecastday"][5]["day"]["condition"]["icon"])
+                            day6sunrise = str(d["forecast"]["forecastday"][5]["astro"]["sunrise"])
+                            day6sunset = str(d["forecast"]["forecastday"][5]["astro"]["sunset"])
+                            day6moonrise = str(d["forecast"]["forecastday"][5]["astro"]["moonrise"])
+                            day6moonset = str(d["forecast"]["forecastday"][5]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1601,19 +1614,19 @@ def weather(messageDetail):
 
                         try:
                             #print("2 days")
-                            day2date = weatherRaw[68][:-11]
-                            day2maxtemp = weatherRaw[71][:-10] + " C / " + weatherRaw[72][:-10] + " F"
-                            day2mintemp = weatherRaw[73][:-10] + " C / " + weatherRaw[74][:-10] + " F"
-                            day2avgtemp = weatherRaw[75][:-10] + " C / " + weatherRaw[76][:-12] + " F"
-                            day2maxwind = weatherRaw[77][:-12] + " mph / " + weatherRaw[78][:-15] + " kph"
-                            day2totalprecip = weatherRaw[79][:-15] + "mm / " + weatherRaw[80][:-10] + "in"
-                            day2avghumidity = weatherRaw[83][:-10]
-                            day2condition = weatherRaw[85][:-5]
-                            day2icon = weatherRaw[86][:-5]
-                            day2sunrise = weatherRaw[90] + ":" + weatherRaw[91][:-7]
-                            day2sunset = weatherRaw[92] + ":" + weatherRaw[93][:-9]
-                            day2moonrise = weatherRaw[94] + ":" + weatherRaw[95][:-8]
-                            day2moonset = weatherRaw[96] + ":" + weatherRaw[97][:-8]
+                            day2date = str(d["forecast"]["forecastday"][1]["date"])
+                            day2maxtemp = str(d["forecast"]["forecastday"][1]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["maxtemp_f"]) + " F"
+                            day2mintemp = str(d["forecast"]["forecastday"][1]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["mintemp_f"]) + " F"
+                            day2avgtemp = str(d["forecast"]["forecastday"][1]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][1]["day"]["avgtemp_f"]) + " F"
+                            day2maxwind = str(d["forecast"]["forecastday"][1]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][1]["day"]["maxwind_kph"]) + " kph"
+                            day2totalprecip = str(d["forecast"]["forecastday"][1]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][1]["day"]["totalprecip_in"]) + "in"
+                            day2avghumidity = str(d["forecast"]["forecastday"][1]["day"]["avghumidity"])
+                            day2condition = str(d["forecast"]["forecastday"][1]["day"]["condition"]["text"])
+                            day2icon = str(d["forecast"]["forecastday"][1]["day"]["condition"]["icon"])
+                            day2sunrise = str(d["forecast"]["forecastday"][1]["astro"]["sunrise"])
+                            day2sunset = str(d["forecast"]["forecastday"][1]["astro"]["sunset"])
+                            day2moonrise = str(d["forecast"]["forecastday"][1]["astro"]["moonrise"])
+                            day2moonset = str(d["forecast"]["forecastday"][1]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1621,19 +1634,19 @@ def weather(messageDetail):
 
                         try:
                             #print("3 days")
-                            day3date = weatherRaw[68+30][:-11]
-                            day3maxtemp = weatherRaw[71+30][:-10] + " C / " + weatherRaw[72+30][:-10] + " F"
-                            day3mintemp = weatherRaw[73+30][:-10] + " C / " + weatherRaw[74+30][:-10] + " F"
-                            day3avgtemp = weatherRaw[75+30][:-10] + " C / " + weatherRaw[76+30][:-12] + " F"
-                            day3maxwind = weatherRaw[77+30][:-12] + " mph / " + weatherRaw[78+30][:-15] + " kph"
-                            day3totalprecip = weatherRaw[79+30][:-15] + "mm / " + weatherRaw[80+30][:-10] + "in"
-                            day3avghumidity = weatherRaw[83+30][:-10]
-                            day3condition = weatherRaw[85+30][:-5]
-                            day3icon = weatherRaw[86+30][:-5]
-                            day3sunrise = weatherRaw[90+30] + ":" + weatherRaw[91+30][:-7]
-                            day3sunset = weatherRaw[92+30] + ":" + weatherRaw[93+30][:-9]
-                            day3moonrise = weatherRaw[94+30] + ":" + weatherRaw[95+30][:-8]
-                            day3moonset = weatherRaw[96+30] + ":" + weatherRaw[97+30][:-8]
+                            day3date = str(d["forecast"]["forecastday"][2]["date"])
+                            day3maxtemp = str(d["forecast"]["forecastday"][2]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["maxtemp_f"]) + " F"
+                            day3mintemp = str(d["forecast"]["forecastday"][2]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["mintemp_f"]) + " F"
+                            day3avgtemp = str(d["forecast"]["forecastday"][2]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][2]["day"]["avgtemp_f"]) + " F"
+                            day3maxwind = str(d["forecast"]["forecastday"][2]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][2]["day"]["maxwind_kph"]) + " kph"
+                            day3totalprecip = str(d["forecast"]["forecastday"][2]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][2]["day"]["totalprecip_in"]) + "in"
+                            day3avghumidity = str(d["forecast"]["forecastday"][2]["day"]["avghumidity"])
+                            day3condition = str(d["forecast"]["forecastday"][2]["day"]["condition"]["text"])
+                            day3icon = str(d["forecast"]["forecastday"][2]["day"]["condition"]["icon"])
+                            day3sunrise = str(d["forecast"]["forecastday"][2]["astro"]["sunrise"])
+                            day3sunset = str(d["forecast"]["forecastday"][2]["astro"]["sunset"])
+                            day3moonrise = str(d["forecast"]["forecastday"][2]["astro"]["moonrise"])
+                            day3moonset = str(d["forecast"]["forecastday"][2]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1641,19 +1654,19 @@ def weather(messageDetail):
 
                         try:
                             #print("4 days")
-                            day4date = weatherRaw[68+60][:-11]
-                            day4maxtemp = weatherRaw[71+60][:-10] + " C / " + weatherRaw[72+60][:-10] + " F"
-                            day4mintemp = weatherRaw[73+60][:-10] + " C / " + weatherRaw[74+60][:-10] + " F"
-                            day4avgtemp = weatherRaw[75+60][:-10] + " C / " + weatherRaw[76+60][:-12] + " F"
-                            day4maxwind = weatherRaw[77+60][:-12] + " mph / " + weatherRaw[78+60][:-15] + " kph"
-                            day4totalprecip = weatherRaw[79+60][:-15] + "mm / " + weatherRaw[80+60][:-10] + "in"
-                            day4avghumidity = weatherRaw[83+60][:-10]
-                            day4condition = weatherRaw[85+60][:-5]
-                            day4icon = weatherRaw[86+60][:-5]
-                            day4sunrise = weatherRaw[90+60] + ":" + weatherRaw[91+60][:-7]
-                            day4sunset = weatherRaw[92+60] + ":" + weatherRaw[93+60][:-9]
-                            day4moonrise = weatherRaw[94+60] + ":" + weatherRaw[95+60][:-8]
-                            day4moonset = weatherRaw[96+60] + ":" + weatherRaw[97+60][:-8]
+                            day4date = str(d["forecast"]["forecastday"][3]["date"])
+                            day4maxtemp = str(d["forecast"]["forecastday"][3]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["maxtemp_f"]) + " F"
+                            day4mintemp = str(d["forecast"]["forecastday"][3]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["mintemp_f"]) + " F"
+                            day4avgtemp = str(d["forecast"]["forecastday"][3]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][3]["day"]["avgtemp_f"]) + " F"
+                            day4maxwind = str(d["forecast"]["forecastday"][3]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][3]["day"]["maxwind_kph"]) + " kph"
+                            day4totalprecip = str(d["forecast"]["forecastday"][3]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][3]["day"]["totalprecip_in"]) + "in"
+                            day4avghumidity = str(d["forecast"]["forecastday"][3]["day"]["avghumidity"])
+                            day4condition = str(d["forecast"]["forecastday"][3]["day"]["condition"]["text"])
+                            day4icon = str(d["forecast"]["forecastday"][3]["day"]["condition"]["icon"])
+                            day4sunrise = str(d["forecast"]["forecastday"][3]["astro"]["sunrise"])
+                            day4sunset = str(d["forecast"]["forecastday"][3]["astro"]["sunset"])
+                            day4moonrise = str(d["forecast"]["forecastday"][3]["astro"]["moonrise"])
+                            day4moonset = str(d["forecast"]["forecastday"][3]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1661,19 +1674,19 @@ def weather(messageDetail):
 
                         try:
                             #print("5 days")
-                            day5date = weatherRaw[68+90][:-11]
-                            day5maxtemp = weatherRaw[71+90][:-10] + " C / " + weatherRaw[72+90][:-10] + " F"
-                            day5mintemp = weatherRaw[73+90][:-10] + " C / " + weatherRaw[74+90][:-10] + " F"
-                            day5avgtemp = weatherRaw[75+90][:-10] + " C / " + weatherRaw[76+90][:-12] + " F"
-                            day5maxwind = weatherRaw[77+90][:-12] + " mph / " + weatherRaw[78+90][:-15] + " kph"
-                            day5totalprecip = weatherRaw[79+90][:-15] + "mm / " + weatherRaw[80+90][:-10] + "in"
-                            day5avghumidity = weatherRaw[83+90][:-10]
-                            day5condition = weatherRaw[85+90][:-5]
-                            day5icon = weatherRaw[86+90][:-5]
-                            day5sunrise = weatherRaw[90+90] + ":" + weatherRaw[91+90][:-7]
-                            day5sunset = weatherRaw[92+90] + ":" + weatherRaw[93+90][:-9]
-                            day5moonrise = weatherRaw[94+90] + ":" + weatherRaw[95+90][:-8]
-                            day5moonset = weatherRaw[96+90] + ":" + weatherRaw[97+90][:-8]
+                            day5date = str(d["forecast"]["forecastday"][4]["date"])
+                            day5maxtemp = str(d["forecast"]["forecastday"][4]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["maxtemp_f"]) + " F"
+                            day5mintemp = str(d["forecast"]["forecastday"][4]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["mintemp_f"]) + " F"
+                            day5avgtemp = str(d["forecast"]["forecastday"][4]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][4]["day"]["avgtemp_f"]) + " F"
+                            day5maxwind = str(d["forecast"]["forecastday"][4]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][4]["day"]["maxwind_kph"]) + " kph"
+                            day5totalprecip = str(d["forecast"]["forecastday"][4]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][4]["day"]["totalprecip_in"]) + "in"
+                            day5avghumidity = str(d["forecast"]["forecastday"][4]["day"]["avghumidity"])
+                            day5condition = str(d["forecast"]["forecastday"][4]["day"]["condition"]["text"])
+                            day5icon = str(d["forecast"]["forecastday"][4]["day"]["condition"]["icon"])
+                            day5sunrise = str(d["forecast"]["forecastday"][4]["astro"]["sunrise"])
+                            day5sunset = str(d["forecast"]["forecastday"][4]["astro"]["sunset"])
+                            day5moonrise = str(d["forecast"]["forecastday"][4]["astro"]["moonrise"])
+                            day5moonset = str(d["forecast"]["forecastday"][4]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1681,19 +1694,19 @@ def weather(messageDetail):
 
                         try:
                             #print("6 days")
-                            day6date = weatherRaw[68+120][:-11]
-                            day6maxtemp = weatherRaw[71+120][:-10] + " C / " + weatherRaw[72+120][:-10] + " F"
-                            day6mintemp = weatherRaw[73+120][:-10] + " C / " + weatherRaw[74+120][:-10] + " F"
-                            day6avgtemp = weatherRaw[75+120][:-10] + " C / " + weatherRaw[76+120][:-12] + " F"
-                            day6maxwind = weatherRaw[77+120][:-12] + " mph / " + weatherRaw[78+120][:-15] + " kph"
-                            day6totalprecip = weatherRaw[79+120][:-15] + "mm / " + weatherRaw[80+120][:-10] + "in"
-                            day6avghumidity = weatherRaw[83+120][:-10]
-                            day6condition = weatherRaw[85+120][:-5]
-                            day6icon = weatherRaw[86+120][:-5]
-                            day6sunrise = weatherRaw[90+120] + ":" + weatherRaw[91+120][:-7]
-                            day6sunset = weatherRaw[92+120] + ":" + weatherRaw[93+120][:-9]
-                            day6moonrise = weatherRaw[94+120] + ":" + weatherRaw[95+120][:-8]
-                            day6moonset = weatherRaw[96+120] + ":" + weatherRaw[97+120][:-8]
+                            day6date = str(d["forecast"]["forecastday"][5]["date"])
+                            day6maxtemp = str(d["forecast"]["forecastday"][5]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["maxtemp_f"]) + " F"
+                            day6mintemp = str(d["forecast"]["forecastday"][5]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["mintemp_f"]) + " F"
+                            day6avgtemp = str(d["forecast"]["forecastday"][5]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][5]["day"]["avgtemp_f"]) + " F"
+                            day6maxwind = str(d["forecast"]["forecastday"][5]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][5]["day"]["maxwind_kph"]) + " kph"
+                            day6totalprecip = str(d["forecast"]["forecastday"][5]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][5]["day"]["totalprecip_in"]) + "in"
+                            day6avghumidity = str(d["forecast"]["forecastday"][5]["day"]["avghumidity"])
+                            day6condition = str(d["forecast"]["forecastday"][5]["day"]["condition"]["text"])
+                            day6icon = str(d["forecast"]["forecastday"][5]["day"]["condition"]["icon"])
+                            day6sunrise = str(d["forecast"]["forecastday"][5]["astro"]["sunrise"])
+                            day6sunset = str(d["forecast"]["forecastday"][5]["astro"]["sunset"])
+                            day6moonrise = str(d["forecast"]["forecastday"][5]["astro"]["moonrise"])
+                            day6moonset = str(d["forecast"]["forecastday"][5]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1701,19 +1714,19 @@ def weather(messageDetail):
 
                         try:
                             #print("7 days")
-                            day7date = weatherRaw[68+150][:-11]
-                            day7maxtemp = weatherRaw[71+150][:-10] + " C / " + weatherRaw[72+150][:-10] + " F"
-                            day7mintemp = weatherRaw[73+150][:-10] + " C / " + weatherRaw[74+150][:-10] + " F"
-                            day7avgtemp = weatherRaw[75+150][:-10] + " C / " + weatherRaw[76+150][:-12] + " F"
-                            day7maxwind = weatherRaw[77+150][:-12] + " mph / " + weatherRaw[78+150][:-15] + " kph"
-                            day7totalprecip = weatherRaw[79+150][:-15] + "mm / " + weatherRaw[80+150][:-10] + "in"
-                            day7avghumidity = weatherRaw[83+150][:-10]
-                            day7condition = weatherRaw[85+150][:-5]
-                            day7icon = weatherRaw[86+150][:-5]
-                            day7sunrise = weatherRaw[90+150] + ":" + weatherRaw[91+150][:-7]
-                            day7sunset = weatherRaw[92+150] + ":" + weatherRaw[93+150][:-9]
-                            day7moonrise = weatherRaw[94+150] + ":" + weatherRaw[95+150][:-8]
-                            day7moonset = weatherRaw[96+150] + ":" + weatherRaw[97+150][:-5]
+                            day7date = str(d["forecast"]["forecastday"][6]["date"])
+                            day7maxtemp = str(d["forecast"]["forecastday"][6]["day"]["maxtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][6]["day"]["maxtemp_f"]) + " F"
+                            day7mintemp = str(d["forecast"]["forecastday"][6]["day"]["mintemp_c"]) + " C / " + str(d["forecast"]["forecastday"][6]["day"]["mintemp_f"]) + " F"
+                            day7avgtemp = str(d["forecast"]["forecastday"][6]["day"]["avgtemp_c"]) + " C / " + str(d["forecast"]["forecastday"][6]["day"]["avgtemp_f"]) + " F"
+                            day7maxwind = str(d["forecast"]["forecastday"][6]["day"]["maxwind_mph"]) + " mph / " + str(d["forecast"]["forecastday"][6]["day"]["maxwind_kph"]) + " kph"
+                            day7totalprecip = str(d["forecast"]["forecastday"][6]["day"]["totalprecip_mm"]) + "mm / " + str(d["forecast"]["forecastday"][6]["day"]["totalprecip_in"]) + "in"
+                            day7avghumidity = str(d["forecast"]["forecastday"][6]["day"]["avghumidity"])
+                            day7condition = str(d["forecast"]["forecastday"][6]["day"]["condition"]["text"])
+                            day7icon = str(d["forecast"]["forecastday"][6]["day"]["condition"]["icon"])
+                            day7sunrise = str(d["forecast"]["forecastday"][6]["astro"]["sunrise"])
+                            day7sunset = str(d["forecast"]["forecastday"][6]["astro"]["sunset"])
+                            day7moonrise = str(d["forecast"]["forecastday"][6]["astro"]["moonrise"])
+                            day7moonset = str(d["forecast"]["forecastday"][6]["astro"]["moonset"])
                         except:
                             return messageDetail.ReplyToChat("Sorry, I am not able to get the weather, please try again later")
 
@@ -1721,12 +1734,11 @@ def weather(messageDetail):
 
                     table_body += "</tbody></table>"
 
-                    return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>the current condition in " + LocationName + ", " + Region + ", " + Country + " as of " + LastUpdated + " is " + Condition + ", <img src=\"" + CurrentURL + "\"/> (" + TempC + " C / " + TempF + " F)<br/></header><body>" + table_body + "</body></card>")
+                    return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>The current condition in " + LocationName + ", " + Region + ", " + Country + " as of " + LastUpdated + " is " + Condition + ", <img src=\"" + CurrentURL + "\"/> (" + TempC + " C / " + TempF + " F)<br/></header><body>" + table_body + "</body></card>")
             except:
                 botlog.LogSymphonyInfo("Weathr did not work")
     except:
         botlog.LogSymphonyInfo("Weather did not work entirely")
-
 
 def funQuote(messageDetail):
 

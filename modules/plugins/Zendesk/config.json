@@ -8,7 +8,7 @@
       "param":"companyName + open or new or pending or solved or closed or unresolved or all",
       "example":"/searchCompanyTicket symphony solved or /searchCompanyTickets symphony",
       "category": "Zendesk",
-      "permission": "All"
+      "permission": "Zendesk Agent"
     },
     {
       "triggers": ["<b>/searchUserTickets</b>", "searchUserTickets" , "searchusertickets", "searchuserticket" , "userTicket", "userticket", "usertickets"],

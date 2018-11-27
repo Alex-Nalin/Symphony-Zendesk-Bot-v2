@@ -44,35 +44,69 @@ def SymphonyZendeskBotHelp(messageDetail):
     botlog.LogSymphonyInfo("Bot Call - Help")
     botlog.LogSymphonyInfo("###############")
 
-    commandCallerUID = messageDetail.FromUserId
+    try:
+        commandCallerUID = messageDetail.FromUserId
 
-    connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-    sessionTok = callout.GetSessionToken()
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
 
-    headersCompany = {
-        'sessiontoken': sessionTok,
-        'cache-control': "no-cache"
-    }
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
+        }
 
-    connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-    resComp = connComp.getresponse()
-    dataComp = resComp.read()
-    data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
 
-    dataRender = json.dumps(data_dict, indent=2)
-    d_org = json.loads(str(dataRender))
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(str(dataRender))
 
-    for index_org in range(len(d_org["users"])):
-        firstName = str(d_org["users"][index_org]["firstName"])
-        lastName = str(d_org["users"][index_org]["lastName"])
-        displayName = str(d_org["users"][index_org]["displayName"])
-        #companyName = d_org["users"][index_org]["company"]
-        companyNameTemp = d_org["users"][index_org]["company"]
-        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-        companyName = str(companyTemp)
-        userID = str(d_org["users"][index_org]["id"])
+        for index_org in range(len(d_org["users"])):
+            firstName = str(d_org["users"][index_org]["firstName"])
+            lastName = str(d_org["users"][index_org]["lastName"])
+            displayName = str(d_org["users"][index_org]["displayName"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+    except:
+        try:
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(str(dataRender))
+
+            for index_org in range(len(d_org["users"])):
+                firstName = str(d_org["users"][index_org]["firstName"])
+                lastName = str(d_org["users"][index_org]["lastName"])
+                displayName = str(d_org["users"][index_org]["displayName"])
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+        except:
+            botlog.LogSymphonyInfo("I was not able to validate the user access, please try again")
 
 
     if companyName in _configDef['AuthCompany']['PodList']:
@@ -178,6 +212,9 @@ def SymphonyZendeskBotHelp(messageDetail):
                     pass
 
                 table_body += "</tbody></table>"
+
+                AdminHelp = str(table_body)
+                #print(str(AdminHelp))
 
                 table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
 

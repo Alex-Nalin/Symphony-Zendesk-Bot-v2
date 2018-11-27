@@ -222,6 +222,18 @@
   ],
   "hashcommands": [
     {
+      "name": "help",
+      "triggers": ["help", "Help", "HELP"],
+      "function": "SymphonyZendeskBotHelp",
+      "helptext": "<b>/help</b>",
+      "description": "Tells you what the bot can do.",
+      "param":"more (optional)",
+      "example":"/help or /help more",
+      "category": "General Bot command",
+      "permission": "All",
+      "immediate": true
+    },
+    {
       "name": "status",
       "triggers": ["status", "poke", "check", "test", "ping"],
       "function": "SendStatusCheck",

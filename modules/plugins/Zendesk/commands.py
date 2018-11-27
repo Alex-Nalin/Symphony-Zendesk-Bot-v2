@@ -793,20 +793,24 @@ def searchCompanyTickets(messageDetail):
                             allTicket = ""
                             counter = False
 
-                if sendUser:
+                if sendUser and limitReached == False:
                     if table_header == "":
                         return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony /searchCompanyTickets symphony")
                     else:
                         table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
-                        return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                        #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                        messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                        return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
                 else:
                     if table_header == "":
                         return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony or /searchCompanyTickets symphony")
                     else:
                         table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
-                        return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        return messageDetail.ReplyToChatV2_noBotLog("End of Result")
 
             else:
                 # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -1105,20 +1109,24 @@ def searchCompanyTickets(messageDetail):
                                 allTicket = ""
                                 counter = False
 
-                    if sendUser:
+                    if sendUser and limitReached == False:
                         if table_header == "":
                             return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony /searchCompanyTickets symphony")
                         else:
                             table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
-                            return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
                     else:
                         if table_header == "":
                             return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony or /searchCompanyTickets symphony")
                         else:
                             table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
-                            return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
 
                 else:
                     # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -4581,7 +4589,9 @@ def recentZD(messageDetail):
             else:
                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
-                return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
         else:
             botlog.LogSymphonyInfo("The calling user is an end user, cannot call the function /recent")
         #return messageDetail.ReplyToChat("You aren't authorised to use this command. If required, please contact your Zendesk Admin to review your role")
@@ -4927,7 +4937,9 @@ def recentZD(messageDetail):
                 else:
                     table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
-                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    return messageDetail.ReplyToChatV2_noBotLog("End of Result")
             else:
                 botlog.LogSymphonyInfo("The calling user is an end user, cannot call the function /recent")
         except:

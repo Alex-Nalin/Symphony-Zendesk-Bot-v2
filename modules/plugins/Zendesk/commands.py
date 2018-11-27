@@ -3537,98 +3537,197 @@ def userZD(messageDetail):
     botlog.LogSymphonyInfo("###########################")
 
     try:
-        isAllowed = False
-        commandCallerUID = messageDetail.FromUserId
+        try:
+            isAllowed = False
+            commandCallerUID = messageDetail.FromUserId
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-            #################################################
+                #################################################
 
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    # print("User is connected: " + emailAddress)
+                    emailZendesk = emailAddress
+                    connectionRequired = False
+                except:
+                    connectionRequired = True
+
+                # if connectionRequired:
+
+                data_lenght = len(dataComp)
+
+                if data_lenght > 450:
+                    try:
+                        # print("inside > 450")
+                        query = "type:user " + emailAddress
+                    except:
+                        query = "type:user " + firstName + " " + lastName
+                    # print("Query used to search Zendesk user" + query)
+                elif data_lenght < 450:
+                    try:
+                        # print("inside < 450")
+                        # query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + emailAddress
+                    except:
+                        # query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + firstName + " " + lastName
+                    # print("Query used to search Zendesk user" + query)
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                    botlog.LogSymphonyInfo(query)
+                results = zendesk.search(query=query)
+                # print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        # name = d["results"][index]["name"]
+                        # email = str(d["results"][index]["email"])
+                        role = str(d["results"][index]["role"])
+                        # print(role)
+                        # botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                            isAllowed = True
+                            botlog.LogSymphonyInfo("Role of the calling user: " + role)
+                        else:
+                            isAllowed = False
+                            botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                #################################################
+
+                botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(
+                    companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
             try:
-                emailAddress = str(d_org["users"][index_org]["emailAddress"])
-                # print("User is connected: " + emailAddress)
-                emailZendesk = emailAddress
-                connectionRequired = False
-            except:
-                connectionRequired = True
+                botlog.LogSymphonyInfo("Inside second try to get calling user data")
+                isAllowed = False
+                commandCallerUID = messageDetail.FromUserId
 
-            # if connectionRequired:
+                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-            data_lenght = len(dataComp)
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
 
-            if data_lenght > 450:
-                try:
-                    # print("inside > 450")
-                    query = "type:user " + emailAddress
-                except:
-                    query = "type:user " + firstName + " " + lastName
-                # print("Query used to search Zendesk user" + query)
-            elif data_lenght < 450:
-                try:
-                    # print("inside < 450")
-                    # query = "type:user " + emailAddress + " organization:" + companyName
-                    query = "type:user " + emailAddress
-                except:
-                    # query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                    query = "type:user " + firstName + " " + lastName
-                # print("Query used to search Zendesk user" + query)
-            else:
-                return messageDetail.ReplyToChat("No user information available")
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
 
-                botlog.LogSymphonyInfo(query)
-            results = zendesk.search(query=query)
-            # print(results)
+                for index_org in range(len(d_org["users"])):
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                    displayName = d_org["users"][index_org]["displayName"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                    userID = str(d_org["users"][index_org]["id"])
 
-            if str(results).startswith(
-                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
-            elif str(results).startswith(
-                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This organisation/company does not exist in Zendesk or name is misspelled.")
-            else:
+                    #################################################
 
-                data = json.dumps(results, indent=2)
-                d = json.loads(data)
+                    try:
+                        emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                        # print("User is connected: " + emailAddress)
+                        emailZendesk = emailAddress
+                        connectionRequired = False
+                    except:
+                        connectionRequired = True
 
-                for index in range(len(d["results"])):
-                    # name = d["results"][index]["name"]
-                    # email = str(d["results"][index]["email"])
-                    role = str(d["results"][index]["role"])
-                    # print(role)
-                    # botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+                    # if connectionRequired:
 
-                    if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                        isAllowed = True
-                        botlog.LogSymphonyInfo("Role of the calling user: " + role)
+                    data_lenght = len(dataComp)
+
+                    if data_lenght > 450:
+                        try:
+                            # print("inside > 450")
+                            query = "type:user " + emailAddress
+                        except:
+                            query = "type:user " + firstName + " " + lastName
+                        # print("Query used to search Zendesk user" + query)
+                    elif data_lenght < 450:
+                        try:
+                            # print("inside < 450")
+                            # query = "type:user " + emailAddress + " organization:" + companyName
+                            query = "type:user " + emailAddress
+                        except:
+                            # query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                            query = "type:user " + firstName + " " + lastName
+                        # print("Query used to search Zendesk user" + query)
                     else:
-                        isAllowed = False
-                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+                        return messageDetail.ReplyToChat("No user information available")
 
-            #################################################
+                        botlog.LogSymphonyInfo(query)
+                    results = zendesk.search(query=query)
+                    # print(results)
 
-            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(
-                companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+                    if str(results).startswith(
+                            "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                        return messageDetail.ReplyToChat(
+                            "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                    elif str(results).startswith(
+                            "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                        return messageDetail.ReplyToChat(
+                            "This organisation/company does not exist in Zendesk or name is misspelled.")
+                    else:
+
+                        data = json.dumps(results, indent=2)
+                        d = json.loads(data)
+
+                        for index in range(len(d["results"])):
+                            # name = d["results"][index]["name"]
+                            # email = str(d["results"][index]["email"])
+                            role = str(d["results"][index]["role"])
+                            # print(role)
+                            # botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                            if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                                isAllowed = True
+                                botlog.LogSymphonyInfo("Role of the calling user: " + role)
+                            else:
+                                isAllowed = False
+                                botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                    #################################################
+
+                    botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(
+                        companyName) + " with UID: " + str(userID))
+                    callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+            except:
+                return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
 
         if callerCheck in AccessFile and isAllowed:
 
@@ -3674,6 +3773,8 @@ def userZD(messageDetail):
 
             # User search only
             if userEntered and orgEntered == False:
+                print("inside user and no org")
+
                 query += "type:user\"" + str(userSplit[1:]) + "\""
                 querystring = {"query": "type:user " + str(userSplit[1:]) + ""}
                 # print(querystring)
@@ -3698,11 +3799,18 @@ def userZD(messageDetail):
                         "You have searched for all users on your Zendesk, I will ignore this request to avoid any performance issue")
 
                 else:
-                    botlog.LogSymphonyInfo("Getting user information from Zendesk")
-                    #messageDetail.ReplyToChat("Getting user information from Zendesk, please wait")
+                    #botlog.LogSymphonyInfo("Getting user information from Zendesk")
+                    messageDetail.ReplyToChat("Getting user information from Zendesk, please wait")
 
             # User and Organisation search
             if userEntered and orgEntered:
+
+                print("inside user and org")
+                org_legnth = len(str(organization[1:]))
+                #print(int(org_legnth))
+                if org_legnth == "" or int(org_legnth) < 2:
+                    return messageDetail.ReplyToChat("You did not enter a valid organization, please check and try again")
+
                 query += "type:user" + str(userSplit) + " organization:" + str(organization[1:])
                 botlog.LogSymphonyInfo("Query used " + str(query))
 
@@ -3722,7 +3830,7 @@ def userZD(messageDetail):
                 noRes = "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"
 
                 if str(data) == str(noRes):
-                    return messageDetail.ReplyToChat("There is no result for this search: " + str(query))
+                    return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search: " + str(query))
 
             if str(results).startswith(
                     "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
@@ -3732,7 +3840,8 @@ def userZD(messageDetail):
                     "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
                 return messageDetail.ReplyToChat("This organisation/company does not exist in Zendesk or is misspelled")
             else:
-                messageDetail.ReplyToChat("Getting user information from Zendesk, please wait")
+                #messageDetail.ReplyToChat("Getting user information from Zendesk, please wait")
+                botlog.LogSymphonyInfo("Getting user information from Zendesk, please wait")
 
                 table_body = ""
                 table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
@@ -3963,6 +4072,13 @@ def userZD(messageDetail):
 
                 # User search only
                 if userEntered and orgEntered == False:
+                    print("inside user and not org")
+
+                    org_legnth = len(str(organization[1:]))
+                    print(int(org_legnth))
+                    if org_legnth == "" or int(org_legnth) < 2:
+                        return messageDetail.ReplyToChat("You did not enter a valid organization, please check and try again")
+
                     query += "type:user\"" + str(userSplit[1:]) + "\""
                     querystring = {"query": "type:user " + str(userSplit[1:]) + ""}
                     #print(querystring)
@@ -3991,6 +4107,13 @@ def userZD(messageDetail):
 
                 # User and Organisation search
                 if userEntered and orgEntered:
+                    print("inside user and org")
+
+                    org_legnth = len(str(organization[1:]))
+                    print(int(org_legnth))
+                    if org_legnth == "" or int(org_legnth) < 2:
+                        return messageDetail.ReplyToChat("You did not enter a valid organization, please check and try again")
+
                     query += "type:user" + str(userSplit) + " organization:" + str(organization[1:])
                     botlog.LogSymphonyInfo("Query used " + str(query))
 
@@ -6294,6 +6417,7 @@ def newTicketToday(messageDetail):
         #     return messageDetail.ReplyToChat("You aren't authorised to use this command. You are either not added to the Agent list with the Bot or you are not an Admin or Agent/staff on Zendesk")
     except:
         try:
+            botlog.LogSymphonyInfo("Inside second try for newTicketToday")
             isAllowed = False
             render = ""
             table_header = ""
@@ -6641,10 +6765,10 @@ def newTicketToday(messageDetail):
 
                     # Checking for unique words (Tokens)
                     UniqueToken = len(set(table_header.split()))
-                    print("UniqueToken: " + str(UniqueToken))
+                    #print("UniqueToken: " + str(UniqueToken))
 
                     dataLenght = len(str(table_header))
-                    print(str(dataLenght))
+                    #print(str(dataLenght))
                     #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
 
                     limitReached = False

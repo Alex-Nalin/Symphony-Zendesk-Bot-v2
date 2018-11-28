@@ -142,6 +142,8 @@ def SymphonyZendeskBotHelp(messageDetail):
 
                     caterory = _configZen["commands"][index]["category"]
 
+                    if caterory == "Information lookup":
+                        caterory_bg_color = "cyan"
                     if caterory == "Zendesk":
                         caterory_bg_color = "cyan"
                     if caterory == "Zendesk/General":
@@ -180,6 +182,8 @@ def SymphonyZendeskBotHelp(messageDetail):
 
                     caterory = _moreconfig["commands"][index]["category"]
 
+                    if caterory == "Information lookup":
+                        caterory_bg_color = "cyan"
                     if caterory == "Zendesk":
                         caterory_bg_color = "cyan"
                     if caterory == "Zendesk/General":

@@ -40,7 +40,7 @@ def PollDataFeed(datafeedId):
     messageItems = []
     if response.Success:
         for respItem in response.ResponseData:
-            # Hopefully this will
+            #Hopefully this will
             try:
                 if respItem.v2messageType and respItem.v2messageType == 'V2Message':
                     detail = msg.MessageDetail(respItem)

@@ -1,124 +1,164 @@
 {
   "commands": [
     {
-      "triggers": ["search"],
-      "function": "searchZD",
-      "description": "This function allows you to search Zendesk. <b>/search companyName</b> for all raised issues or use following filters before companyName. .",
-      "helptext": "<b>/search</b> [o/n/p/s/c/u](filter optional) [companyName]",
-      "param":"open or o, new or n, pending or p, solved or s and closed or c or, unresolved or u + company name",
-      "example":"/search open symphony or /search o symphony",
-      "category": "Zendesk",
-      "permission": "Authorised List"
-     },
-    {
-      "triggers": ["createTicket", "createticket", "ticketCreate", "ticketcreate" ,"newticket", "newTicket"],
-      "function": "TicketCreate",
-      "description": "Create a Zendesk ticket as an Zendesk Agent with a subject and description (must be seperated by comma (,) in between each)",
-      "helptext": "<b>/createTicket</b> [subject],[description]",
-      "param":"Subject, Description",
-      "example":"/createTicket This is the subject of the ticket, This is the description of the ticket",
-      "category": "Zendesk",
-      "permission": "Authorised List"
+      "triggers": ["searchCompanyTickets", "ZDOrgTicket", "ZDorgTicket", "ZDorgticket", "zdorgticket"],
+      "function": "searchCompanyTickets",
+      "description": "Search Zendesk tickets by specific organization. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDOrgTicket</b> STATUS ORG",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk ",
+      "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
+      "category": "Information lookup",
+      "permission": "Zendesk Agent"
     },
     {
-      "triggers": ["createRequest", "createrequest", "newZD", "newzd", "requestCreate", "newrequest", "newRequest", "requestcreate"],
-      "function": "RequestCreate",
-      "description": "Create a Zendesk Request as a Zendesk end-user by @mentioning the requester name, give a subject and description (must be seperated by comma (,) in between each)",
-      "helptext": "<b>/createRequest</b> [@mention],[subject],[description]",
-      "param":" @mention, subject, description",
-      "example":"/createRequest @alex nalin,This is the subject of the ticket, This is the description of the ticket",
-      "category": "Zendesk",
-      "permission": "Authorised List"
+      "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuser,Ticket", "ZDuserticket", "zduserticket"],
+      "function": "searchUserTickets",
+      "description": "Search Zendesk tickets by specific user. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDUserTicket</b> STATUS [@USER]",
+      "param":"STATUS = open | new | pending | solved | closed | unresolved | all @USER is an @mention (optional)",
+      "example":"/ZDUserTicket open <br></br>/ZDUserTicket open @Joe Smith",
+      "category": "Information lookup",
+      "permission": "All"
     },
     {
-      "triggers": ["recentZD", "recent"],
-      "function": "recentZD",
-      "description": "List recent Zendesk tickets created or viewed by the Zendesk agents",
-      "helptext": "<b>/recentZD</b>",
-      "param":"None",
-      "example":"/recentZD",
-      "category": "Zendesk",
-      "permission": "Authorised List"
-    },
-    {
-      "triggers": ["userZD", "user", "searchUser", "searchuser"],
-      "function": "userZD",
-      "description": "Search users in Zendesk and provide their email address, Zendesk Organisation they belong as well as their Zendesk role",
-      "helptext": "<b>/userZD</b> [user name], [company name]optional. Example: \"/userZD alex\" or \"/userZD , symphony",
-      "param":"user name, company name (optional) or user name (optional), company name",
-      "example":"/userZD alex\" or \"/userZD , symphony",
-      "category": "Zendesk",
-      "permission": "Authorised List"
-    },
-    {
-      "triggers": ["showZD", "show", "zd", "ZD"],
+      "triggers": ["showZD","ZDShow", "ZDshow", "zdshow", "ZD", "zd" ],
       "function": "showZD",
-      "description": "Shows Zendesk Ticket or tickets",
-      "helptext": "<b>/show</b> [ticket id][ticket id](optional)",
-      "param":"ticketid ticketid (optional)",
-      "example":"/showZD 222 or /showZD 222 425 342",
-      "category": "Zendesk",
-      "permission": "Authorised List"
+      "description": "Shows Zendesk ticket(s) matching the Zendesk ticket ID(s)",
+      "helptext": "<b>/ZDShow</b> TICKET_ID ...)",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>Can be multiple IDs separated with spaces",
+      "example":"/ZDShow 222 <br></br>/ZSShow 222 425 342",
+      "category": "Information lookup",
+      "permission": "All"
     },
     {
-      "triggers": ["tickettoday", "ticketToday", "today", "ZDToday"],
+      "triggers": ["recentZD", "ZDRecent", "ZDrecent", "zdrecent"],
+      "function": "recentZD",
+      "description": "List recent Zendesk tickets viewed by the calling Zendesk agent",
+      "helptext": "<b>/ZDRecent</b>",
+      "param":"None",
+      "example":"/ZDRecent",
+      "category": "Information lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["today", "ZDToday", "ZDtoday", "zdtoday"],
       "function": "newTicketToday",
-      "description": "Shows all tickets raised today (1) or any other given day",
-      "helptext": "<b>/today</b> [1-10]",
-      "param":"1-10",
-      "example":"/today 1 or /today 3",
-      "category": "Zendesk",
-      "permission": "Authorised List"
+      "description": "Shows all tickets raised today (1) or from any other given day up to 5 days ago",
+      "helptext": "<b>/ZDToday</b> 1-5",
+      "param":"DAYS_AGO is a number betwteen 1 and 5",
+      "example":"/ZDToday 1 <br></br>/ZDtoday 2",
+      "category": "Information lookup",
+      "permission": "Zendesk Agent"
     },
     {
-      "triggers": ["ticketupdate", "ticketUpdate", "update", "Update", "updateTicket", "updateticket"],
+      "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdomments", "zdcomment"],
+      "function": "showTicketComments",
+      "description": "Shows Zendesk Ticket comments for Zendesk ticket ID",
+      "helptext": "<b>/ZDComments</b> TICKET_ID",
+      "param":"TICKET_ID is Zendesk ticket ID",
+      "example":"/ZDComments 222",
+      "category": "Information lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["ZDUser", "ZDuser", "zduser"],
+      "function": "userZD",
+      "description": "Search Zendesk users. Filter results base on first/last/full name of user. <br></br>Filter results based on company name. <br></br>Display users with their email address, organisation and role",
+      "helptext": "<b>/ZDUser</b> NAME [| COMPANY]",
+      "param":"NAME can be first name, last name or full name <br></br>COMPANY is company name (optional)",
+      "example":"/ZDUser alex <br></br>/ZDUser | symphony <br></br>/ZDUser alex | symphony",
+      "category": "Information lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["KB", "kb", "ZDKB", "ZDkb", "zdkb"],
+      "function": "searchKb",
+      "description": "List all Knowledge Base article with that WORD",
+      "helptext": "<b>/ZDKB</b> WORD",
+      "param": "WORD is the search word for the article",
+      "example": "/ZDKB performance",
+      "category": "Information lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["ticketCreate", "ticketcreate", "ZDTicket", "ZDticket", "zdticket"],
+      "function": "TicketCreate",
+      "description": "Create a new Zendesk ticket with subject & description. Ticket created as a Zendesk agent)",
+      "helptext": "<b>/ZDTicket</b> SUBJECT | DESCR",
+      "param":"SUBJECT & DESCRIPTION are texts. They are separated by a | character",
+      "example":"/ZDTicket ticket-subject | ticket_description",
+      "category": "Create/update",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["requestCreate", "requestcreate", "ZDRequest", "ZDrequest", "zdrequest"],
+      "function": "RequestCreate",
+      "description": "Create a new Zendesk request with subject & description. Caller is the requester. If @User is included, @User is the requester",
+      "helptext": "<b>/ZDRequest</b> [@USER] | SUBJECT | DESCR",
+      "param":" SUBJECT & DESCRIPTION are texts and are separated by a | character. @USER is an @mention (optional)",
+      "example":"/ZDRequest request_subject | request_description <br></br>/ZDRequest @Joe Smith | request_subject | request_description",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
+      "triggers": ["ticketUpdate", "ticketupdate", "ZDUpdate", "ZDupdate", "zdupdate"],
       "function": "ticketUpdate",
-      "description": "Add a comment to an existing Zendesk ticket as private or public and set its status",
-      "helptext": "<b>/ticketUpdate</b> [id], [comment], [status], [public/private].",
-      "param":"id, comment, status, public/private",
-      "example":"/ticketUpdate 222, This is an update this hide, private, open or /ticketUpdate 425, This comment will be visble to all, public, pending",
-      "category": "Zendesk",
-      "permission": "Authorised List"
+      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment & update ticket status <br></br>End user: Add a public comment",
+      "helptext": "<b>/ZDUpdate</b> TICKET_ID | TXT [| STATUS| MODE]",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS & MODE are only for Agent",
+      "example":"/ZDUpdate 222 | txt <br></br>/ZDUpdate 222 | txt | open | private <br></br>/ZDUpdate 222 | txt | closed | public",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
     },
     {
-      "triggers": ["createZendeskUser", "createUser", "ZDuser", "newUser", "newuser"],
+      "triggers": ["assignTicket", "assignticket", "Assign", "assign", "ZDAssign", "ZDAassign", "zdassign"],
+      "function": "assignTicket",
+      "description": "Assign the @USER (who is also an Agent) as ticket assignee. <br></br>This will leave an internal comment about the assignment",
+      "helptext": "<b>/ZDAssign</b> TICKET_ID @USER",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>@USER is an @mention user name",
+      "example":"/ZDAssign 400 @Joe Smith",
+      "category": "Create/update",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["ZDCreateUser", "ZDcreateUser","ZDcreateuser", "zdcreateuser"],
       "function": "createZendeskUser",
-      "description": "Create a new Zendesk end-user by @mentioning the Symphony User, the Pod name will be used to cross check existing Zendesk organization name",
-      "helptext": "<b>/createZendeskUser</b> @mention",
-      "param":"@mention",
-      "example":"/createZendeskUser @alex nalin",
-      "category": "Zendesk",
-      "permission": "Admin"
+      "description": "Create a new Zendesk end-user base on Symphony @USER <br></br>Use POD name to look up the Zendesk organization name",
+      "helptext": "<b>/ZDCreateUser</b> @USER",
+      "param":"@USER is an @mention user name",
+      "example":"/ZDCreateUser @Joe Smith",
+      "category": "Create/update",
+      "permission": "Bot Admin"
     },
     {
-      "triggers": ["addAccess", "addaccess"],
+      "triggers": ["ZDAccessAdd", "ZDaccessAdd", "ZDaccessadd", "zdaccessadd"],
       "function": "addAccess",
       "description": "Add user or users to the authorised list to run Bot commands",
-      "helptext": "<b>/addAccess</b> [@mention user(s)]",
-      "param":"@mention user(s)",
-      "example":"/addAccess @alex nalin or /addAccess @alex nalin @franck berdat",
-      "category": "Zendesk/General",
-      "permission": "Admin"
+      "helptext": "<b>/ZDAccessAdd</b> @USER ...",
+      "param":"@USER is an @mention user name <br></br>Multiple users are seperated with spaces",
+      "example":"/ZDAccessAdd @Joe Smith <br></br>/ZDAccessAdd @Joe Smith @Dana White",
+      "category": "Admin",
+      "permission": "Bot Admin"
     },
     {
-      "triggers": ["removeAccess", "removeaccess", "remaccess", "remAccess"],
+      "triggers": ["removeAccess", "removeaccess", "ZDAccessRemove", "ZDaccessRemove", "ZDaccessremove", "zdaccessremove"],
       "function": "removeAccess",
       "description": "Remove user from the authorised list to run Bot commands",
-      "helptext": "<b>/removeAccess</b> [@mention user(s)]",
-      "param":"@mention user(s)",
-      "example":"/removeAccess @alex nalin or /removeAccess @alex nalin @franck berdat",
-      "category": "Zendesk/General",
-      "permission": "Admin"
+      "helptext": "<b>/ZDAccessRemove</b> @USER ...",
+      "param":"@USER is an @mention user name <br></br>Multiple users are seperated with spaces",
+      "example":"/ZDAccessRemove @Joe Smith <br></br>/ZDAccessRemove @Joe Smith @Dana White",
+      "category": "Admin",
+      "permission": "Bot Admin"
     },
     {
-      "triggers": ["listAllAccess", "listallaccess" , "listAccess", "listaccess"],
+      "triggers": ["listAllAccess", "listallaccess", "ZDAccessList", "ZDaccessList" , "ZDaccesslist", "zdaccesslist"],
       "function": "listAllAccess",
       "description": "List all the users authorised to run Bot commands",
-      "helptext": "<b>/listAllAccess</b>",
-       "param":"None",
-      "example":"/listAllAccess",
-      "category": "Zendesk/General",
-      "permission": "Admin"
+      "helptext": "<b>/ZDAccessList</b>",
+      "param":"None",
+      "example":"/ZDAccessList",
+      "category": "Admin",
+      "permission": "BotAdmin"
     },
     {
       "triggers": ["autoConnect", "autoconnect", "autocConn", "autoconn"],

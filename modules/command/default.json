@@ -1,25 +1,25 @@
 {
   "commands": [
     {
-      "name": "botStream",
-      "triggers": ["botStream", "botstream"],
+      "name": "ZDStream",
+      "triggers": ["ZDStream", "ZDstream", "zdstream"],
       "function": "botStream",
-      "helptext": "<b>/botStream</b>",
+      "helptext": "<b>/ZDStream</b> TYPE",
       "description": "This will return all the chat that users have with the Bot, this could be of any type (IM/MIM and ROOMs)",
-      "param":"IM or ROOM or ALL",
-      "example":"/botStream im or /botStream all",
-      "category": "General Bot command",
+      "param":"TYPE = 'IM', 'ROOM' or 'ALL'",
+      "example":"/ZDStream im <b></b>/ZDStream room <b></b>/ZDStream all",
+      "category": "Miscelaneous",
       "permission": "Bot Admin"
     },
     {
-      "name": "botMessageBlast",
-      "triggers": ["botMessageBlast", "botmessageblast", "botMessage", "botmessage"],
+      "name": "ZDBlast",
+      "triggers": ["ZDBlast", "ZDblast", "zdblast"],
       "function": "botMessageBlast",
-      "helptext": "<b>/botMessageBlast</b>",
+      "helptext": "<b>/ZDBlast</b> TYPE TXT",
       "description": "Sends a message to all IM/MIM or ROOMs or even all Types with a specific message",
-      "param":"IM or ROOM or ALL + message",
-      "example":"/botMessageBlast IM The bot has been updated",
-      "category": "General Bot command",
+      "param":"TYPE = 'IM', 'ROOM' or 'ALL' <b></b>TXT = text of message to blast",
+      "example":"/ZDBlast IM The bot has been updated",
+      "category": "Miscelaneous",
       "permission": "Bot Admin"
     },
     {
@@ -30,7 +30,7 @@
       "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
       "param":"None",
       "example":"/ping",
-      "category": "General Bot command",
+      "category": "Miscelaneous",
       "permission": "All",
       "immediate": true
     },
@@ -40,9 +40,9 @@
       "function": "SymphonyZendeskBotHelp",
       "helptext": "<b>/help</b>",
       "description": "Tells you what the bot can do.",
-      "param":"more (optional)",
-      "example":"/help or /help more",
-      "category": "General Bot command",
+      "param":"none",
+      "example":"/help",
+      "category": "Miscelaneous",
       "permission": "All"
     },
     {

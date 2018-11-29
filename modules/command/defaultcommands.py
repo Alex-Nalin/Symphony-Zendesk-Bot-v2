@@ -146,11 +146,11 @@ def SymphonyZendeskBotHelp(messageDetail):
                         caterory_bg_color = "cyan"
                     if caterory == "Zendesk":
                         caterory_bg_color = "cyan"
-                    if caterory == "Zendesk/General":
+                    if caterory == "Admin":
                         caterory_bg_color = "purple"
-                    if caterory == "General Bot command":
+                    if caterory == "Miscellaneous":
                         caterory_bg_color = "blue"
-                    if caterory == "Miscellaneous Bot command":
+                    if caterory == "Create/update":
                         caterory_bg_color = "yellow"
 
                     permission = _configZen["commands"][index]["permission"]
@@ -162,15 +162,22 @@ def SymphonyZendeskBotHelp(messageDetail):
                     if permission == "All":
                         perm_bg_color = "green"
                     if permission == "Zendesk Agent/Zendesk End-user":
-                        perm_bg_color = "yellow"
+                        perm_bg_color = "orange"
+
+                    helptext_a = str(_configZen["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                    param_a = str(_configZen["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                    example_a = str(_configZen["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                    desc_a = str(_configZen["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                    cat_a = str(_configZen["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                    perm_a = str(_configZen["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
                     table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _configZen["commands"][index]["helptext"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _configZen["commands"][index]["param"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _configZen["commands"][index]["example"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _configZen["commands"][index]["description"] + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + _configZen["commands"][index]["category"] + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + _configZen["commands"][index]["permission"] + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
                                   "</tr>"
 
                 # _moreconfigPath = os.path.abspath('modules/command/default.json')
@@ -186,11 +193,11 @@ def SymphonyZendeskBotHelp(messageDetail):
                         caterory_bg_color = "cyan"
                     if caterory == "Zendesk":
                         caterory_bg_color = "cyan"
-                    if caterory == "Zendesk/General":
+                    if caterory == "Admin":
                         caterory_bg_color = "purple"
-                    if caterory == "General Bot command":
+                    if caterory == "Miscellaneous":
                         caterory_bg_color = "blue"
-                    if caterory == "Miscellaneous Bot command":
+                    if caterory == "Create/update":
                         caterory_bg_color = "yellow"
 
                     permission = str(_moreconfig["commands"][index]["permission"])
@@ -202,15 +209,22 @@ def SymphonyZendeskBotHelp(messageDetail):
                     if permission == "All":
                         perm_bg_color = "green"
                     if permission == "Zendesk Agent/Zendesk End-user":
-                        perm_bg_color = "yellow"
+                        perm_bg_color = "orange"
+
+                    helptext_b = str(_moreconfig["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                    param_b = str(_moreconfig["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                    example_b = str(_moreconfig["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                    desc_b = str(_moreconfig["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                    cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                    perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
                     table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _moreconfig["commands"][index]["helptext"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _moreconfig["commands"][index]["param"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _moreconfig["commands"][index]["example"] + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + _moreconfig["commands"][index]["description"] + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + _moreconfig["commands"][index]["category"] + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + _moreconfig["commands"][index]["permission"] + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
                                   "</tr>"
                 else:
                     pass

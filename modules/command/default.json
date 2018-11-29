@@ -7,8 +7,8 @@
       "helptext": "<b>/ZDStream</b> TYPE",
       "description": "This will return all the chat that users have with the Bot, this could be of any type (IM/MIM and ROOMs)",
       "param":"TYPE = 'IM', 'ROOM' or 'ALL'",
-      "example":"/ZDStream im <b></b>/ZDStream room <b></b>/ZDStream all",
-      "category": "Miscelaneous",
+      "example":"/ZDStream im <br></br>/ZDStream room <b></b>/ZDStream all",
+      "category": "Miscellaneous",
       "permission": "Bot Admin"
     },
     {
@@ -17,9 +17,9 @@
       "function": "botMessageBlast",
       "helptext": "<b>/ZDBlast</b> TYPE TXT",
       "description": "Sends a message to all IM/MIM or ROOMs or even all Types with a specific message",
-      "param":"TYPE = 'IM', 'ROOM' or 'ALL' <b></b>TXT = text of message to blast",
+      "param":"TYPE = 'IM', 'ROOM' or 'ALL' <br></br>TXT = text of message to blast",
       "example":"/ZDBlast IM The bot has been updated",
-      "category": "Miscelaneous",
+      "category": "Miscellaneous",
       "permission": "Bot Admin"
     },
     {
@@ -30,7 +30,7 @@
       "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
       "param":"None",
       "example":"/ping",
-      "category": "Miscelaneous",
+      "category": "Miscellaneous",
       "permission": "All",
       "immediate": true
     },
@@ -42,7 +42,7 @@
       "description": "Tells you what the bot can do.",
       "param":"none",
       "example":"/help",
-      "category": "Miscelaneous",
+      "category": "Miscellaneous",
       "permission": "All"
     },
     {

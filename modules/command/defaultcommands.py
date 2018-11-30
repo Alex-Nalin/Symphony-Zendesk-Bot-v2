@@ -2991,7 +2991,7 @@ def whois(messageDetail):
                 d_org = json.loads(dataRender)
 
                 table_body = ""
-                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:20%'>ID</td>" \
                                "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
                                "<td style='max-width:20%'>FIRST NAME</td>" \
@@ -3072,7 +3072,7 @@ def whois(messageDetail):
             d_org = json.loads(dataRender)
 
             table_body = ""
-            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+            table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                            "<td style='max-width:20%'>ID</td>" \
                            "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
                            "<td style='max-width:20%'>FIRST NAME</td>" \
@@ -3198,7 +3198,7 @@ def streamCheck(messageDetail):
 
                 res = connComp.getresponse()
                 data = res.read().decode("utf-8")
-                print(data)
+                #print(data)
 
                 invalidStreamID = "{\"code\":400,\"message\":\"Invalid stream ID\"}"
 
@@ -3251,7 +3251,7 @@ def streamCheck(messageDetail):
 
 
                 table_body = ""
-                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:20%'>ID</td>" \
                                "<td style='max-width:20%'>CROSS POD</td>" \
                                "<td style='max-width:20%'>ACTIVE</td>" \
@@ -3353,7 +3353,7 @@ def streamCheck(messageDetail):
 
 
             table_body = ""
-            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+            table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                            "<td style='max-width:20%'>ID</td>" \
                            "<td style='max-width:20%'>CROSS POD</td>" \
                            "<td style='max-width:20%'>ACTIVE</td>" \
@@ -3462,7 +3462,7 @@ def UIDCheck(messageDetail):
                     return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
 
                 table_body = ""
-                table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:20%'>ID</td>" \
                                "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
                                "<td style='max-width:20%'>FIRST NAME</td>" \
@@ -3561,7 +3561,7 @@ def UIDCheck(messageDetail):
                 return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
 
             table_body = ""
-            table_header = "<table style='max-width:100%;table-layout:fixed'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+            table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                            "<td style='max-width:20%'>ID</td>" \
                            "<td style='max-width:20%'>EMAIL ADDRESS</td>" \
                            "<td style='max-width:20%'>FIRST NAME</td>" \

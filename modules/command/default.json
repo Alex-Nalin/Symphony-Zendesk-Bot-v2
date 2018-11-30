@@ -200,7 +200,7 @@
       "permission": "Authorised List"
     },
     {
-      "triggers": ["UIDCheck", "uidCheck", "UID", "uid"],
+      "triggers": ["UIDCheck", "uidCheck", "uidcheck", "UID", "uid"],
       "function": "UIDCheck",
       "description": "Finds details about the given UID and retrieves the Symphony user information",
       "helptext": "<b>/UIDCheck</b>",

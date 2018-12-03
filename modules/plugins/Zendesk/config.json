@@ -19,7 +19,17 @@
       "example":"/ZDUserTicket open <br></br>/ZDUserTicket open @Joe Smith",
       "category": "Information lookup",
       "permission": "All"
-     },
+    },
+    {
+      "triggers": ["KeyWord", "keyWord", "keyword", "ZDKeyWord", "ZDKeyword", "ZDkeyword", "zdkeyword"],
+      "function": "searchKeyWord",
+      "description": "Search Zendesk tickets by specific key words <br/>To get exact keyword search use \"KEYWORD\"",
+      "helptext": "<b>/ZDKeyWord</b> KEYWORD",
+      "param":"KEYWORD is the key word to look up",
+      "example":"/ZDKeyWord RSA Cert <br/>/ZDKeyWord \"RSA Cert\"",
+      "category": "Information lookup",
+      "permission": "All"
+    },
     {
       "triggers": ["showZD","ZDShow", "ZDshow", "zdshow", "ZD", "zd" ],
       "function": "showZD",

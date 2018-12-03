@@ -47,7 +47,7 @@
     },
     {
       "name": "addAcronym",
-      "triggers": ["addAcronym", "addacronym", "newAcronym", "newacronym"],
+      "triggers": ["addAcronym", "addacronym"],
       "function": "addAcronym",
       "helptext": "<b>/addAcronym</b>",
       "description": "Add acronym to the dictionary",
@@ -103,7 +103,7 @@
     },
     {
       "name": "translate",
-      "triggers": ["trans", "translate"],
+      "triggers": ["Translate", "translate"],
       "function": "GetGoogleTranslation",
       "helptext": "<b>/translate</b>",
       "description": "Uses Google Translate to translate the search word or phrase.",
@@ -136,7 +136,7 @@
     },
     {
       "name": "weather",
-      "triggers": ["weather", "forecast", "cast"],
+      "triggers": ["Weather", "weather", "Forecast", "forecast", "Cast", "cast"],
       "function": "weather",
       "helptext": "<b>/weather</b>",
       "description": "Gives the weather forecast for the given location from 1 to 7 days.",
@@ -190,7 +190,7 @@
       "permission": "All"
     },
     {
-      "triggers": ["whois"],
+      "triggers": ["Whois", "whois"],
       "function": "whois",
       "description": "Give details about the @mentioned Symphony user",
       "helptext": "<b>/whois</b>",

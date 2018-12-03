@@ -2,6 +2,7 @@ import requests
 import os
 import codecs
 import json
+import re
 import modules.botlog as botlog
 import modules.botconfig as botconfig
 import modules.crypto as crypto
@@ -38,6 +39,19 @@ headersCompany = {
     'cache-control': "no-cache"
 }
 
+def remove_emoji(emoji):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\u200d"
+                               u"\u2640-\u2642"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', emoji.decode("utf-8"))
 
 def SymphonyZendeskBotHelp(messageDetail):
     botlog.LogSymphonyInfo("###############")
@@ -2551,54 +2565,56 @@ def addAcronym(messageDetail):
 
         botlog.LogSymphonyInfo("Bot Call: Add Acronym")
 
-        #try:
-        commandCallerUID = messageDetail.FromUserId
+        try:
+            commandCallerUID = messageDetail.FromUserId
 
-        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-        sessionTok = callout.GetSessionToken()
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
 
-        headersCompany = {
-            'sessiontoken': sessionTok,
-            'cache-control': "no-cache"
-        }
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-            botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-        # except:
-        #     return messageDetail.ReplyToChat("Cannot validate user access")
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
 
         if callerCheck in AccessFile:
 
             try:
-                message = (messageDetail.Command.MessageText)
-                info = message.split("-")
+                # message = (messageDetail.Command.MessageText)
+                message_raw = (messageDetail.Command.MessageFlattened)
+                message = str(message_raw).replace("/addacronym ", "").replace("/addAcronym ", "")
+                info = message.split("|")
                 acronym = str(info[0]).strip()
-                answer = info[1][1:]
+                answer = str(info[1][1:])
 
-                AcronymsDictionary.update({acronym.upper(): answer})
+                AcronymsDictionary.update({acronym.upper(): str(answer)})
                 sortDict(messageDetail)
 
-                return messageDetail.ReplyToChat(acronym + " was successfully added. Thank you for extending my knowledge")
+                return messageDetail.ReplyToChat(acronym + " was successfully added")
 
             except:
                 return messageDetail.ReplyToChat("Invalid format")
@@ -2613,42 +2629,42 @@ def removeAcronym(messageDetail):
 
         botlog.LogSymphonyInfo("Bot Call: Remove Acronym")
 
-        #try:
-        commandCallerUID = messageDetail.FromUserId
+        try:
+            commandCallerUID = messageDetail.FromUserId
 
-        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-        sessionTok = callout.GetSessionToken()
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
 
-        headersCompany = {
-            'sessiontoken': sessionTok,
-            'cache-control': "no-cache"
-        }
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-            botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+                botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
-        # except:
-        #     return messageDetail.ReplyToChat("Cannot validate user access")
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
 
         if callerCheck in AccessFile:
 
@@ -2678,54 +2694,54 @@ def findAcronym(messageDetail):
     try:
         botlog.LogSymphonyInfo("Bot Call: Find Acronym")
 
-        #try:
-        commandCallerUID = messageDetail.FromUserId
+        try:
+            commandCallerUID = messageDetail.FromUserId
 
-        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-        sessionTok = callout.GetSessionToken()
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
 
-        headersCompany = {
-            'sessiontoken': sessionTok,
-            'cache-control': "no-cache"
-        }
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-            botlog.LogSymphonyInfo(
-                firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+                botlog.LogSymphonyInfo(
+                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
-        # except:
-        #     return messageDetail.ReplyToChat("Cannot validate user access")
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
 
         if callerCheck in AccessFile:
 
             try:
-                Acronym = (messageDetail.Command.MessageText)[1:]
+                Acronym = str((messageDetail.Command.MessageText)[1:]).strip()
 
-                return messageDetail.ReplyToChat(Acronym.upper() + " - " + AcronymsDictionary[Acronym.upper()])
+                return messageDetail.ReplyToChat(Acronym.upper() + " - " + str(AcronymsDictionary[Acronym.upper()]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b",""))
             except:
-                return messageDetail.ReplyToChat("No result for " + Acronym + " found")
-        # else:
-        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+                return messageDetail.ReplyToChat("No result for " + str(Acronym) + " found")
+        else:
+            return messageDetail.ReplyToChat("You aren't authorised to use this command.")
     except:
         botlog.LogSymphonyInfo("Find Accronym did not work entirely")
 
@@ -2735,56 +2751,56 @@ def listAllAcronyms(messageDetail):
 
         botlog.LogSymphonyInfo("Bot Call: List All Acronyms")
 
-        #try:
-        commandCallerUID = messageDetail.FromUserId
+        try:
+            commandCallerUID = messageDetail.FromUserId
 
-        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-        sessionTok = callout.GetSessionToken()
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
 
-        headersCompany = {
-            'sessiontoken': sessionTok,
-            'cache-control': "no-cache"
-        }
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-            botlog.LogSymphonyInfo(
-                firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-        # except:
-        #     return messageDetail.ReplyToChat("Cannot validate user access")
+                botlog.LogSymphonyInfo(
+                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
 
         if callerCheck in AccessFile:
 
             try:
                 sortDict(messageDetail)
                 table_body = ""
-                table_header = "<table style='max-width:50%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='max-width:100%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:10%'>Acronym</td>" \
                                "</tr></thead><tbody>"
 
                 for acronym in AcronymsDictionary:
                     table_body += "<tr>" \
-                                  "<td>" + acronym + " - " + AcronymsDictionary[acronym] + "</td>" \
-                                                                                           "</tr>"
+                                  "<td>" + acronym + " - " + str(AcronymsDictionary[acronym]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
+                                  "</tr>"
 
                 table_body += "</tbody></table>"
 
@@ -2809,7 +2825,7 @@ def sortDict(messageDetail):
 
     updatedDictionary = 'AcronymsDictionary = ' + str(sortedAcronymsDictionary)
     #file = open("modules/command/dictionary.py", "w+")
-    file = open("data/dictionary.py","w+")
+    file = open("Data/dictionary.py","w+")
     file.write(updatedDictionary)
     file.close()
 
@@ -2970,6 +2986,10 @@ def whois(messageDetail):
         #     return messageDetail.ReplyToChat("Cannot validate user access")
 
         if callerCheck in AccessFile:
+
+            flat1 = messageDetail.Command.MessageFlattened
+            flat2 = messageDetail.Command.MessageText
+
             try:
 
                 try:

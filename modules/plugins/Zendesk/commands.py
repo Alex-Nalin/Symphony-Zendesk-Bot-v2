@@ -9039,7 +9039,6 @@ def removeAccess(messageDetail):
                             return messageDetail.ReplyToChat("This user is not in the Access List")
                         updatedAccess = 'AccessFile = ' + str(sorted(AccessFile))
 
-                        #file = open("modules/plugins/Zendesk/access.py", "w+")
                         file = open("Data/access.py", "w+")
                         file.write(updatedAccess)
                         file.close()

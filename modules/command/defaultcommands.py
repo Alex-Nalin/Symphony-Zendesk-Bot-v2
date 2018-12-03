@@ -2604,7 +2604,7 @@ def addAcronym(messageDetail):
         if callerCheck in AccessFile:
 
             try:
-                # message = (messageDetail.Command.MessageText)
+                #message = (messageDetail.Command.MessageText)
                 message_raw = (messageDetail.Command.MessageFlattened)
                 message = str(message_raw).replace("/addacronym ", "").replace("/addAcronym ", "")
                 info = message.split("|")
@@ -2617,7 +2617,7 @@ def addAcronym(messageDetail):
                 return messageDetail.ReplyToChat(acronym + " was successfully added")
 
             except:
-                return messageDetail.ReplyToChat("Invalid format")
+                return messageDetail.ReplyToChat("Invalid format, please use /addAcronym abbreviation | full_sentense")
         # else:
         #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
     except:
@@ -2824,7 +2824,6 @@ def sortDict(messageDetail):
 
 
     updatedDictionary = 'AcronymsDictionary = ' + str(sortedAcronymsDictionary)
-    #file = open("modules/command/dictionary.py", "w+")
     file = open("Data/dictionary.py","w+")
     file.write(updatedDictionary)
     file.close()
@@ -2987,20 +2986,20 @@ def whois(messageDetail):
 
         if callerCheck in AccessFile:
 
-            flat1 = messageDetail.Command.MessageFlattened
-            flat2 = messageDetail.Command.MessageText
-
             try:
-
                 try:
                     flat = messageDetail.Command.MessageFlattened.split("_u_")
-                    #UID = flat[1][:14]
                     UID = flat[1][:int(_configDef['UID'])]
                     botlog.LogSymphonyInfo("User UI: " + UID)
+                    connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
                 except:
-                    return messageDetail.ReplyToChat("Please use @mention")
-
-                connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+                    try:
+                        flat = messageDetail.Command.MessageText
+                        user_email = str(flat).strip()
+                        botlog.LogSymphonyInfo("User Email: " + str(user_email))
+                        connComp.request("GET", "/pod/v3/users?email=" + user_email + "&local=false", headers=headersCompany)
+                    except:
+                        return messageDetail.ReplyToChat("Please use @mention or email address to do the user lookup")
 
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
@@ -3069,19 +3068,24 @@ def whois(messageDetail):
             # else:
             #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
             except:
-                botlog.LogSymphonyInfo("Whois did not work")
+                return messageDetail.ReplyToChatV2_noBotLog("Please make sure you have entered a valid UID or email address")
     except:
         try:
             botlog.LogSymphonyInfo("Inside second try for Whois")
+
             try:
                 flat = messageDetail.Command.MessageFlattened.split("_u_")
-                #UID = flat[1][:14]
                 UID = flat[1][:int(_configDef['UID'])]
                 botlog.LogSymphonyInfo("User UI: " + UID)
+                connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
             except:
-                return messageDetail.ReplyToChat("Please use @mention")
-
-            connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
+                try:
+                    flat = messageDetail.Command.MessageText
+                    user_email = str(flat).strip()
+                    botlog.LogSymphonyInfo("User Email: " + str(user_email))
+                    connComp.request("GET", "/pod/v3/users?email=" + user_email + "&local=false", headers=headersCompany)
+                except:
+                    return messageDetail.ReplyToChat("Please use @mention or email address to do the user lookup")
 
             resComp = connComp.getresponse()
             dataComp = resComp.read()
@@ -3202,7 +3206,10 @@ def streamCheck(messageDetail):
                     stream_raw = messageDetail.Command.MessageFlattened.split(" ")
                     stream_split = str(stream_raw).split(",")
                     stream_split_Data = stream_split[1].replace("'", "").replace("]","")
-                    streamID = str(stream_split_Data).replace(" ","")
+                    try:
+                        streamID = str(stream_split_Data).replace(" ","")
+                    except:
+                        streamID = str(stream_split_Data).replace(" ","").replace("/", "_").replace("==", "").replace("+", "-")
                 except:
                     return messageDetail.ReplyToChatV2("Please a valid stream ID converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
 
@@ -3305,7 +3312,10 @@ def streamCheck(messageDetail):
                 stream_raw = messageDetail.Command.MessageFlattened.split(" ")
                 stream_split = str(stream_raw).split(",")
                 stream_split_Data = stream_split[1].replace("'", "").replace("]","")
-                streamID = str(stream_split_Data).replace(" ","")
+                try:
+                    streamID = str(stream_split_Data).replace(" ","")
+                except:
+                    streamID = str(stream_split_Data).replace(" ","").replace("/", "_").replace("==", "").replace("+", "-")
             except:
                 return messageDetail.ReplyToChatV2("Please a valid stream ID converted into <a href=\"https://rest-api.symphony.com/docs/message-id\">base64</a>")
 

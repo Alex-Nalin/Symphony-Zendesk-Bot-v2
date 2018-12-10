@@ -34,6 +34,10 @@ def GetSymphonyAuthToken(authEndpoint):
     response = SymphonyREST('AUTH', authEndpoint, None)
     return response.ResponseData.token
 
+# def GetSymphonyAuthToken(authEndpoint):
+#     response = SymphonyREST('AUTH', authEndpoint, None, None)
+#     return response.ResponseData.token
+
 def BuildHeaders(sessionToken, keyAuthToken, contentType="application/json"):
     RESTheaders = {
         "sessionToken": sessionToken,
@@ -68,6 +72,9 @@ def SymphonyPOST(endpoint, body):
 def SymphonyPOSTV2(endpoint, body):
     return SymphonyREST('POSTV2', endpoint, body)
 
+# def SymphonyPOSTV2_data(endpoint, body, attachments):
+#     return SymphonyREST('POSTV2', endpoint, body, attachments)
+
 def SymphonyPOSTV2_1(endpoint, body):
     return SymphonyREST('POSTV2_1', endpoint, body)
 
@@ -85,6 +92,8 @@ def SymphonyREST(method, endpoint, body):
             response = agentSession.post(endpoint, data=body)
         elif method == 'POSTV2':
             response = PostV2(endpoint, body)
+        # elif method == 'POSTV2_data':
+        #     response = PostV2_data(endpoint, body, attachments)
         elif method == 'POSTV2_1':
             response = PostV2_1(endpoint, body)
         elif method == 'AUTH':
@@ -131,20 +140,6 @@ def SymphonyREST(method, endpoint, body):
         return retVal
 
 
-# def PostV2(endpoint, body):
-#     encoder = MultipartEncoder(fields=body)
-#
-#     v2SessionToken = GetSessionToken()
-#     v2KeyAuthToken = GetKeyManagerToken()
-#
-#     v2Headers = {"sessionToken": v2SessionToken, "keyManagerToken": v2KeyAuthToken,
-#                  "Content-Type": encoder.content_type}
-#
-#     agentV2Session.headers.update(v2Headers)
-#
-#     return agentV2Session.post(endpoint, data=encoder)
-
-
 def PostV2(endpoint, body):
     global v2LastAuth
     global v2SessionToken
@@ -162,6 +157,26 @@ def PostV2(endpoint, body):
     agentV2Session.headers.update(v2Headers)
 
     return agentV2Session.post(endpoint, data=encoder)
+
+
+# def PostV2_data(endpoint, body, attachments=None):
+#     global v2LastAuth
+#     global v2SessionToken
+#     global v2KeyAuthToken
+#     global agentV2Session
+#
+#     if v2SessionToken is None or v2LastAuth is None or datetime.now() > v2LastAuth + timedelta(days=2):
+#         v2SessionToken = GetSessionToken()
+#         v2KeyAuthToken = GetKeyManagerToken()
+#         v2LastAuth = datetime.now()
+#
+#     encoder = MultipartEncoder(fields=body)
+#     v2Headers = BuildHeaders(v2SessionToken, v2KeyAuthToken, encoder.content_type)
+#
+#     agentV2Session.headers.update(v2Headers)
+#
+#     return agentV2Session.post(endpoint, data=encoder, attachments=attachments)
+
 
 # Does not work
 # I believe the problem is the Content-Type header, which does not include the boundary

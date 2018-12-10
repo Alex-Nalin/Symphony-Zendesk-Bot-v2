@@ -65,11 +65,15 @@ class MessageDetail:
     def ReplyToChat(self, message: str):
         msg.SendSymphonyMessage(self.StreamId, message)
 
-    def ReplyToChatV2(self, message: str):
-        msg.SendSymphonyMessageV2(self.StreamId, message)
 
-    def ReplyToChatV2_noBotLog(self, message: str):
-        msg.SendSymphonyMessageV2_noBotLog(self.StreamId, message)
+    def ReplyToChatV2(self, message: str, data=None):
+        msg.SendSymphonyMessageV2(self.StreamId, message, data)
+
+    # def ReplyToChatV2_data(self, message: str, data=None, attachments=None):
+    #     msg.SendSymphonyMessageV2_data(self.StreamId, message, data, attachments)
+
+    def ReplyToChatV2_noBotLog(self, message: str, data=None):
+        msg.SendSymphonyMessageV2_noBotLog(self.StreamId, message, data)
 
     def ReplyToSender(self, message: str):
         msg.SendUserIM([self.FromUserId], message)

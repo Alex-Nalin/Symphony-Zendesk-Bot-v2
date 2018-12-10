@@ -2283,16 +2283,21 @@ def searchKeyWord(messageDetail):
     if companyName in _configDef['AuthCompany']['PodList']:
 
         keyword_raw = messageDetail.Command.MessageText
-        keyword = str(keyword_raw).replace('"',"\"" )
+        #print(keyword_raw)
+        #keyword = str(keyword_raw).replace('"',"\"" ).replace("&quot;","\"")
+        keyword_rep = str(keyword_raw).replace('"',"" ).replace("&quot;","")
+        keyword =  "\"" + (str(keyword_rep)[1:]) + "\""
+        #print(keyword)
         key_lenght = len(str(keyword))
-        print(int(key_lenght)-1)
+        #print(int(key_lenght)-1)
 
         if int(key_lenght)-1 <= 2:
             return messageDetail.ReplyToChat("Please enter a valid keyword search, keyword with more than 2 character")
 
         url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/search"
 
-        querystring = {"query":"" + str(keyword) + " type:ticket ","sort_by":"updated_at","sort_order":"desc"}
+        querystring = {"query":"" + str(keyword) + " type:ticket","sort_by":"updated_at","sort_order":"desc"}
+        botlog.LogSymphonyInfo(str(querystring))
 
         headers = {
             'username': _configDef['zdesk_config']['zdesk_email'] + "/token",

@@ -23,10 +23,10 @@
     {
       "triggers": ["KeyWord", "keyWord", "keyword", "ZDKeyWord", "ZDKeyword", "ZDkeyword", "zdkeyword"],
       "function": "searchKeyWord",
-      "description": "Search Zendesk tickets by specific key words <br/>To get exact keyword search use \"KEYWORD\"",
+      "description": "Search Zendesk tickets by specific key words",
       "helptext": "<b>/ZDKeyWord</b> KEYWORD",
       "param":"KEYWORD is the key word to look up",
-      "example":"/ZDKeyWord RSA Cert <br/>/ZDKeyWord \"RSA Cert\"",
+      "example":"/ZDKeyWord RSA Cert",
       "category": "Information lookup",
       "permission": "All"
     },

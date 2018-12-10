@@ -88,6 +88,74 @@ def SendSymphonyMessageV2(streamId, message: str, data=None):
     botlog.LogSymphonyInfo('Sending Symphony Message Create V4 | StreamId: ' + streamId + ' | Message: ' + message)
     return callout.SymphonyPOSTV2(messageEP, bodyObj)
 
+
+# def SendSymphonyMessageV2_data(stream_id: str, message: str, data=None, attachments: List[MessageAttachment]=None):
+#
+#     msg = util.FormatSymphonyMessage(message)
+#     endpoint = ep.SendMessage_Endpoint(stream_id, 4)
+#
+#     # To send multiple attachments with the same key, we need to use a slighly different
+#     # submission format for requests-toolbelt. Instead, the "fields" parameter
+#     # that gets passed to the MultipartEncoder should take a list of tuples
+#     # for all the parameters.
+#     # https://github.com/requests/toolbelt/issues/190#issuecomment-319900108
+#     body_list = [('message', msg)]
+#
+#     # data here is for structured objects, not attachments
+#     if data is not None:
+#         data = json.dumps(data)
+#         body_list.append(('data', data))
+#
+#     # if there are attachments, we need to create a tuple for each one of the form:
+#     # (filename, file_data, MIME_type)
+#     # then we append those tuples to the list defined by body_list
+#     # We then pass body_list to SymphonyPOSTv2. Requests-Toolbelt
+#     # will create the correct multipart format
+#     if attachments:
+#         for att in attachments:
+#             att_t = (att.Filename, att.Data, att.MIME)
+#             body_list.append(('attachment', att_t))
+#
+#
+#     response = conn.SymphonyPOSTv2(endpoint, body_list)
+#
+#     LogMessagePost(response, stream_id, message)
+#
+#     return response
+
+# def SendSymphonyMessageV2_data(streamId: str, message: str, data=None, attachments=None):
+#
+#     msg = FormatSymphonyMessage(message)
+#     messageEP = config.GetSendMessageEndpoint(streamId, config.MessageMLVersion.v2)
+#
+#     # To send multiple attachments with the same key, we need to use a slighly different
+#     # submission format for requests-toolbelt. Instead, the "fields" parameter
+#     # that gets passed to the MultipartEncoder should take a list of tuples
+#     # for all the parameters.
+#     # https://github.com/requests/toolbelt/issues/190#issuecomment-319900108
+#     body_list = [('message', msg)]
+#
+#     # data here is for structured objects, not attachments
+#     if data is not None:
+#         data = json.dumps(data)
+#         body_list.append(('data', data))
+#
+#     # if there are attachments, we need to create a tuple for each one of the form:
+#     # (filename, file_data, MIME_type)
+#     # then we append those tuples to the list defined by body_list
+#     # We then pass body_list to SymphonyPOSTv2. Requests-Toolbelt
+#     # will create the correct multipart format
+#     if attachments is not None:
+#         for att in attachments:
+#             att_t = (att.Filename, att.Data, att.MIME)
+#             body_list.append(('attachment', att_t))
+#
+#
+#     response = callout.SymphonyPOSTv2(messageEP, body_list)
+#     botlog.LogConsoleInfo(response, streamId, message)
+#     return response
+
+
 def SendSymphonyMessageV2_noBotLog(streamId, message: str, data=None):
 
     if not message.startswith('<messageML>'):

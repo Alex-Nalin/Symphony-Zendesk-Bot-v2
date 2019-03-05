@@ -34,9 +34,6 @@ def GetSymphonyAuthToken(authEndpoint):
     response = SymphonyREST('AUTH', authEndpoint, None)
     return response.ResponseData.token
 
-# def GetSymphonyAuthToken(authEndpoint):
-#     response = SymphonyREST('AUTH', authEndpoint, None, None)
-#     return response.ResponseData.token
 
 def BuildHeaders(sessionToken, keyAuthToken, contentType="application/json"):
     RESTheaders = {
@@ -71,9 +68,6 @@ def SymphonyPOST(endpoint, body):
 
 def SymphonyPOSTV2(endpoint, body):
     return SymphonyREST('POSTV2', endpoint, body)
-
-# def SymphonyPOSTV2_data(endpoint, body, attachments):
-#     return SymphonyREST('POSTV2', endpoint, body, attachments)
 
 def SymphonyPOSTV2_1(endpoint, body):
     return SymphonyREST('POSTV2_1', endpoint, body)
@@ -159,23 +153,23 @@ def PostV2(endpoint, body):
     return agentV2Session.post(endpoint, data=encoder)
 
 
-# def PostV2_data(endpoint, body, attachments=None):
-#     global v2LastAuth
-#     global v2SessionToken
-#     global v2KeyAuthToken
-#     global agentV2Session
-#
-#     if v2SessionToken is None or v2LastAuth is None or datetime.now() > v2LastAuth + timedelta(days=2):
-#         v2SessionToken = GetSessionToken()
-#         v2KeyAuthToken = GetKeyManagerToken()
-#         v2LastAuth = datetime.now()
-#
-#     encoder = MultipartEncoder(fields=body)
-#     v2Headers = BuildHeaders(v2SessionToken, v2KeyAuthToken, encoder.content_type)
-#
-#     agentV2Session.headers.update(v2Headers)
-#
-#     return agentV2Session.post(endpoint, data=encoder, attachments=attachments)
+def PostV2_data(endpoint, body):
+    global v2LastAuth
+    global v2SessionToken
+    global v2KeyAuthToken
+    global agentV2Session
+
+    if v2SessionToken is None or v2LastAuth is None or datetime.now() > v2LastAuth + timedelta(days=2):
+        v2SessionToken = GetSessionToken()
+        v2KeyAuthToken = GetKeyManagerToken()
+        v2LastAuth = datetime.now()
+
+    encoder = MultipartEncoder(fields=body)
+    v2Headers = BuildHeaders(v2SessionToken, v2KeyAuthToken, encoder.content_type)
+
+    agentV2Session.headers.update(v2Headers)
+
+    return agentV2Session.post(endpoint, data=encoder)
 
 
 # Does not work

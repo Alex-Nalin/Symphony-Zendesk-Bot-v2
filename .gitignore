@@ -6,26 +6,27 @@
 config.json
 
 # Documents
+modules/plugins/wordcloud/
+modules/plugins/wordcloud/commands.py
+Data/wordcloud.py
+Data/zendesk_trend.py
 Data/dictionary.py
 Data/access.py
 modules/plugins/Zendesk/Note.py
+Data/*.png
+Data/*.tif
+
+# Temp
+Temp/*.*
 
 # Application config files
+modules/plugins/wordcloud/config.json
 config.json
 config_Symp.json
-config_symp_full.json
-config_symp_int.json
-config_symp_ext.json
-config_zen_full.json
-config_zen_int.json
-config_zen_ext.json
-default_full.json
-default_int.json
-default_ext.json
 config_corp.json
 config_sup.json
 config_preview.json
-config_develop2.json
+config_dev2.json
 
 # Allow
 !/modules/plugins/Zendesk/config.json

@@ -5,18 +5,38 @@
       "function": "searchCompanyTickets",
       "description": "Search Zendesk tickets by specific organization. Filter results to specific ticket status (e.g. open, unresolved)",
       "helptext": "<b>/ZDOrgTicket</b> STATUS ORG",
-      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk ",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk",
       "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
       "category": "Information lookup",
       "permission": "Zendesk Agent"
     },
     {
-      "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuser,Ticket", "ZDuserticket", "zduserticket"],
+      "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuserTicket", "ZDuserticket", "zduserticket"],
       "function": "searchUserTickets",
       "description": "Search Zendesk tickets by specific user. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
       "helptext": "<b>/ZDUserTicket</b> STATUS [@USER]",
       "param":"STATUS = open | new | pending | solved | closed | unresolved | all @USER is an @mention (optional)",
       "example":"/ZDUserTicket open <br></br>/ZDUserTicket open @Joe Smith",
+      "category": "Information lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["ZDAssigneeTickets", "ZDAssigneeTicket", "ZDAssigneeticket", "ZDassigneeticket", "zdassigneeticket"],
+      "function": "searchAssigneeTickets",
+      "description": "Search Zendesk tickets by specific assignee/agent. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDAssigneeTicket</b> STATUS [@USER]",
+      "param":"STATUS = open | new | pending | solved | closed | unresolved | all @USER is an @mention (optional)",
+      "example":"/ZDAssigneeTicket open <br></br>/ZDAssigneeTicket open @Joe Smith",
+      "category": "Information lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["ZDCCTickets", "ZDCCTicket", "ZDACCticket", "ZDAccticket", "zdccticket"],
+      "function": "searchCCTickets",
+      "description": "Search Zendesk tickets by specific contributor/CCed/follower. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDCCTicket</b> STATUS [@USER]",
+      "param":"STATUS = open | new | pending | solved | closed | unresolved | all @USER is an @mention (optional)",
+      "example":"/ZDCCTicket open <br></br>/ZDCCTicket open @Joe Smith",
       "category": "Information lookup",
       "permission": "All"
     },
@@ -61,7 +81,7 @@
       "permission": "Zendesk Agent"
     },
     {
-      "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdomments", "zdcomment"],
+      "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdcomments", "zdcomment"],
       "function": "showTicketComments",
       "description": "Shows Zendesk Ticket comments for Zendesk ticket ID",
       "helptext": "<b>/ZDComments</b> TICKET_ID",

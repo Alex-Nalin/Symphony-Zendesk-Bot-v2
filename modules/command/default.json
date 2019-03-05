@@ -46,6 +46,17 @@
       "permission": "All"
     },
     {
+      "name": "helpcheat",
+      "triggers": ["helpCheat", "helpcheat", "cheat"],
+      "function": "SymphonyZendeskBotHelpCheat",
+      "helptext": "<b>/helpCheat</b>",
+      "description": "Cheat help",
+      "param":"none",
+      "example":"/helpCheat",
+      "category": "Miscellaneous",
+      "permission": "Authorised List"
+    },
+    {
       "name": "addAcronym",
       "triggers": ["addAcronym", "addacronym"],
       "function": "addAcronym",
@@ -53,8 +64,8 @@
       "description": "Add acronym to the dictionary",
       "param":"acronym",
       "example":"/addAcronym VIP - Very Important Person",
-      "category": "Miscellaneous Bot command",
-      "permission": "Zendesk Agent"
+      "category": "Create/update",
+      "permission": "Authorised List"
     },
     {
       "name": "removeAcronym",
@@ -64,8 +75,8 @@
       "description": "Removes the acronym from the dictionary",
       "param":"acronym",
       "example":"/removeAcronym VIP",
-      "category": "Miscellaneous Bot command",
-      "permission": "Zendesk Agent"
+      "category": "Create/update",
+      "permission": "Authorised List"
     },
     {
       "name": "findAcronym",
@@ -75,8 +86,8 @@
       "description": "Finds existing acronym",
       "param":"acronym",
       "example":"/findAcronym VIP",
-      "category": "Miscellaneous Bot command",
-      "permission": "Zendesk Agent"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "listAllAcronyms",
@@ -86,8 +97,8 @@
       "description": "List all the existing acronym",
       "param":"None",
       "example":"/listAllAcronyms",
-      "category": "Miscellaneous Bot command",
-      "permission": "Zendesk Agent"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "echo",
@@ -98,7 +109,7 @@
       "param":"[Text]",
       "example":"/echo hello world",
       "category": "General Bot command",
-      "permission": "All",
+      "permission": "Authorised List",
       "immediate": true
     },
     {
@@ -109,8 +120,8 @@
       "description": "Uses Google Translate to translate the search word or phrase.",
       "param":"Text",
       "example":"/translate bonjour",
-      "category": "General Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "quote",
@@ -120,8 +131,8 @@
       "description": "Pulls the most recent open and close prices for the specified ticker symbol from Alpha Vantage.",
       "param":"tickerSymbol",
       "example":"/quote $appl",
-      "category": "General Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "gif",
@@ -131,8 +142,8 @@
       "description": "Searches and brings a funny gif from Giphy. If search text is blank this command will return a random GIF. (using Card)",
       "param":"Text (optional)",
       "example":"/gif Symphony",
-      "category": "General Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "weather",
@@ -142,19 +153,19 @@
       "description": "Gives the weather forecast for the given location from 1 to 7 days.",
       "param":"location + dys to forecast",
       "example":"/weather london or /weather london 5",
-      "category": "Miscellaneous Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "Quote of the Day",
-      "triggers": ["qod", "QoD", "QOD"],
+      "triggers": ["quoteoftheday","qod", "QoD", "QOD"],
       "function": "QoD",
       "helptext": "<b>/qod</b>",
       "description": "Retrieves a Quote of the Day to ponder on. /qod .",
       "param":"None",
       "example":"/qod",
-      "category": "Miscellaneous Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "Fun Quote",
@@ -164,8 +175,8 @@
       "description": "Displays quotes from famous movies and person.",
       "param":"None",
       "example":"/funQuote",
-      "category": "Miscellaneous Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "Joke",
@@ -175,8 +186,8 @@
       "description": "Displays random joke",
       "param":"None",
       "example":"/joke",
-      "category": "Miscellaneous Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "name": "Wikipedia Search",
@@ -186,8 +197,8 @@
       "description": "Finds top 3 results from Wikipedia",
       "param":"Search Term",
       "example":"/wikiSearch Symphony Communication",
-      "category": "Miscellaneous Bot command",
-      "permission": "All"
+      "category": "Information lookup",
+      "permission": "Authorised List"
     },
     {
       "triggers": ["Whois", "whois"],
@@ -196,7 +207,7 @@
       "helptext": "<b>/whois</b>",
       "param": "@mentioned user",
       "example": "/whois @alex nalin",
-      "category": "Zendesk/General",
+      "category": "Information lookup",
       "permission": "Authorised List"
     },
     {
@@ -206,7 +217,7 @@
       "helptext": "<b>/UIDCheck</b>",
       "param": "UID",
       "example": "/UIDCheck 71811853189765",
-      "category": "Zendesk/General",
+      "category": "Information lookupl",
       "permission": "Authorised List"
     },
     {
@@ -216,7 +227,7 @@
       "helptext": "<b>/streamCheck</b>",
       "param": "streamID",
       "example": "/streamCheck 5fEubxc6pMHqioicBamPZ3___qN3RFcKdA",
-      "category": "Zendesk/General",
+      "category": "Information lookup",
       "permission": "Authorised List"
     }
   ],

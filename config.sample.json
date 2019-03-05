@@ -21,32 +21,85 @@
     "createIM": "${host}:${port}/pod/v1/im/create",
     "sendMessage": "${host}:${port}/agent/${ver}/stream/${streamId}/message/create"
   },
-  "zendeskinfo": {
-    "zdesk_url": ""
+  "zdesk_config":
+  {
+    "zdesk_email": "",
+    "zdesk_password": "",
+    "zdesk_url": "https://....zendesk.com",
+    "zdesk_user": "https://....zendesk.com/agent/users/",
+    "zdesk_link": "https://....zendesk.com/agent/tickets/",
+    "zdesk_org": "https://....zendesk.com/agent/organizations/",
+    "zdesk_api": "....zendesk.com",
+    "zdesk_auth": "",
+    "zdesk_token": "",
+    "zdesk_sev_field": "",
+    "zdesk_resolution": ""
   },
+  "AuthUser":
+  {
+    "AdminList": [""],
+    "RoomStream": ""
+  },
+  "AuthCompany":
+  {
+    "PodList": [""]
+  },
+  "BotStreamForPing": "",
+  "showcomment_streamid" : [""],
+  "UID": "15",
   "redis": {
-    "active": true,
+    "active": false,
     "host": "127.0.0.1",
     "port": 6379,
-    "password": "redispwd"
+    "password": ""
   },
   "loggingPath": "./logging",
+  "logToFile": true,
   "defaultCommandSettings": [
     {
       "name": "alphavantage",
-      "apikey": "apikey"
+      "apikey": ""
     },
     {
       "name": "giphy",
-      "apikey": "apikey"
+      "apikey": ""
     }
   ],
   "pluginPath": "./modules/plugins",
   "blacklist": [
     "no-reply@symphony.com",
-    "no-reply@salesforce.com",
-    "bot.user@email.com"
+    "bot.user@email.com",
+    ""
   ],
   "defaultCommandDefinitionPath": "./modules/command/default.json",
-  "BotStreamForPing": ""
+  "weather":
+  {
+    "API_Key":""
+  },
+  "x-mashape":
+  {
+    "URL": "",
+    "API_Key":""
+  },
+  "Jokes":
+  {
+    "URL": "",
+    "user-agent": ""
+  },
+  "convertTime":
+  {
+    "URL": "",
+    "api_key": ""
+  },
+  "Wiki":
+  {
+    "API_Key": "",
+    "token": "",
+    "replace" : ""
+  },
+  "limit":
+  {
+    "character": "35000",
+    "token":"1000"
+  }
 }

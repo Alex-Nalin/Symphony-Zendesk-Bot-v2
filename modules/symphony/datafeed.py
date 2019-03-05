@@ -12,6 +12,8 @@ import modules.symphony.messaging as messaging
 import os
 import codecs
 import json
+from Data.wordcloud import WordCloud
+import random
 
 
 #Grab the config.json main parameters
@@ -41,6 +43,7 @@ def PollDataFeed(datafeedId):
     if response.Success:
         for respItem in response.ResponseData:
             #Hopefully this will
+
             try:
                 if respItem.v2messageType and respItem.v2messageType == 'V2Message':
                     detail = msg.MessageDetail(respItem)

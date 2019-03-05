@@ -2,7 +2,7 @@ from zdesk import Zendesk
 import json
 import os
 import codecs
-#import modules.symphony.user as user
+import modules.symphony.messaging as msg
 import http.client
 import requests
 import base64
@@ -18,13 +18,6 @@ from string import punctuation
 #from xml.sax.saxutils import escape
 
 global setEnableDisable
-
-
-# def ThisIsWhereIFormatMyString(input_str):
-#     output_text = escape(input_str)
-#     output_text = output_text.replace('"', '&quot;').replace("'", '&apos;')
-#
-#     return output_text
 
 
 #Grab the config.json main parameters
@@ -322,6 +315,7 @@ def searchCompanyTickets(messageDetail):
         organization = ""
         query = ""
         isIMRequired = False
+        limitReached = False
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -578,7 +572,7 @@ def searchCompanyTickets(messageDetail):
                     if index == 1:
                         botlog.LogSymphonyInfo("Search query: " + str(query))
                         if org_length < 2:
-                            return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as knwon on your Zendesk instance")
+                            return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
 
         ################################
                     try:
@@ -606,6 +600,7 @@ def searchCompanyTickets(messageDetail):
         #################################
 
                 for result in data['results']:
+                    #print(result["priority"])
 
                     try:
                         assignee_flag = False
@@ -660,6 +655,38 @@ def searchCompanyTickets(messageDetail):
                     ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                     updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
 
+
+                    if (len(result["tags"])) == 0:
+                        noTag = True
+                    else:
+                        noTag = False
+
+                    notSet = True
+                    if noTag:
+                        notSet = False
+
+                    sev = "Not Set"
+                    for index_tags in range(len(result["tags"])):
+                        tags = str((result["tags"][index_tags]))
+
+                        if tags.startswith("severity_1"):
+                            sev = "Severity 1"
+                            notSet = False
+                        elif tags.startswith("severity_2"):
+                            sev = "Severity 2"
+                            notSet = False
+                        elif tags.startswith("severity_3"):
+                            sev = "Severity 3"
+                            notSet = False
+                        elif tags.startswith("severity_4"):
+                            sev = "Severity 4"
+                            notSet = False
+
+                    if notSet:
+                        sev = "Not set"
+                        notSet = False
+
+
                     if assignee_flag:
 
                         assignee = str(assigneeName)
@@ -680,7 +707,9 @@ def searchCompanyTickets(messageDetail):
                                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
                                         "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
                                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                        "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
                                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                        "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
                     else:
 
@@ -701,52 +730,11 @@ def searchCompanyTickets(messageDetail):
                                         "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
                                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
                                         "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
+                                        "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                        "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                                        "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                        "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
-                    try:
-                        table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>"
-                        table_header += "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>"
-                    except:
-                        table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>"
-                        table_header += "<td style='border:1px solid black;text-align:center'>Not set</td></tr><tr>"
-
-                    if (len(result["tags"])) == 0:
-                        noTag = True
-                    else:
-                        noTag = False
-
-                    notSet = True
-                    if noTag:
-                        notSet = False
-
-                    sev = ""
-                    for index_tags in range(len(result["tags"])):
-                        tags = str((result["tags"][index_tags]))
-
-                        if tags.startswith("severity_1"):
-                            sev = "Severity 1"
-                            notSet = False
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                        elif tags.startswith("severity_2"):
-                            sev = "Severity 2"
-                            notSet = False
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                        elif tags.startswith("severity_3"):
-                            sev = "Severity 3"
-                            notSet = False
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                        elif tags.startswith("severity_4"):
-                            sev = "Severity 4"
-                            notSet = False
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-
-                    if notSet:
-                        table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                        table_header += "<td style='border:1px solid black;text-align:center'>Not Set</td></tr></thead><tbody></tbody></table>"
-                        notSet = False
 
                     allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
 
@@ -772,7 +760,8 @@ def searchCompanyTickets(messageDetail):
 
                     if sendUser:
                         if limitReached:
-                            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             myTicketLenght = ""
@@ -783,7 +772,8 @@ def searchCompanyTickets(messageDetail):
                             counter = False
                     else:
                         if limitReached:
-                            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
                             myTicketLenght = ""
@@ -795,18 +785,20 @@ def searchCompanyTickets(messageDetail):
 
                 if sendUser and limitReached == False:
                     if table_header == "":
-                        return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony /searchCompanyTickets symphony")
+                        return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
                     else:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
                 else:
                     if table_header == "":
-                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony or /searchCompanyTickets symphony")
+                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
                     else:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -977,6 +969,37 @@ def searchCompanyTickets(messageDetail):
                         ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
 
+                        if (len(result["tags"])) == 0:
+                            noTag = True
+                        else:
+                            noTag = False
+
+                        notSet = True
+                        if noTag:
+                            notSet = False
+
+                        sev = "Not Set"
+                        for index_tags in range(len(result["tags"])):
+                            tags = str((result["tags"][index_tags]))
+
+                            if tags.startswith("severity_1"):
+                                sev = "Severity 1"
+                                notSet = False
+                            elif tags.startswith("severity_2"):
+                                sev = "Severity 2"
+                                notSet = False
+                            elif tags.startswith("severity_3"):
+                                sev = "Severity 3"
+                                notSet = False
+                            elif tags.startswith("severity_4"):
+                                sev = "Severity 4"
+                                notSet = False
+
+                        if notSet:
+                            sev = "Not set"
+                            notSet = False
+
+
                         if assignee_flag:
 
                             assignee = str(assigneeName)
@@ -997,7 +1020,9 @@ def searchCompanyTickets(messageDetail):
                                             "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
                                             "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
                                             "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                            "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
                                             "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                            "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
                         else:
 
@@ -1018,52 +1043,10 @@ def searchCompanyTickets(messageDetail):
                                             "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
                                             "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
                                             "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
-
-                        try:
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>"
-                        except:
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>Not set</td></tr><tr>"
-
-                        if (len(result["tags"])) == 0:
-                            noTag = True
-                        else:
-                            noTag = False
-
-                        notSet = True
-                        if noTag:
-                            notSet = False
-
-                        sev = ""
-                        for index_tags in range(len(result["tags"])):
-                            tags = str((result["tags"][index_tags]))
-
-                            if tags.startswith("severity_1"):
-                                sev = "Severity 1"
-                                notSet = False
-                                table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                                table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                            elif tags.startswith("severity_2"):
-                                sev = "Severity 2"
-                                notSet = False
-                                table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                                table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                            elif tags.startswith("severity_3"):
-                                sev = "Severity 3"
-                                notSet = False
-                                table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                                table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-                            elif tags.startswith("severity_4"):
-                                sev = "Severity 4"
-                                notSet = False
-                                table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                                table_header += "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
-
-                        if notSet:
-                            table_header += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>"
-                            table_header += "<td style='border:1px solid black;text-align:center'>Not Set</td></tr></thead><tbody></tbody></table>"
-                            notSet = False
+                                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                            "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                            "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
                         allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
 
@@ -1089,7 +1072,8 @@ def searchCompanyTickets(messageDetail):
 
                         if sendUser:
                             if limitReached:
-                                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                                 reply = str(table_bodyFull)
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                                 myTicketLenght = ""
@@ -1100,7 +1084,8 @@ def searchCompanyTickets(messageDetail):
                                 counter = False
                         else:
                             if limitReached:
-                                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                                 reply = str(table_bodyFull)
                                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
                                 myTicketLenght = ""
@@ -1112,18 +1097,20 @@ def searchCompanyTickets(messageDetail):
 
                     if sendUser and limitReached == False:
                         if table_header == "":
-                            return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony /searchCompanyTickets symphony")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
                         else:
-                            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
                     else:
                         if table_header == "":
-                            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchCompanyTickets solved symphony or /searchCompanyTickets symphony")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
                         else:
-                            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -1467,8 +1454,46 @@ def searchUserTickets(messageDetail):
                             assigneeName = "N/A"
                             assignee_flag = True
 
+                    #############
+
+                    try:
+                        # Convert the Zendesk ID to company name
+                        conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                        res = conn.getresponse()
+                        companyID = res.read()
+                        compNameRaw = str(companyID.decode("utf-8"))
+
+                        data = json.dumps(compNameRaw, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        org_Name = str(d["organizations"][0]["name"])
+                        org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        orgName = str(org_name_temp)
+                        # print(orgName)
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                            # Convert the Zendesk ID to company namer
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            orgName = "N/A"
+
+                    #############
+
                     requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
                     assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                    OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
 
                     ticketSubject_temp = str(result["subject"])
                     ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
@@ -1516,6 +1541,8 @@ def searchUserTickets(messageDetail):
                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
                                       "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
@@ -1547,6 +1574,8 @@ def searchUserTickets(messageDetail):
                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
                                       "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
                                       "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
                                       "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
@@ -1594,7 +1623,8 @@ def searchUserTickets(messageDetail):
                         # break
 
                     if limitReached:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
                         reply = str(table_bodyFull)
                         if imRequired:
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -1614,10 +1644,11 @@ def searchUserTickets(messageDetail):
                             counter = False
 
                 if table_body == "" and limitReached == False:
-                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchUserTickets open or /searchUserTickets open @alex nalin")
+                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDUserTicket open or /ZDUserTicket open @alex nalin")
 
                 else:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
                     reply = str(table_bodyFull)
                     #print("reply: " + reply)
 
@@ -1887,8 +1918,47 @@ def searchUserTickets(messageDetail):
                                 assigneeName = "N/A"
                                 assignee_flag = True
 
+
+                                            #############
+
+                        try:
+                            # Convert the Zendesk ID to company name
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                                # Convert the Zendesk ID to company namer
+                                conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                                res = conn.getresponse()
+                                companyID = res.read()
+                                compNameRaw = str(companyID.decode("utf-8"))
+
+                                data = json.dumps(compNameRaw, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d = json.loads(data_dict)
+                                org_Name = str(d["organizations"][0]["name"])
+                                org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                                orgName = str(org_name_temp)
+                                # print(orgName)
+                            except:
+                                orgName = "N/A"
+
+                        #############
+
                         requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
                         assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                        OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
 
                         ticketSubject_temp = str(result["subject"])
                         ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
@@ -1936,6 +2006,8 @@ def searchUserTickets(messageDetail):
                                           "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
                                           "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
                                           "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
@@ -1967,6 +2039,8 @@ def searchUserTickets(messageDetail):
                                           "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
                                           "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
                                           "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
                                           "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
@@ -2014,7 +2088,8 @@ def searchUserTickets(messageDetail):
                             # break
 
                         if limitReached:
-                            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
                             reply = str(table_bodyFull)
                             if imRequired:
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -2034,10 +2109,11 @@ def searchUserTickets(messageDetail):
                                 counter = False
 
                     if table_body == "" and limitReached == False:
-                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchUserTickets open or /searchUserTickets open @alex nalin")
+                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDUserTicket open or /ZDUserTicket open @alex nalin")
 
                     else:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
                         reply = str(table_bodyFull)
                         #print("reply: " + reply)
 
@@ -2062,12 +2138,2064 @@ def searchUserTickets(messageDetail):
                                 return messageDetail.ReplyToChatV2_noBotLog("End of Result")
 
             except:
-                botlog.LogSymphonyInfo("searchUserTicket did no work")
+                botlog.LogSymphonyInfo("searchUserTickets did no work")
         else:
             # return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
             botlog.LogSymphonyInfo("You aren't authorised to use this command. Please consult Symphony Support team")
     except:
         return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+def searchAssigneeTickets(messageDetail):
+    botlog.LogSymphonyInfo("###############################")
+    botlog.LogSymphonyInfo("Bot Call: SearchAssigneeTickets")
+    botlog.LogSymphonyInfo("###############################")
+
+    try:
+        try:
+            commandCallerUID = messageDetail.FromUserId
+            # Calling the API endpoint to get display name
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+                try:
+                    emailZendesk = str(d_org["users"][index_org]["emailAddress"])
+                except:
+                    emailZendesk = "none@none.com"
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                #callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
+            try:
+                botlog.LogSymphonyInfo("Inside second try for getting callinguser data")
+                commandCallerUID = messageDetail.FromUserId
+                # Calling the API endpoint to get display name
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                for index_org in range(len(d_org["users"])):
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                    displayName = d_org["users"][index_org]["displayName"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                    userID = str(d_org["users"][index_org]["id"])
+                    try:
+                        emailZendesk = str(d_org["users"][index_org]["emailAddress"])
+                    except:
+                        emailZendesk = "none@none.com"
+
+                    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                    #callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+            except:
+                botlog.LogSymphonyInfo("Did not get calling usr data")
+
+        try:
+            #if callerCheck in AccessFile:
+            if companyName in _configDef['AuthCompany']['PodList']:
+
+                streamType = (messageDetail.ChatRoom.Type)
+                #print(streamType)
+
+                callername = messageDetail.Sender.Name
+                table_body = ""
+                table_bodyFull = ""
+                status = ""
+                status_message = ""
+                indexB= ""
+                requesterData = ""
+                query = ""
+                reply = ""
+                allTicket = ""
+                updated = ""
+                counter = True
+                limitReached = False
+                imRequired = False
+                message = (messageDetail.Command.MessageText)
+                message_split = message.split()
+
+                statusCheck = str(len(message_split))
+
+                if statusCheck == "0":
+                    message_split = "unresolved"
+                    status = "status<solved "
+                    status_message = "unresolved"
+
+                elif statusCheck == "1":
+                    try:
+                        detail = messageDetail.Command.MessageFlattened.split(" ")
+                        #print(detail)
+                        flat = messageDetail.Command.MessageFlattened.split("_u_")
+                        #print(flat)
+
+                        UID = flat[1][:int(_configDef['UID'])]
+                        #print(str(UID))
+                        botlog.LogSymphonyInfo("User UI: " + str(UID))
+
+                        # Calling the API endpoint to get display name
+                        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                        sessionTok = callout.GetSessionToken()
+
+                        headersCompany = {
+                            'sessiontoken': sessionTok,
+                            'cache-control': "no-cache"
+                        }
+
+                        try:
+                            connComp.request("GET", "/pod/v3/users?uid=" + UID, headers=headersCompany)
+
+                            resComp = connComp.getresponse()
+                            dataComp = resComp.read()
+                            data_raw = str(dataComp.decode('utf-8'))
+                            data_dict = ast.literal_eval(data_raw)
+
+                            dataRender = json.dumps(data_dict, indent=2)
+                            d_org = json.loads(dataRender)
+                        except:
+                            return messageDetail.ReplyToChat("Please check the UID of the user, also make sure its digit matches the Config's setting.")
+
+                        connectionRequired = ""
+                        connectionRequired = True
+                        for index_org in range(len(d_org["users"])):
+                            firstName = d_org["users"][index_org]["firstName"]
+                            lastName = d_org["users"][index_org]["lastName"]
+                            #company = d_org["users"][index_org]["company"]
+                            # print(company)
+                            #try:
+                            emailZendesk = d_org["users"][index_org]["emailAddress"]
+                            #print("User is connected: " + emailAddress)
+                            #email_address = emailAddress
+                            connectionRequired = False
+                            #except:
+                            connectionRequired = True
+                            # messageDetail.ReplyToChat("User is not connected with me")
+                            #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                    except:
+                        botlog.LogSymphonyInfo("No user was @mentioned for the SearchUserTicket function")
+
+                # Parse the messages received
+                for index in range(len(message_split)):
+
+                    if str(message_split[index][:4]).strip() == "Open" or str(message_split[index][:6]).strip() == "Opened" or str(message_split[index][:4]).strip() == "open" or str(message_split[index][:6]).strip() == "opened":
+                        status = "status:open "
+                        status_message = "open"
+                    elif str(message_split[index][:3]).strip() == "New" or str(message_split[index][:3]).strip() == "new":
+                        status = "status:new "
+                        status_message = "new"
+                    elif str(message_split[index][:6]).strip() == "Solved" or str(message_split[index][:6]).strip() == "solved":
+                        status = "status:solved "
+                        status_message = "solved"
+                    elif str(message_split[index][:6]).strip() == "Closed" or str(message_split[index][:6]).strip() == "closed":
+                        status = "status:closed "
+                        status_message = "closed"
+                    elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
+                        status = "status:pending "
+                        status_message = "pending"
+                    elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
+                        status = "status<solved "
+                        status_message = "unresolved"
+                    elif str(message_split[index][:3]).strip() == "All" or str(message_split[index][:3]).strip() == "all" and index == 0:
+                        status = ""
+                        status_message = "all"
+                        imRequired = True
+                    else:
+                        requesterData += message_split[index]
+
+                    query = (str(status) + "type:ticket assignee:" + str(emailZendesk))
+                botlog.LogSymphonyInfo("query: " + str(query))
+
+                if imRequired:
+                    messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + "</b> Zendesk tickets assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, I will message you 1:1 with the result")
+                    messageDetail.ReplyToSenderv2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets assigneed to <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+                else:
+                    messageDetail.ReplyToChatV2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets assigned to <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+
+                if index == 1:
+                    botlog.LogSymphonyInfo("Search query: " + str(query))
+                    if imRequired:
+                        messageDetail.ReplyToSenderv2_noBotLog("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+                    else:
+                        messageDetail.ReplyToChatV2("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+
+            ################################
+                try:
+                    #Using the bot as Zendesk Admin to view all info for tickets as well as requests endpoints
+                    headers = {
+                        'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                        'password': _configDef['zdesk_config']['zdesk_password'],
+                        'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                        'cache-control': "no-cache",
+                        'Content-Type': 'application/json',
+                    }
+
+                    # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+                    # base64Enc = (base64Encoded.decode("utf-8"))
+                    # print(str(base64Enc))
+                    # base = ("Basic " + base64Enc)
+                    # print(str(base))
+                    #
+                    # headers = {
+                    #     'email_address': emailZendesk + "/token",
+                    #     'password': (_configDef['zdesk_config']['zdesk_password']),
+                    #     'authorization': base,
+                    #     'cache-control': "no-cache",
+                    #     'content-type': "application/json"
+                    # }
+                    #print(str(headers))
+
+                    url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+                    querystring = {"query": ""+ str(query)}
+                    #print(querystring)
+
+                    response = requests.request("GET", str(url), headers=headers, params=querystring)
+                    data = response.json()
+                    #print(data)
+                except:
+                    return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+            #################################
+
+                for result in data['results']:
+
+                    try:
+                        assignee_flag = False
+                        # strip out conflicting HTML tags in descriptions
+                        description_temp = str(result["description"])
+                        description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                        ticketid = str(result["id"])
+
+                        # Getting IDs of requesters to be processed
+                        requesterid = str(result["requester_id"])
+                    except:
+                        botlog.LogSymphonyInfo("Cannot get ticket info")
+
+                    try:
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d_req = json.loads(data_dict)
+                        req_name = str(d_req["user"]["name"])
+                        requesterName = req_name
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside second try for requester name value")
+                            # To get the name of the requester given the requesterID
+                            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                            res = conn.getresponse()
+                            userRequesterId = res.read()
+                            tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            data = json.dumps(tempUserRequester, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_req = json.loads(data_dict)
+                            req_name = str(d_req["user"]["name"])
+                            requesterName = req_name
+                        except:
+                            requesterName = "N/A"
+                            botlog.LogSymphonyInfo("Cannot get requester info")
+
+                    # Getting IDs of assignee to be processed
+                    try:
+                        assigneeid = str(result["assignee_id"])
+
+                        # To get the name of the assignee given the assigneeID
+                        conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                        res = conn.getresponse()
+                        userAssigneeId = res.read()
+                        tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                        data = json.dumps(tempUserAssignee, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d_assign = json.loads(data_dict)
+                        assign_name = str(d_assign["user"]["name"])
+                        assigneeName = assign_name
+
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside second try for assignee name value")
+                            assigneeid = str(result["assignee_id"])
+
+                            # To get the name of the assignee given the assigneeID
+                            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                            res = conn.getresponse()
+                            userAssigneeId = res.read()
+                            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                            data = json.dumps(tempUserAssignee, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_assign = json.loads(data_dict)
+                            assign_name = str(d_assign["user"]["name"])
+                            assigneeName = assign_name
+
+                        except:
+                            assigneeName = "N/A"
+                            assignee_flag = True
+
+                    #############
+
+                    try:
+                        # Convert the Zendesk ID to company name
+                        conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                        res = conn.getresponse()
+                        companyID = res.read()
+                        compNameRaw = str(companyID.decode("utf-8"))
+
+                        data = json.dumps(compNameRaw, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        org_Name = str(d["organizations"][0]["name"])
+                        org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        orgName = str(org_name_temp)
+                        # print(orgName)
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                            # Convert the Zendesk ID to company namer
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            orgName = "N/A"
+
+                    #############
+
+                    requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+                    assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                    OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
+
+                    ticketSubject_temp = str(result["subject"])
+                    ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+
+                    sev = ""
+                    if (len(result["tags"])) == 0:
+                        noTag = True
+                    else:
+                        noTag = False
+
+                    notSet = True
+                    if noTag:
+                        sev = "Not Set"
+                        notSet = False
+
+                    #sev = ""
+                    for index_tags in range(len(result["tags"])):
+                        tags = str((result["tags"][index_tags]))
+
+                        if tags.startswith("severity_1"):
+                            sev = "Severity 1"
+                            notSet = False
+                        elif tags.startswith("severity_2"):
+                            sev = "Severity 2"
+                            notSet = False
+                        elif tags.startswith("severity_3"):
+                            sev = "Severity 3"
+                            notSet = False
+                        elif tags.startswith("severity_4"):
+                            sev = "Severity 4"
+                            notSet = False
+
+                    if notSet:
+                        sev = "Not Set"
+                        notSet = False
+
+                    updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+                    if assignee_flag:
+                        assignee = (str(assigneeName))
+                        table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                        try:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+                        except:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+
+                    else:
+                        assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+                        requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+                        table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + requester + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                        try:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+                        except:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+
+                    # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
+
+                    # Checking for unique words (Tokens)
+                    UniqueToken = len(set(table_body.split()))
+                    #UniqueToken1 = len(str(set(str(table_body).translate(punctuation).lower().split())))
+                    #print("Unique: " + str(UniqueToken))# + " Unique1: " + str(UniqueToken1))
+                    #print("Ticket ID: " + str(ticketid))
+
+                    myTicketLenght = len(str(table_body))
+                    #print(str(myTicketLenght))
+
+                    limitReached = False
+                    #if myTicketLenght >= 80000 or UniqueToken >= 2500:
+                    if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+
+                        limitReached = True
+                        if counter:
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                        # break
+
+                    if limitReached:
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            myTicketLenght = ""
+                            table_body = ""
+                            UniqueToken = ""
+                            table_bodyFull = ""
+                            allTicket = ""
+                            counter = False
+                        else:
+                            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            myTicketLenght = ""
+                            table_body = ""
+                            UniqueToken = ""
+                            table_bodyFull = ""
+                            allTicket = ""
+                            counter = False
+
+                if table_body == "" and limitReached == False:
+                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDAssigneeTicket open or /ZDAssigneeTicket open @alex nalin")
+
+                else:
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    #print("reply: " + reply)
+
+                    # replyLenght = len(reply)
+                    # #print(replyLenght)
+                    #print(str(set(str(table_body).translate(punctuation).lower().split())))
+                    # return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+
+                    #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+
+                    if table_body == "":
+                        if imRequired:
+                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                        else:
+                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                    else:
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                        else:
+                            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+
+        except:
+            try:
+                botlog.LogSymphonyInfo("Inside second try for searchUserTicket")
+                #if callerCheck in AccessFile:
+                if companyName in _configDef['AuthCompany']['PodList']:
+
+                    streamType = (messageDetail.ChatRoom.Type)
+                    #print(streamType)
+
+                    callername = messageDetail.Sender.Name
+                    table_body = ""
+                    table_bodyFull = ""
+                    status = ""
+                    status_message = ""
+                    indexB= ""
+                    requesterData = ""
+                    query = ""
+                    reply = ""
+                    allTicket = ""
+                    updated = ""
+                    counter = True
+                    limitReached = False
+                    imRequired = False
+                    message = (messageDetail.Command.MessageText)
+                    message_split = message.split()
+
+                    statusCheck = str(len(message_split))
+
+                    if statusCheck == "0":
+                        message_split = "unresolved"
+                        status = "status<solved "
+                        status_message = "unresolved"
+
+                    elif statusCheck == "1":
+                        try:
+                            detail = messageDetail.Command.MessageFlattened.split(" ")
+                            #print(detail)
+                            flat = messageDetail.Command.MessageFlattened.split("_u_")
+                            #print(flat)
+
+                            UID = flat[1][:int(_configDef['UID'])]
+                            #print(str(UID))
+                            botlog.LogSymphonyInfo("User UI: " + str(UID))
+
+                            # Calling the API endpoint to get display name
+                            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                            sessionTok = callout.GetSessionToken()
+
+                            headersCompany = {
+                                'sessiontoken': sessionTok,
+                                'cache-control': "no-cache"
+                            }
+
+                            try:
+                                connComp.request("GET", "/pod/v3/users?uid=" + UID, headers=headersCompany)
+
+                                resComp = connComp.getresponse()
+                                dataComp = resComp.read()
+                                data_raw = str(dataComp.decode('utf-8'))
+                                data_dict = ast.literal_eval(data_raw)
+
+                                dataRender = json.dumps(data_dict, indent=2)
+                                d_org = json.loads(dataRender)
+                            except:
+                                return messageDetail.ReplyToChat("Please check the UID of the user, also make sure its digit matches the Config's setting.")
+
+                            connectionRequired = ""
+                            connectionRequired = True
+                            for index_org in range(len(d_org["users"])):
+                                firstName = d_org["users"][index_org]["firstName"]
+                                lastName = d_org["users"][index_org]["lastName"]
+                                #company = d_org["users"][index_org]["company"]
+                                # print(company)
+                                #try:
+                                emailZendesk = d_org["users"][index_org]["emailAddress"]
+                                #print("User is connected: " + emailAddress)
+                                #email_address = emailAddress
+                                connectionRequired = False
+                                #except:
+                                connectionRequired = True
+                                # messageDetail.ReplyToChat("User is not connected with me")
+                                #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                        except:
+                            botlog.LogSymphonyInfo("No user was @mentioned for the ZDAssigneeTicket function")
+
+                    # Parse the messages received
+                    for index in range(len(message_split)):
+
+                        if str(message_split[index][:4]).strip() == "Open" or str(message_split[index][:6]).strip() == "Opened" or str(message_split[index][:4]).strip() == "open" or str(message_split[index][:6]).strip() == "opened":
+                            status = "status:open "
+                            status_message = "open"
+                        elif str(message_split[index][:3]).strip() == "New" or str(message_split[index][:3]).strip() == "new":
+                            status = "status:new "
+                            status_message = "new"
+                        elif str(message_split[index][:6]).strip() == "Solved" or str(message_split[index][:6]).strip() == "solved":
+                            status = "status:solved "
+                            status_message = "solved"
+                        elif str(message_split[index][:6]).strip() == "Closed" or str(message_split[index][:6]).strip() == "closed":
+                            status = "status:closed "
+                            status_message = "closed"
+                        elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
+                            status = "status:pending "
+                            status_message = "pending"
+                        elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
+                            status = "status<solved "
+                            status_message = "unresolved"
+                        elif str(message_split[index][:3]).strip() == "All" or str(message_split[index][:3]).strip() == "all" and index == 0:
+                            status = ""
+                            status_message = "all"
+                            imRequired = True
+                        else:
+                            requesterData += message_split[index]
+
+                        query = (str(status) + "type:ticket assignee:" + str(emailZendesk))
+                    botlog.LogSymphonyInfo("query: " + str(query))
+
+                    if imRequired:
+                        messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + "</b> Zendesk tickets assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, I will message you 1:1 with the result")
+                        messageDetail.ReplyToSenderv2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets assigned to <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+                    else:
+                        messageDetail.ReplyToChatV2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets assigned to <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+
+                    if index == 1:
+                        botlog.LogSymphonyInfo("Search query: " + str(query))
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+                        else:
+                            messageDetail.ReplyToChatV2("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk assigned to <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+
+                ################################
+                    try:
+                        #Using the bot as Zendesk Admin to view all info for tickets as well as requests endpoints
+                        headers = {
+                            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                            'password': _configDef['zdesk_config']['zdesk_password'],
+                            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                            'cache-control': "no-cache",
+                            'Content-Type': 'application/json',
+                        }
+
+                        # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+                        # base64Enc = (base64Encoded.decode("utf-8"))
+                        # print(str(base64Enc))
+                        # base = ("Basic " + base64Enc)
+                        # print(str(base))
+                        #
+                        # headers = {
+                        #     'email_address': emailZendesk + "/token",
+                        #     'password': (_configDef['zdesk_config']['zdesk_password']),
+                        #     'authorization': base,
+                        #     'cache-control': "no-cache",
+                        #     'content-type': "application/json"
+                        # }
+                        #print(str(headers))
+
+                        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+                        querystring = {"query": ""+ str(query)}
+                        #print(querystring)
+
+                        response = requests.request("GET", str(url), headers=headers, params=querystring)
+                        data = response.json()
+                        #print(data)
+                    except:
+                        return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+                #################################
+
+                    for result in data['results']:
+
+                        try:
+                            assignee_flag = False
+                            # strip out conflicting HTML tags in descriptions
+                            description_temp = str(result["description"])
+                            description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                            ticketid = str(result["id"])
+
+                            # Getting IDs of requesters to be processed
+                            requesterid = str(result["requester_id"])
+                        except:
+                            botlog.LogSymphonyInfo("Cannot get ticket info")
+
+                        try:
+                            # To get the name of the requester given the requesterID
+                            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                            res = conn.getresponse()
+                            userRequesterId = res.read()
+                            tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            data = json.dumps(tempUserRequester, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_req = json.loads(data_dict)
+                            req_name = str(d_req["user"]["name"])
+                            requesterName = req_name
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside second try for requester name value")
+                                # To get the name of the requester given the requesterID
+                                conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                                res = conn.getresponse()
+                                userRequesterId = res.read()
+                                tempUserRequester = str(userRequesterId.decode('utf-8'))
+                                data = json.dumps(tempUserRequester, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d_req = json.loads(data_dict)
+                                req_name = str(d_req["user"]["name"])
+                                requesterName = req_name
+                            except:
+                                requesterName = "N/A"
+                                botlog.LogSymphonyInfo("Cannot get requester info")
+
+                        # Getting IDs of assignee to be processed
+                        try:
+                            assigneeid = str(result["assignee_id"])
+
+                            # To get the name of the assignee given the assigneeID
+                            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                            res = conn.getresponse()
+                            userAssigneeId = res.read()
+                            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                            data = json.dumps(tempUserAssignee, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_assign = json.loads(data_dict)
+                            assign_name = str(d_assign["user"]["name"])
+                            assigneeName = assign_name
+
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside second try for assignee name value")
+                                assigneeid = str(result["assignee_id"])
+
+                                # To get the name of the assignee given the assigneeID
+                                conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                                res = conn.getresponse()
+                                userAssigneeId = res.read()
+                                tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                                data = json.dumps(tempUserAssignee, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d_assign = json.loads(data_dict)
+                                assign_name = str(d_assign["user"]["name"])
+                                assigneeName = assign_name
+
+                            except:
+                                assigneeName = "N/A"
+                                assignee_flag = True
+
+
+                                            #############
+
+                        try:
+                            # Convert the Zendesk ID to company name
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                                # Convert the Zendesk ID to company namer
+                                conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                                res = conn.getresponse()
+                                companyID = res.read()
+                                compNameRaw = str(companyID.decode("utf-8"))
+
+                                data = json.dumps(compNameRaw, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d = json.loads(data_dict)
+                                org_Name = str(d["organizations"][0]["name"])
+                                org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                                orgName = str(org_name_temp)
+                                # print(orgName)
+                            except:
+                                orgName = "N/A"
+
+                        #############
+
+                        requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+                        assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                        OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
+
+                        ticketSubject_temp = str(result["subject"])
+                        ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+
+                        sev = ""
+                        if (len(result["tags"])) == 0:
+                            noTag = True
+                        else:
+                            noTag = False
+
+                        notSet = True
+                        if noTag:
+                            sev = "Not Set"
+                            notSet = False
+
+                        #sev = ""
+                        for index_tags in range(len(result["tags"])):
+                            tags = str((result["tags"][index_tags]))
+
+                            if tags.startswith("severity_1"):
+                                sev = "Severity 1"
+                                notSet = False
+                            elif tags.startswith("severity_2"):
+                                sev = "Severity 2"
+                                notSet = False
+                            elif tags.startswith("severity_3"):
+                                sev = "Severity 3"
+                                notSet = False
+                            elif tags.startswith("severity_4"):
+                                sev = "Severity 4"
+                                notSet = False
+
+                        if notSet:
+                            sev = "Not Set"
+                            notSet = False
+
+                        updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+                        if assignee_flag:
+                            assignee = (str(assigneeName))
+                            table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                          "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                            try:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+                            except:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+
+                        else:
+                            assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+                            requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+                            table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                          "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + requester + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                            try:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+                            except:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+
+                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+
+                        # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
+
+                        # Checking for unique words (Tokens)
+                        UniqueToken = len(set(table_body.split()))
+                        #UniqueToken1 = len(str(set(str(table_body).translate(punctuation).lower().split())))
+                        #print("Unique: " + str(UniqueToken))# + " Unique1: " + str(UniqueToken1))
+                        #print("Ticket ID: " + str(ticketid))
+
+                        myTicketLenght = len(str(table_body))
+                        #print(str(myTicketLenght))
+
+                        limitReached = False
+                        #if myTicketLenght >= 80000 or UniqueToken >= 2500:
+                        if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+
+                            limitReached = True
+                            if counter:
+                                if imRequired:
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                else:
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                            # break
+
+                        if limitReached:
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            reply = str(table_bodyFull)
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                                myTicketLenght = ""
+                                table_body = ""
+                                UniqueToken = ""
+                                table_bodyFull = ""
+                                allTicket = ""
+                                counter = False
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                                myTicketLenght = ""
+                                table_body = ""
+                                UniqueToken = ""
+                                table_bodyFull = ""
+                                allTicket = ""
+                                counter = False
+
+                    if table_body == "" and limitReached == False:
+                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDAssigneeTicket open or /ZDAssigneeTicket open @alex nalin")
+
+                    else:
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        #print("reply: " + reply)
+
+                        # replyLenght = len(reply)
+                        # #print(replyLenght)
+                        #print(str(set(str(table_body).translate(punctuation).lower().split())))
+                        # return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+
+                        #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+
+                        if table_body == "":
+                            if imRequired:
+                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            else:
+                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                        else:
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+
+            except:
+                botlog.LogSymphonyInfo("SearchAssigneeTickets did no work")
+        else:
+            # return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
+            botlog.LogSymphonyInfo("You aren't authorised to use this command. Please consult Symphony Support team")
+    except:
+        return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+###############################################
+
+
+def searchCCTickets(messageDetail):
+    botlog.LogSymphonyInfo("###############################")
+    botlog.LogSymphonyInfo("Bot Call: SearchCCTickets")
+    botlog.LogSymphonyInfo("###############################")
+
+    try:
+        try:
+            commandCallerUID = messageDetail.FromUserId
+            # Calling the API endpoint to get display name
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+                try:
+                    emailZendesk = str(d_org["users"][index_org]["emailAddress"])
+                except:
+                    emailZendesk = "none@none.com"
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                #callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
+            try:
+                botlog.LogSymphonyInfo("Inside second try for getting callinguser data")
+                commandCallerUID = messageDetail.FromUserId
+                # Calling the API endpoint to get display name
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                for index_org in range(len(d_org["users"])):
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                    displayName = d_org["users"][index_org]["displayName"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                    userID = str(d_org["users"][index_org]["id"])
+                    try:
+                        emailZendesk = str(d_org["users"][index_org]["emailAddress"])
+                    except:
+                        emailZendesk = "none@none.com"
+
+                    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                    #callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+            except:
+                botlog.LogSymphonyInfo("Did not get calling usr data")
+
+        try:
+            #if callerCheck in AccessFile:
+            if companyName in _configDef['AuthCompany']['PodList']:
+
+                streamType = (messageDetail.ChatRoom.Type)
+                #print(streamType)
+
+                callername = messageDetail.Sender.Name
+                table_body = ""
+                table_bodyFull = ""
+                status = ""
+                status_message = ""
+                indexB= ""
+                requesterData = ""
+                query = ""
+                reply = ""
+                allTicket = ""
+                updated = ""
+                counter = True
+                limitReached = False
+                imRequired = False
+                message = (messageDetail.Command.MessageText)
+                message_split = message.split()
+
+                statusCheck = str(len(message_split))
+
+                if statusCheck == "0":
+                    message_split = "unresolved"
+                    status = "status<solved "
+                    status_message = "unresolved"
+
+                elif statusCheck == "1":
+                    try:
+                        detail = messageDetail.Command.MessageFlattened.split(" ")
+                        #print(detail)
+                        flat = messageDetail.Command.MessageFlattened.split("_u_")
+                        #print(flat)
+
+                        UID = flat[1][:int(_configDef['UID'])]
+                        #print(str(UID))
+                        botlog.LogSymphonyInfo("User UI: " + str(UID))
+
+                        # Calling the API endpoint to get display name
+                        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                        sessionTok = callout.GetSessionToken()
+
+                        headersCompany = {
+                            'sessiontoken': sessionTok,
+                            'cache-control': "no-cache"
+                        }
+
+                        try:
+                            connComp.request("GET", "/pod/v3/users?uid=" + UID, headers=headersCompany)
+
+                            resComp = connComp.getresponse()
+                            dataComp = resComp.read()
+                            data_raw = str(dataComp.decode('utf-8'))
+                            data_dict = ast.literal_eval(data_raw)
+
+                            dataRender = json.dumps(data_dict, indent=2)
+                            d_org = json.loads(dataRender)
+                        except:
+                            return messageDetail.ReplyToChat("Please check the UID of the user, also make sure its digit matches the Config's setting.")
+
+                        connectionRequired = ""
+                        connectionRequired = True
+                        for index_org in range(len(d_org["users"])):
+                            firstName = d_org["users"][index_org]["firstName"]
+                            lastName = d_org["users"][index_org]["lastName"]
+                            #company = d_org["users"][index_org]["company"]
+                            # print(company)
+                            #try:
+                            emailZendesk = d_org["users"][index_org]["emailAddress"]
+                            #print("User is connected: " + emailAddress)
+                            #email_address = emailAddress
+                            connectionRequired = False
+                            #except:
+                            connectionRequired = True
+                            # messageDetail.ReplyToChat("User is not connected with me")
+                            #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                    except:
+                        botlog.LogSymphonyInfo("No user was @mentioned for the SearchUserTicket function")
+
+                # Parse the messages received
+                for index in range(len(message_split)):
+
+                    if str(message_split[index][:4]).strip() == "Open" or str(message_split[index][:6]).strip() == "Opened" or str(message_split[index][:4]).strip() == "open" or str(message_split[index][:6]).strip() == "opened":
+                        status = "status:open "
+                        status_message = "open"
+                    elif str(message_split[index][:3]).strip() == "New" or str(message_split[index][:3]).strip() == "new":
+                        status = "status:new "
+                        status_message = "new"
+                    elif str(message_split[index][:6]).strip() == "Solved" or str(message_split[index][:6]).strip() == "solved":
+                        status = "status:solved "
+                        status_message = "solved"
+                    elif str(message_split[index][:6]).strip() == "Closed" or str(message_split[index][:6]).strip() == "closed":
+                        status = "status:closed "
+                        status_message = "closed"
+                    elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
+                        status = "status:pending "
+                        status_message = "pending"
+                    elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
+                        status = "status<solved "
+                        status_message = "unresolved"
+                    elif str(message_split[index][:3]).strip() == "All" or str(message_split[index][:3]).strip() == "all" and index == 0:
+                        status = ""
+                        status_message = "all"
+                        imRequired = True
+                    else:
+                        requesterData += message_split[index]
+
+                    query = (str(status) + "type:ticket cc:" + str(emailZendesk))
+                botlog.LogSymphonyInfo("query: " + str(query))
+
+                if imRequired:
+                    messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + "</b> Zendesk tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, I will message you 1:1 with the result")
+                    messageDetail.ReplyToSenderv2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+                else:
+                    messageDetail.ReplyToChatV2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+
+                if index == 1:
+                    botlog.LogSymphonyInfo("Search query: " + str(query))
+                    if imRequired:
+                        messageDetail.ReplyToSenderv2_noBotLog("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+                    else:
+                        messageDetail.ReplyToChatV2("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+
+            ################################
+                try:
+                    #Using the bot as Zendesk Admin to view all info for tickets as well as requests endpoints
+                    headers = {
+                        'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                        'password': _configDef['zdesk_config']['zdesk_password'],
+                        'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                        'cache-control': "no-cache",
+                        'Content-Type': 'application/json',
+                    }
+
+                    # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+                    # base64Enc = (base64Encoded.decode("utf-8"))
+                    # print(str(base64Enc))
+                    # base = ("Basic " + base64Enc)
+                    # print(str(base))
+                    #
+                    # headers = {
+                    #     'email_address': emailZendesk + "/token",
+                    #     'password': (_configDef['zdesk_config']['zdesk_password']),
+                    #     'authorization': base,
+                    #     'cache-control': "no-cache",
+                    #     'content-type': "application/json"
+                    # }
+                    #print(str(headers))
+
+                    url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+                    querystring = {"query": ""+ str(query)}
+                    #print(querystring)
+
+                    response = requests.request("GET", str(url), headers=headers, params=querystring)
+                    data = response.json()
+                    #print(data)
+                except:
+                    return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+            #################################
+
+                for result in data['results']:
+
+                    try:
+                        assignee_flag = False
+                        # strip out conflicting HTML tags in descriptions
+                        description_temp = str(result["description"])
+                        description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                        ticketid = str(result["id"])
+
+                        # Getting IDs of requesters to be processed
+                        requesterid = str(result["requester_id"])
+                    except:
+                        botlog.LogSymphonyInfo("Cannot get ticket info")
+
+                    try:
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d_req = json.loads(data_dict)
+                        req_name = str(d_req["user"]["name"])
+                        requesterName = req_name
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside second try for requester name value")
+                            # To get the name of the requester given the requesterID
+                            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                            res = conn.getresponse()
+                            userRequesterId = res.read()
+                            tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            data = json.dumps(tempUserRequester, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_req = json.loads(data_dict)
+                            req_name = str(d_req["user"]["name"])
+                            requesterName = req_name
+                        except:
+                            requesterName = "N/A"
+                            botlog.LogSymphonyInfo("Cannot get requester info")
+
+                    # Getting IDs of assignee to be processed
+                    try:
+                        assigneeid = str(result["assignee_id"])
+
+                        # To get the name of the assignee given the assigneeID
+                        conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                        res = conn.getresponse()
+                        userAssigneeId = res.read()
+                        tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                        data = json.dumps(tempUserAssignee, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d_assign = json.loads(data_dict)
+                        assign_name = str(d_assign["user"]["name"])
+                        assigneeName = assign_name
+
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside second try for assignee name value")
+                            assigneeid = str(result["assignee_id"])
+
+                            # To get the name of the assignee given the assigneeID
+                            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                            res = conn.getresponse()
+                            userAssigneeId = res.read()
+                            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                            data = json.dumps(tempUserAssignee, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_assign = json.loads(data_dict)
+                            assign_name = str(d_assign["user"]["name"])
+                            assigneeName = assign_name
+
+                        except:
+                            assigneeName = "N/A"
+                            assignee_flag = True
+
+                    #############
+
+                    try:
+                        # Convert the Zendesk ID to company name
+                        conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                        res = conn.getresponse()
+                        companyID = res.read()
+                        compNameRaw = str(companyID.decode("utf-8"))
+
+                        data = json.dumps(compNameRaw, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        org_Name = str(d["organizations"][0]["name"])
+                        org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        orgName = str(org_name_temp)
+                        # print(orgName)
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                            # Convert the Zendesk ID to company namer
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            orgName = "N/A"
+
+                    #############
+
+                    requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+                    assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                    OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
+
+                    ticketSubject_temp = str(result["subject"])
+                    ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+
+                    sev = ""
+                    if (len(result["tags"])) == 0:
+                        noTag = True
+                    else:
+                        noTag = False
+
+                    notSet = True
+                    if noTag:
+                        sev = "Not Set"
+                        notSet = False
+
+                    #sev = ""
+                    for index_tags in range(len(result["tags"])):
+                        tags = str((result["tags"][index_tags]))
+
+                        if tags.startswith("severity_1"):
+                            sev = "Severity 1"
+                            notSet = False
+                        elif tags.startswith("severity_2"):
+                            sev = "Severity 2"
+                            notSet = False
+                        elif tags.startswith("severity_3"):
+                            sev = "Severity 3"
+                            notSet = False
+                        elif tags.startswith("severity_4"):
+                            sev = "Severity 4"
+                            notSet = False
+
+                    if notSet:
+                        sev = "Not Set"
+                        notSet = False
+
+                    updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+                    if assignee_flag:
+                        assignee = (str(assigneeName))
+                        table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                        try:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+                        except:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+
+                    else:
+                        assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+                        requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+                        table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + requester + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                      "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                        try:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+                        except:
+                            table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                          "</tr></thead><tbody></tbody></table>"
+
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+
+                    # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
+
+                    # Checking for unique words (Tokens)
+                    UniqueToken = len(set(table_body.split()))
+                    #UniqueToken1 = len(str(set(str(table_body).translate(punctuation).lower().split())))
+                    #print("Unique: " + str(UniqueToken))# + " Unique1: " + str(UniqueToken1))
+                    #print("Ticket ID: " + str(ticketid))
+
+                    myTicketLenght = len(str(table_body))
+                    #print(str(myTicketLenght))
+
+                    limitReached = False
+                    #if myTicketLenght >= 80000 or UniqueToken >= 2500:
+                    if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+
+                        limitReached = True
+                        if counter:
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                        # break
+
+                    if limitReached:
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            myTicketLenght = ""
+                            table_body = ""
+                            UniqueToken = ""
+                            table_bodyFull = ""
+                            allTicket = ""
+                            counter = False
+                        else:
+                            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            myTicketLenght = ""
+                            table_body = ""
+                            UniqueToken = ""
+                            table_bodyFull = ""
+                            allTicket = ""
+                            counter = False
+
+                if table_body == "" and limitReached == False:
+                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDCCTicket open or /ZDCCTicket open @alex nalin")
+
+                else:
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    #print("reply: " + reply)
+
+                    # replyLenght = len(reply)
+                    # #print(replyLenght)
+                    #print(str(set(str(table_body).translate(punctuation).lower().split())))
+                    # return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+
+                    #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+
+                    if table_body == "":
+                        if imRequired:
+                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                        else:
+                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                    else:
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                        else:
+                            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+
+        except:
+            try:
+                botlog.LogSymphonyInfo("Inside second try for searchUserTicket")
+                #if callerCheck in AccessFile:
+                if companyName in _configDef['AuthCompany']['PodList']:
+
+                    streamType = (messageDetail.ChatRoom.Type)
+                    #print(streamType)
+
+                    callername = messageDetail.Sender.Name
+                    table_body = ""
+                    table_bodyFull = ""
+                    status = ""
+                    status_message = ""
+                    indexB= ""
+                    requesterData = ""
+                    query = ""
+                    reply = ""
+                    allTicket = ""
+                    updated = ""
+                    counter = True
+                    limitReached = False
+                    imRequired = False
+                    message = (messageDetail.Command.MessageText)
+                    message_split = message.split()
+
+                    statusCheck = str(len(message_split))
+
+                    if statusCheck == "0":
+                        message_split = "unresolved"
+                        status = "status<solved "
+                        status_message = "unresolved"
+
+                    elif statusCheck == "1":
+                        try:
+                            detail = messageDetail.Command.MessageFlattened.split(" ")
+                            #print(detail)
+                            flat = messageDetail.Command.MessageFlattened.split("_u_")
+                            #print(flat)
+
+                            UID = flat[1][:int(_configDef['UID'])]
+                            #print(str(UID))
+                            botlog.LogSymphonyInfo("User UI: " + str(UID))
+
+                            # Calling the API endpoint to get display name
+                            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                            sessionTok = callout.GetSessionToken()
+
+                            headersCompany = {
+                                'sessiontoken': sessionTok,
+                                'cache-control': "no-cache"
+                            }
+
+                            try:
+                                connComp.request("GET", "/pod/v3/users?uid=" + UID, headers=headersCompany)
+
+                                resComp = connComp.getresponse()
+                                dataComp = resComp.read()
+                                data_raw = str(dataComp.decode('utf-8'))
+                                data_dict = ast.literal_eval(data_raw)
+
+                                dataRender = json.dumps(data_dict, indent=2)
+                                d_org = json.loads(dataRender)
+                            except:
+                                return messageDetail.ReplyToChat("Please check the UID of the user, also make sure its digit matches the Config's setting.")
+
+                            connectionRequired = ""
+                            connectionRequired = True
+                            for index_org in range(len(d_org["users"])):
+                                firstName = d_org["users"][index_org]["firstName"]
+                                lastName = d_org["users"][index_org]["lastName"]
+                                #company = d_org["users"][index_org]["company"]
+                                # print(company)
+                                #try:
+                                emailZendesk = d_org["users"][index_org]["emailAddress"]
+                                #print("User is connected: " + emailAddress)
+                                #email_address = emailAddress
+                                connectionRequired = False
+                                #except:
+                                connectionRequired = True
+                                # messageDetail.ReplyToChat("User is not connected with me")
+                                #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                        except:
+                            botlog.LogSymphonyInfo("No user was @mentioned for the ZDAssigneeTicket function")
+
+                    # Parse the messages received
+                    for index in range(len(message_split)):
+
+                        if str(message_split[index][:4]).strip() == "Open" or str(message_split[index][:6]).strip() == "Opened" or str(message_split[index][:4]).strip() == "open" or str(message_split[index][:6]).strip() == "opened":
+                            status = "status:open "
+                            status_message = "open"
+                        elif str(message_split[index][:3]).strip() == "New" or str(message_split[index][:3]).strip() == "new":
+                            status = "status:new "
+                            status_message = "new"
+                        elif str(message_split[index][:6]).strip() == "Solved" or str(message_split[index][:6]).strip() == "solved":
+                            status = "status:solved "
+                            status_message = "solved"
+                        elif str(message_split[index][:6]).strip() == "Closed" or str(message_split[index][:6]).strip() == "closed":
+                            status = "status:closed "
+                            status_message = "closed"
+                        elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
+                            status = "status:pending "
+                            status_message = "pending"
+                        elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
+                            status = "status<solved "
+                            status_message = "unresolved"
+                        elif str(message_split[index][:3]).strip() == "All" or str(message_split[index][:3]).strip() == "all" and index == 0:
+                            status = ""
+                            status_message = "all"
+                            imRequired = True
+                        else:
+                            requesterData += message_split[index]
+
+                        query = (str(status) + "type:ticket cc:" + str(emailZendesk))
+                    botlog.LogSymphonyInfo("query: " + str(query))
+
+                    if imRequired:
+                        messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + "</b> Zendesk tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, I will message you 1:1 with the result")
+                        messageDetail.ReplyToSenderv2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+                    else:
+                        messageDetail.ReplyToChatV2_noBotLog("Rendering all <b>" + str(status_message) + "</b> Zendesk Tickets with contributor <b>" + str(firstName) + " " + str(lastName) + "</b> , please wait.")
+
+                    if index == 1:
+                        botlog.LogSymphonyInfo("Search query: " + str(query))
+                        if imRequired:
+                            messageDetail.ReplyToSenderv2_noBotLog("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+                        else:
+                            messageDetail.ReplyToChatV2("Pulling <b>" + str(emailZendesk) + "</b> tickets from Zendesk with contributor <b>" + str(firstName) + " " + str(lastName) + "</b>, rendering the result now, please wait.")
+
+                ################################
+                    try:
+                        #Using the bot as Zendesk Admin to view all info for tickets as well as requests endpoints
+                        headers = {
+                            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                            'password': _configDef['zdesk_config']['zdesk_password'],
+                            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                            'cache-control': "no-cache",
+                            'Content-Type': 'application/json',
+                        }
+
+                        # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+                        # base64Enc = (base64Encoded.decode("utf-8"))
+                        # print(str(base64Enc))
+                        # base = ("Basic " + base64Enc)
+                        # print(str(base))
+                        #
+                        # headers = {
+                        #     'email_address': emailZendesk + "/token",
+                        #     'password': (_configDef['zdesk_config']['zdesk_password']),
+                        #     'authorization': base,
+                        #     'cache-control': "no-cache",
+                        #     'content-type': "application/json"
+                        # }
+                        #print(str(headers))
+
+                        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+                        querystring = {"query": ""+ str(query)}
+                        #print(querystring)
+
+                        response = requests.request("GET", str(url), headers=headers, params=querystring)
+                        data = response.json()
+                        #print(data)
+                    except:
+                        return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+                #################################
+
+                    for result in data['results']:
+
+                        try:
+                            assignee_flag = False
+                            # strip out conflicting HTML tags in descriptions
+                            description_temp = str(result["description"])
+                            description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                            ticketid = str(result["id"])
+
+                            # Getting IDs of requesters to be processed
+                            requesterid = str(result["requester_id"])
+                        except:
+                            botlog.LogSymphonyInfo("Cannot get ticket info")
+
+                        try:
+                            # To get the name of the requester given the requesterID
+                            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                            res = conn.getresponse()
+                            userRequesterId = res.read()
+                            tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            data = json.dumps(tempUserRequester, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_req = json.loads(data_dict)
+                            req_name = str(d_req["user"]["name"])
+                            requesterName = req_name
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside second try for requester name value")
+                                # To get the name of the requester given the requesterID
+                                conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                                res = conn.getresponse()
+                                userRequesterId = res.read()
+                                tempUserRequester = str(userRequesterId.decode('utf-8'))
+                                data = json.dumps(tempUserRequester, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d_req = json.loads(data_dict)
+                                req_name = str(d_req["user"]["name"])
+                                requesterName = req_name
+                            except:
+                                requesterName = "N/A"
+                                botlog.LogSymphonyInfo("Cannot get requester info")
+
+                        # Getting IDs of assignee to be processed
+                        try:
+                            assigneeid = str(result["assignee_id"])
+
+                            # To get the name of the assignee given the assigneeID
+                            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                            res = conn.getresponse()
+                            userAssigneeId = res.read()
+                            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                            data = json.dumps(tempUserAssignee, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d_assign = json.loads(data_dict)
+                            assign_name = str(d_assign["user"]["name"])
+                            assigneeName = assign_name
+
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside second try for assignee name value")
+                                assigneeid = str(result["assignee_id"])
+
+                                # To get the name of the assignee given the assigneeID
+                                conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                                res = conn.getresponse()
+                                userAssigneeId = res.read()
+                                tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                                data = json.dumps(tempUserAssignee, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d_assign = json.loads(data_dict)
+                                assign_name = str(d_assign["user"]["name"])
+                                assigneeName = assign_name
+
+                            except:
+                                assigneeName = "N/A"
+                                assignee_flag = True
+
+
+                                            #############
+
+                        try:
+                            # Convert the Zendesk ID to company name
+                            conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                            res = conn.getresponse()
+                            companyID = res.read()
+                            compNameRaw = str(companyID.decode("utf-8"))
+
+                            data = json.dumps(compNameRaw, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            org_Name = str(d["organizations"][0]["name"])
+                            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                            orgName = str(org_name_temp)
+                            # print(orgName)
+                        except:
+                            try:
+                                botlog.LogSymphonyInfo("Inside Second try for Org name value")
+                                # Convert the Zendesk ID to company namer
+                                conn.request("GET", "/api/v2/users/" + str(requesterid) + "/organizations.json", headers=headers)
+                                res = conn.getresponse()
+                                companyID = res.read()
+                                compNameRaw = str(companyID.decode("utf-8"))
+
+                                data = json.dumps(compNameRaw, indent=2)
+                                data_dict = ast.literal_eval(data)
+                                d = json.loads(data_dict)
+                                org_Name = str(d["organizations"][0]["name"])
+                                org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                                orgName = str(org_name_temp)
+                                # print(orgName)
+                            except:
+                                orgName = "N/A"
+
+                        #############
+
+                        requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+                        assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+                        OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/organization/tickets"
+
+                        ticketSubject_temp = str(result["subject"])
+                        ticketSubject = str(ticketSubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+
+                        sev = ""
+                        if (len(result["tags"])) == 0:
+                            noTag = True
+                        else:
+                            noTag = False
+
+                        notSet = True
+                        if noTag:
+                            sev = "Not Set"
+                            notSet = False
+
+                        #sev = ""
+                        for index_tags in range(len(result["tags"])):
+                            tags = str((result["tags"][index_tags]))
+
+                            if tags.startswith("severity_1"):
+                                sev = "Severity 1"
+                                notSet = False
+                            elif tags.startswith("severity_2"):
+                                sev = "Severity 2"
+                                notSet = False
+                            elif tags.startswith("severity_3"):
+                                sev = "Severity 3"
+                                notSet = False
+                            elif tags.startswith("severity_4"):
+                                sev = "Severity 4"
+                                notSet = False
+
+                        if notSet:
+                            sev = "Not Set"
+                            notSet = False
+
+                        updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+                        if assignee_flag:
+                            assignee = (str(assigneeName))
+                            table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                          "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                            try:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+                            except:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+
+                        else:
+                            assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+                            requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+                            table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                          "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:3%;text-align:center'>ID</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>REQUESTER</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + requester + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>COMPANY</td>" \
+                                          "<td style='border:1px solid black;text-align:center'><a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a></td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>REQUESTED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:7%;text-align:center'>ASSIGNEE</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>UPDATED</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                          "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                          "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>"
+                            try:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + result["priority"] + "</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+                            except:
+                                table_body += "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>Not Set</td></tr><tr>" \
+                                              "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                              "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
+                                              "</tr></thead><tbody></tbody></table>"
+
+                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+
+                        # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
+
+                        # Checking for unique words (Tokens)
+                        UniqueToken = len(set(table_body.split()))
+                        #UniqueToken1 = len(str(set(str(table_body).translate(punctuation).lower().split())))
+                        #print("Unique: " + str(UniqueToken))# + " Unique1: " + str(UniqueToken1))
+                        #print("Ticket ID: " + str(ticketid))
+
+                        myTicketLenght = len(str(table_body))
+                        #print(str(myTicketLenght))
+
+                        limitReached = False
+                        #if myTicketLenght >= 80000 or UniqueToken >= 2500:
+                        if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+
+                            limitReached = True
+                            if counter:
+                                if imRequired:
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                else:
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                            # break
+
+                        if limitReached:
+                            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                            reply = str(table_bodyFull)
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                                myTicketLenght = ""
+                                table_body = ""
+                                UniqueToken = ""
+                                table_bodyFull = ""
+                                allTicket = ""
+                                counter = False
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                                myTicketLenght = ""
+                                table_body = ""
+                                UniqueToken = ""
+                                table_bodyFull = ""
+                                allTicket = ""
+                                counter = False
+
+                    if table_body == "" and limitReached == False:
+                        return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDCCTicket open or /ZDCCTicket open @alex nalin")
+
+                    else:
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        #print("reply: " + reply)
+
+                        # replyLenght = len(reply)
+                        # #print(replyLenght)
+                        #print(str(set(str(table_body).translate(punctuation).lower().split())))
+                        # return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+
+                        #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+
+                        if table_body == "":
+                            if imRequired:
+                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            else:
+                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                        else:
+                            if imRequired:
+                                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            else:
+                                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+
+            except:
+                botlog.LogSymphonyInfo("searchCCTickets did no work")
+        else:
+            # return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
+            botlog.LogSymphonyInfo("You aren't authorised to use this command. Please consult Symphony Support team")
+    except:
+        return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+###############################################
 
 
 #############################
@@ -2664,9 +4792,110 @@ def showZD (messageDetail):
             botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
             #callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
 
-        #if callerCheck in AccessFile and isAllowed:
-        if companyName in _configDef['AuthCompany']['PodList']:
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside secon try user check")
+            commandCallerUID = messageDetail.FromUserId
 
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(str(dataRender))
+
+            for index_org in range(len(d_org["users"])):
+                firstName = str(d_org["users"][index_org]["firstName"])
+                lastName = str(d_org["users"][index_org]["lastName"])
+                displayName = str(d_org["users"][index_org]["displayName"])
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                #################################################
+
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    botlog.LogSymphonyInfo("User is connected with the bot or is an internal user: " + str(emailAddress))
+                    emailZendesk = emailAddress
+                    connectionRequired = False
+                except:
+                    connectionRequired = True
+
+                # if connectionRequired:
+
+                data_lenght = len(dataComp)
+
+                if data_lenght > 450:
+                    try:
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+                elif data_lenght < 450:
+                    try:
+                        #query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                    botlog.LogSymphonyInfo(query)
+                results = zendesk.search(query=query)
+                #print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        # name = d["results"][index]["name"]
+                        # email = str(d["results"][index]["email"])
+                        role = str(d["results"][index]["role"])
+                        #print(role)
+                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+
+                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                            isAllowed = True
+                            #print(role)
+                            botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+
+                #################################################
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                #callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            return botlog.LogSymphonyInfo("User Check did not work")
+
+    #if callerCheck in AccessFile and isAllowed:
+    if companyName in _configDef['AuthCompany']['PodList']:
+
+        try:
             streamType = (messageDetail.ChatRoom.Type)
             #print(streamType)
 
@@ -2763,40 +4992,42 @@ def showZD (messageDetail):
 
                 if isnext:
 
-                    try:
-                        data = json.dumps(request_raw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
+                    # try:
+                    data = json.dumps(request_raw, indent=2)
+                    data_dict = ast.literal_eval(data)
+                    d = json.loads(data_dict)
 
-                        #for index in range(len(request_raw["request"])):
-                        # requestid = str(d["request"]["id"])
-                        # requeststatus = d["request"]["status"]
-                        # requestpriority = d["request"]["priority"]
-                        # requestsubject = d["request"]["subject"]
-                        # requestdescription_temps = d["request"]["description"]
-                        # requestdescription = requestdescription_temps.replace("<", "&lt;")
-                        # requestorganization_id = str(d["request"]["organization_id"])
-                        # requestrequester_id = str(d["request"]["requester_id"])
-                        # #print(requestrequester_id)
-                        # requestcreated_at = str(d["request"]["created_at"])
-                        # requestupdated_at = str(d["request"]["updated_at"])
-                        # requestassignee_id = str(d["request"]["assignee_id"])
+                    #for index in range(len(request_raw["request"])):
+                    # requestid = str(d["request"]["id"])
+                    # requeststatus = d["request"]["status"]
+                    # requestpriority = d["request"]["priority"]
+                    # requestsubject = d["request"]["subject"]
+                    # requestdescription_temps = d["request"]["description"]
+                    # requestdescription = requestdescription_temps.replace("<", "&lt;")
+                    # requestorganization_id = str(d["request"]["organization_id"])
+                    # requestrequester_id = str(d["request"]["requester_id"])
+                    # #print(requestrequester_id)
+                    # requestcreated_at = str(d["request"]["created_at"])
+                    # requestupdated_at = str(d["request"]["updated_at"])
+                    # requestassignee_id = str(d["request"]["assignee_id"])
 
-                        requestid = str(d["ticket"]["id"])
-                        requeststatus = str(d["ticket"]["status"])
-                        requestpriority = str(d["ticket"]["priority"])
-                        requestsubject_temp = str(d["ticket"]["subject"])
-                        requestsubject = str(requestsubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                        requestdescription_temps = str(d["ticket"]["description"])
-                        requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                        requestorganization_id = str(d["ticket"]["organization_id"])
-                        requestrequester_id = str(d["ticket"]["requester_id"])
-                        requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
-                        requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
-                        requestassignee_id = str(d["ticket"]["assignee_id"])
-                        requestseverity = str(d["ticket"]["tags"]).replace("[']", "")
-                    except:
-                        return messageDetail.ReplyToChat("Cannot get ticket info for ID " + str(zdid))
+                    requestid = str(d["ticket"]["id"])
+                    requeststatus = str(d["ticket"]["status"])
+                    requestpriority = str(d["ticket"]["priority"])
+                    requestsubject_temp = str(d["ticket"]["subject"])
+                    requestsubject = str(requestsubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    requestdescription_temps = str(d["ticket"]["description"])
+                    requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                    requestorganization_id = str(d["ticket"]["organization_id"])
+                    requestrequester_id = str(d["ticket"]["requester_id"])
+                    requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
+                    requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
+                    requestassignee_id = str(d["ticket"]["assignee_id"])
+                    requestseverity = str(d["ticket"]["tags"]).replace("[']", "")
+                    # request_res_field = str(d["ticket"]["custom_fields"]['id': 24598606])
+                    # print(request_res_field)
+                    # except:
+                    #     return messageDetail.ReplyToChat("Cannot get ticket info for ID " + str(zdid))
 
 
                     if (len(d["ticket"]["tags"])) == 0:
@@ -3010,7 +5241,8 @@ def showZD (messageDetail):
                     # myTicketLenght = len(str(table_header))
                     # print(str(myTicketLenght))
 
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                    # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
                     reply = table_bodyFull
                     characterLimit = len(str(table_bodyFull))
 
@@ -3030,109 +5262,12 @@ def showZD (messageDetail):
                     #messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
 
-            # else:
-            #     return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
+        # else:
+        #     return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
 
-    except:
-        try:
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-            sessionTok = callout.GetSessionToken()
-
-            headersCompany = {
-                'sessiontoken': sessionTok,
-                'cache-control': "no-cache"
-            }
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(str(dataRender))
-
-            for index_org in range(len(d_org["users"])):
-                firstName = str(d_org["users"][index_org]["firstName"])
-                lastName = str(d_org["users"][index_org]["lastName"])
-                displayName = str(d_org["users"][index_org]["displayName"])
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                #################################################
-
-                try:
-                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
-                    botlog.LogSymphonyInfo("User is connected with the bot or is an internal user: " + str(emailAddress))
-                    emailZendesk = emailAddress
-                    connectionRequired = False
-                except:
-                    connectionRequired = True
-
-                # if connectionRequired:
-
-                data_lenght = len(dataComp)
-
-                if data_lenght > 450:
-                    try:
-                        query = "type:user " + str(emailAddress)
-                    except:
-                        query = "type:user " + str(firstName) + " " + str(lastName)
-                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
-                elif data_lenght < 450:
-                    try:
-                        #query = "type:user " + emailAddress + " organization:" + companyName
-                        query = "type:user " + str(emailAddress)
-                    except:
-                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                        query = "type:user " + str(firstName) + " " + str(lastName)
-                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
-                else:
-                    return messageDetail.ReplyToChat("No user information available")
-
-                    botlog.LogSymphonyInfo(query)
-                results = zendesk.search(query=query)
-                #print(results)
-
-                if str(results).startswith(
-                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                    return messageDetail.ReplyToChat(
-                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
-                elif str(results).startswith(
-                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                    return messageDetail.ReplyToChat(
-                        "This organisation/company does not exist in Zendesk or name is misspelled.")
-                else:
-
-                    data = json.dumps(results, indent=2)
-                    d = json.loads(data)
-
-                    for index in range(len(d["results"])):
-                        # name = d["results"][index]["name"]
-                        # email = str(d["results"][index]["email"])
-                        role = str(d["results"][index]["role"])
-                        #print(role)
-                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
-
-                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                            isAllowed = True
-                            #print(role)
-                            botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
-
-                #################################################
-
-                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                #callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
-
-            #if callerCheck in AccessFile and isAllowed:
-            if companyName in _configDef['AuthCompany']['PodList']:
-
+        except:
+            try:
+                botlog.LogSystemInfo("Inside Second try showZD")
                 streamType = (messageDetail.ChatRoom.Type)
                 #print(streamType)
 
@@ -3178,8 +5313,10 @@ def showZD (messageDetail):
 
                             conn.request("GET", "/api/v2/tickets/" + zdid + ".json", headers=headers)
                             res = conn.getresponse()
-                            data = res.read()
-                            request_raw = data.decode("utf-8")
+                            data_raw = res.read()
+                            data = remove_emoji(data_raw)
+                            #request_raw = data.decode("utf-8")
+                            request_raw = str(data)
 
                             ticketDoesNotExist = "{\"error\":\"RecordNotFound","description\":\"Not found\"}"
 
@@ -3227,40 +5364,42 @@ def showZD (messageDetail):
 
                     if isnext:
 
-                        try:
-                            data = json.dumps(request_raw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
+                        # try:
+                        data = json.dumps(request_raw, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
 
-                            #for index in range(len(request_raw["request"])):
-                            # requestid = str(d["request"]["id"])
-                            # requeststatus = d["request"]["status"]
-                            # requestpriority = d["request"]["priority"]
-                            # requestsubject = d["request"]["subject"]
-                            # requestdescription_temps = d["request"]["description"]
-                            # requestdescription = requestdescription_temps.replace("<", "&lt;")
-                            # requestorganization_id = str(d["request"]["organization_id"])
-                            # requestrequester_id = str(d["request"]["requester_id"])
-                            # #print(requestrequester_id)
-                            # requestcreated_at = str(d["request"]["created_at"])
-                            # requestupdated_at = str(d["request"]["updated_at"])
-                            # requestassignee_id = str(d["request"]["assignee_id"])
+                        #for index in range(len(request_raw["request"])):
+                        # requestid = str(d["request"]["id"])
+                        # requeststatus = d["request"]["status"]
+                        # requestpriority = d["request"]["priority"]
+                        # requestsubject = d["request"]["subject"]
+                        # requestdescription_temps = d["request"]["description"]
+                        # requestdescription = requestdescription_temps.replace("<", "&lt;")
+                        # requestorganization_id = str(d["request"]["organization_id"])
+                        # requestrequester_id = str(d["request"]["requester_id"])
+                        # #print(requestrequester_id)
+                        # requestcreated_at = str(d["request"]["created_at"])
+                        # requestupdated_at = str(d["request"]["updated_at"])
+                        # requestassignee_id = str(d["request"]["assignee_id"])
 
-                            requestid = str(d["ticket"]["id"])
-                            requeststatus = str(d["ticket"]["status"])
-                            requestpriority = str(d["ticket"]["priority"])
-                            requestsubject_temp = str(d["ticket"]["subject"])
-                            requestsubject = str(requestsubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                            requestdescription_temps = str(d["ticket"]["description"])
-                            requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                            requestorganization_id = str(d["ticket"]["organization_id"])
-                            requestrequester_id = str(d["ticket"]["requester_id"])
-                            requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
-                            requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
-                            requestassignee_id = str(d["ticket"]["assignee_id"])
-                            requestseverity = str(d["ticket"]["tags"]).replace("[']", "")
-                        except:
-                            return messageDetail.ReplyToChat("Cannot get ticket info for ID " + str(zdid))
+                        requestid = str(d["ticket"]["id"])
+                        requeststatus = str(d["ticket"]["status"])
+                        requestpriority = str(d["ticket"]["priority"])
+                        requestsubject_temp = str(d["ticket"]["subject"])
+                        requestsubject = str(requestsubject_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                        requestdescription_temps = str(d["ticket"]["description"])
+                        requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                        requestorganization_id = str(d["ticket"]["organization_id"])
+                        requestrequester_id = str(d["ticket"]["requester_id"])
+                        requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
+                        requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
+                        requestassignee_id = str(d["ticket"]["assignee_id"])
+                        requestseverity = str(d["ticket"]["tags"]).replace("[']", "")
+                        # request_res_field = str(d["ticket"]["custom_fields"]['id': 24598606])
+                        # print(request_res_field)
+                        # except:
+                        #     return messageDetail.ReplyToChat("Cannot get ticket info for ID " + str(zdid))
 
 
                         if (len(d["ticket"]["tags"])) == 0:
@@ -3465,6 +5604,7 @@ def showZD (messageDetail):
                                                "<td style='border:1px solid black;text-align:center'><a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a></td>" \
                                                "</tr></thead><tbody></tbody></table>"
 
+
                         # # Enable this to troubleshoot if there is any issue of character limitation
                         # UniqueToken = len(set(table_header.split()))
                         # print("Unique: " + str(UniqueToken))# + " Unique1: " + str(UniqueToken1))
@@ -3473,7 +5613,8 @@ def showZD (messageDetail):
                         # myTicketLenght = len(str(table_header))
                         # print(str(myTicketLenght))
 
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
                         reply = table_bodyFull
                         characterLimit = len(str(table_bodyFull))
 
@@ -3492,8 +5633,9 @@ def showZD (messageDetail):
                         #messageDetail.ReplyToChatV2(reply)
                         #messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
-        except:
-            return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+            except:
+                return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 
 
 def showTicketComments (messageDetail):
@@ -3514,6 +5656,8 @@ def showTicketComments (messageDetail):
         commentLenght = ""
         table_header = ""
         UniqueToken = ""
+        showComment = ""
+        isMe = ""
         commandCallerUID = messageDetail.FromUserId
 
         connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
@@ -3614,13 +5758,30 @@ def showTicketComments (messageDetail):
 
             streamType = (messageDetail.ChatRoom.Type)
             #print(streamType)
+            if streamType == "IM":
+                isIM = True
+                #print("its IM")
+            else:
+                isIM = False
+                #print("its not IM")
+
+            streamId = (messageDetail.StreamId)
+            #print(streamId)
+
+            if streamId in _configDef['showcomment_streamid']:
+                showComment = True
+                #print("inside allowed room")
+            else:
+                showComment = False
+                #print("inside not allowed room")
+            #print(showComment)
 
             showRequest = (messageDetail.Command.MessageText)
             message_split = str(showRequest).split()
             try:
                 ticketID = str(message_split[0])
             except:
-                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+                return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
 
             ## Calling user is Agent on Zendesk and also added to the Bot list as Agent
 
@@ -3665,7 +5826,7 @@ def showTicketComments (messageDetail):
                 return messageDetail.ReplyToChatV2("This Ticket ID, " + str(ticketID) + " does not exist on Zendesk")
 
             if str(data).startswith(invalid):
-                return messageDetail.ReplyToChatV2("Please use this format: <b>/showTicketComments ticketid</b>")
+                return messageDetail.ReplyToChatV2("Please use this format: <b>/ZDComments ticketid</b>")
 
             if str(data).startswith(forbidden):
                 return messageDetail.ReplyToChatV2("To view the comments on this ticket, you need to be Zendesk Admin, not yet sure why")
@@ -3690,6 +5851,8 @@ def showTicketComments (messageDetail):
                 else:
                     #privateComment = False
                     public = "Public"
+                #print("privateComment: " + str(privateComment))
+                #print("prvCom: " + str(prvCom))
 
                 attachments = str(result["attachments"])
 
@@ -3796,19 +5959,45 @@ def showTicketComments (messageDetail):
                 #if commentLenght >= 70000:
                 if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                     limitReached = True
-                    if privateComment and limitMessageNeeded:
+
+                    # if showComment and limitMessageNeeded:
+                    #     print("First")
+                    #     notPrivate = True
+                    #     messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+
+
+                    if privateComment and limitMessageNeeded and showComment:
+                        #print("Allowed room")
+                        prvCom = False
+                        messageSent = True
+                        #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+
+                    if privateComment and limitMessageNeeded and showComment is False and isIM:
+                        #print("Not allowed room but IM")
+                        prvCom = True
+                        messageSent = True
+                        #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+
+                    if privateComment and limitMessageNeeded and showComment is False and isIM is False:
+                        #print("Not allowed room")
                         prvCom = True
                         messageSent = True
                         messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+
                     if counter and prvCom:
+                        #print("Not A")
                         messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+
                     elif counter and prvCom is False:
+                        #print("Not B")
                         messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
                 #break
 
                 if limitReached and prvCom:
+                    #print("A")
                     limitMessageNeeded = False
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                     commentLenght = ""
@@ -3819,8 +6008,10 @@ def showTicketComments (messageDetail):
                     notPrivate = False
 
                 if limitReached and notPrivate:
+                    #print("B")
                     limitMessageNeeded = False
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     commentLenght = ""
@@ -3834,21 +6025,72 @@ def showTicketComments (messageDetail):
                 #limitMessageNeeded = False
             else:
                 #limitMessageNeeded = False
+
+
                 if privateComment and prvCom:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #print("1")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                elif privateComment and prvCom is False and messageSent is False:
+                elif privateComment and prvCom is False and messageSent is False and isMe:
+                    #print("2")
+                    #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif privateComment and prvCom is False and messageSent is False and isMe is False:
+                    #print("3")
                     messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif privateComment and prvCom is False and messageSent and notPrivate is False:
+                    #print("4")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                 elif privateComment and prvCom is False and messageSent:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #print("5")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                elif showComment is False and isIM:
+                    #print("6")
+                    #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif privateComment is False and prvCom is False and showComment is False and isIM is False:
+                    #print("7")
+                    #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                elif showComment is False and isIM is False:
+                    #print("8")
+                    messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                elif showComment and isIM is False:
+                    #print("9")
+                    #messageDetail.ReplyToChatV2_noBotLog("There is 1 or more private comments in this Zendesk Ticket. For confidentiality reasons, I will respond to you in a 1:1 chat.")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                 else:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #print("10")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     return messageDetail.ReplyToChatV2_noBotLog(str(reply))
 
@@ -3864,7 +6106,7 @@ def showTicketComments (messageDetail):
             try:
                 ticketID = str(message_split[0])
             except:
-                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+                return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
 
     ########################
 
@@ -3908,7 +6150,7 @@ def showTicketComments (messageDetail):
             invalidReq = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
 
             if str(data).startswith(invalid):
-                return messageDetail.ReplyToChat("Please use this format: <b>/showTicketComments ticketid</b>")
+                return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
 
             if str(data).startswith(invalidReq):
                 return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
@@ -4023,7 +6265,8 @@ def showTicketComments (messageDetail):
 
                 if limitReached:
                     limitMessageNeeded = False
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     commentLenght = ""
@@ -4037,7 +6280,8 @@ def showTicketComments (messageDetail):
                 botlog.LogSymphonyInfo("There is no result for this search")
             else:
                 limitMessageNeeded = False
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
                 return messageDetail.ReplyToChatV2_noBotLog(str(reply))
         else:
@@ -4145,9 +6389,9 @@ def userZD(messageDetail):
 
                 #################################################
 
-                botlog.LogSymphonyInfo(firstName + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(
                     companyName) + " with UID: " + str(userID))
-                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(isplayName) + " - " + str(companyName) + " - " + str(userID))
+                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
         except:
             try:
                 botlog.LogSymphonyInfo("Inside second try to get calling user data")
@@ -4294,7 +6538,7 @@ def userZD(messageDetail):
 
             # User search only
             if userEntered and orgEntered == False:
-                print("inside user and no org")
+                #print("inside user and no org")
 
                 query += "type:user\"" + str(userSplit[1:]) + "\""
                 querystring = {"query": "type:user " + str(userSplit[1:]) + ""}
@@ -4326,7 +6570,7 @@ def userZD(messageDetail):
             # User and Organisation search
             if userEntered and orgEntered:
 
-                print("inside user and org")
+                #print("inside user and org")
                 org_legnth = len(str(organization[1:]))
                 #print(int(org_legnth))
                 if org_legnth == "" or int(org_legnth) < 2:
@@ -4346,18 +6590,18 @@ def userZD(messageDetail):
 
                 response = requests.request("GET", url, headers=headers, params=querystring)
                 data = response.json()
-                # print(str(data))
+                print(str(data))
 
                 noRes = "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"
 
                 if str(data) == str(noRes):
                     return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search: " + str(query))
 
-            if str(results).startswith(
+            if str(data).startswith(
                     "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
                 return messageDetail.ReplyToChat(
                     "This user does not exist on Zendesk, name is misspelled or does not belong to this organisation")
-            elif str(results).startswith(
+            elif str(data).startswith(
                     "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
                 return messageDetail.ReplyToChat("This organisation/company does not exist in Zendesk or is misspelled")
             else:
@@ -4596,10 +6840,10 @@ def userZD(messageDetail):
 
                 # User search only
                 if userEntered and orgEntered == False:
-                    print("inside user and not org")
+                    #print("inside user and not org")
 
                     org_legnth = len(str(organization[1:]))
-                    print(int(org_legnth))
+                    #print(int(org_legnth))
                     if org_legnth == "" or int(org_legnth) < 2:
                         return messageDetail.ReplyToChat("You did not enter a valid organization, please check and try again")
 
@@ -4631,10 +6875,10 @@ def userZD(messageDetail):
 
                 # User and Organisation search
                 if userEntered and orgEntered:
-                    print("inside user and org")
+                    #print("inside user and org")
 
                     org_legnth = len(str(organization[1:]))
-                    print(int(org_legnth))
+                    #print(int(org_legnth))
                     if org_legnth == "" or int(org_legnth) < 2:
                         return messageDetail.ReplyToChat("You did not enter a valid organization, please check and try again")
 
@@ -4658,9 +6902,9 @@ def userZD(messageDetail):
                     if str(data) == str(noRes):
                         return messageDetail.ReplyToChat("There is no result for this search: " + str(query))
 
-                if str(results).startswith("{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                if str(data).startswith("{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
                     return messageDetail.ReplyToChat("This user does not exist on Zendesk, name is misspelled or does not belong to this organisation")
-                elif str(results).startswith("{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                elif str(data).startswith("{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
                     return messageDetail.ReplyToChat("This organisation/company does not exist in Zendesk or is misspelled")
                 else:
                     messageDetail.ReplyToChat("Getting user information from Zendesk, please wait")
@@ -5076,7 +7320,7 @@ def recentZD(messageDetail):
                            "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
                            "</tr></thead><tbody></tbody></table>"
 
-                allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: " + str(status) + ") <br/>"
+                allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: <b>" + str(status) + "</b>) <br/>"
 
                 UniqueToken = len(set(table_header.split()))
                 #print(UniqueToken)
@@ -5093,7 +7337,8 @@ def recentZD(messageDetail):
                         messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
 
                 if limitReached:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + allTicket + "</header><body>" + str(table_header) + "</body></card>")
+                    # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + allTicket + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + allTicket + "</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     dataLenght = ""
@@ -5106,7 +7351,8 @@ def recentZD(messageDetail):
             if table_header == "":
                 return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
             else:
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
                 #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -5427,7 +7673,7 @@ def recentZD(messageDetail):
                                "<td style='border:1px solid black;text-align:center'>" + tags + "</td>" \
                                "</tr></thead><tbody></tbody></table>"
 
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: " + str(status) + ") <br/>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(subject) + " (assignee: " + str(assigned) + " updated: " + str(updated_at) + " status: <b>" + str(status) + "</b>) <br/>"
 
                     UniqueToken = len(set(table_header.split()))
                     #print(UniqueToken)
@@ -5444,7 +7690,8 @@ def recentZD(messageDetail):
                             messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
 
                     if limitReached:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         dataLenght = ""
@@ -5457,7 +7704,8 @@ def recentZD(messageDetail):
                 if table_header == "":
                     return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search")
                 else:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -5629,7 +7877,7 @@ def TicketCreate(messageDetail):
 
             try:
                 #Removing the string of the function in the output
-                ticketSubject = str(detail[0][14:]).replace("&quot;", "\"").replace("&amp;","&").replace("&lt;","<").replace("&apos;","'").replace("&gt;",">")
+                ticketSubject = str(detail[0][10:]).replace("&quot;", "\"").replace("&amp;","&").replace("&lt;","<").replace("&apos;","'").replace("&gt;",">")
                 botlog.LogSymphonyInfo("Ticket Subject: " + ticketSubject)
             except:
                 return messageDetail.ReplyToChatV2("You did not enter a Subject. Please use the following format: <b>/createTicket subject, description</b>")
@@ -5866,7 +8114,7 @@ def TicketCreate(messageDetail):
 
                 try:
                     #Removing the string of the function in the output
-                    ticketSubject = str(detail[0][14:]).replace("&quot;", "\"").replace("&amp;","&").replace("&lt;","<").replace("&apos;","'").replace("&gt;",">")
+                    ticketSubject = str(detail[0][10:]).replace("&quot;", "\"").replace("&amp;","&").replace("&lt;","<").replace("&apos;","'").replace("&gt;",">")
                     # botlog.LogSymphonyInfo("Ticket Subject: " + ticketSubject)
                 except:
                     return messageDetail.ReplyToChatV2("You did not enter a Subject. Please use the following format: <b>/createTicket subject, description</b>")
@@ -6195,14 +8443,14 @@ def RequestCreate(messageDetail):
                 requestSubject = str(detail[1]).replace("\ufffd", "")
                 botlog.LogSymphonyInfo("Request Subject: " + requestSubject)
             except:
-                return messageDetail.ReplyToChat("You did not enter a Subject. Please use this format: /createRequest @mention| subject| description")
+                return messageDetail.ReplyToChat("You did not enter a Subject. Please use this format: /ZDRequest @mention| subject| description")
 
             try:
                 requestComment = str(detail[2]).replace("\u200b", "").replace("\n", "\\n").replace("\ufffd", "")
                 botlog.LogSymphonyInfo("Request Description: " + requestComment)
                 botlog.LogSymphonyInfo("**********")
             except:
-                return messageDetail.ReplyToChat("You did not enter a description/comment. Please use this format: /createRequest @mention| subject| description")
+                return messageDetail.ReplyToChat("You did not enter a description/comment. Please use this format: /ZDRequest @mention| subject| description")
 
 
             conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
@@ -6347,7 +8595,7 @@ def RequestCreate(messageDetail):
                 requestsubject_temps = str(d["request"]["subject"])
                 requestsubject = requestsubject_temps.replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                 requestdescription_temps = str(d["request"]["description"])
-                requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
                 requestorganization_id = str(d["request"]["organization_id"])
                 requestrequester_id = str(d["request"]["requester_id"])
                 requestcreated_at = str(d["request"]["created_at"]).replace("T", " ").replace("Z", "")
@@ -6484,9 +8732,15 @@ def RequestCreate(messageDetail):
 
             reply_raw = table_header + table_body
             reply = str(reply_raw).replace("\ufffd","")
-            return messageDetail.ReplyToChatV2(reply)
+            #return messageDetail.ReplyToChatV2(reply)
+            # return messageDetail.ReplyToChatV2_noBotLog(
+            #     "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the new Support Ticket</header><body>" + reply + "</body></card>")
 
-        #else:
+            return messageDetail.ReplyToChatV2_noBotLog(
+                "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find below the new Support Ticket</header><body>" + reply + "</body></card>")
+
+
+#else:
         elif companyName in _configDef['AuthCompany']['PodList']:
             streamType = (messageDetail.ChatRoom.Type)
             #print(streamType)
@@ -6499,14 +8753,14 @@ def RequestCreate(messageDetail):
                 detail = messageDetail.Command.MessageFlattened.split("|")
                 #print(detail)
             except:
-                return messageDetail.ReplyToChat("Please use this format: /createRequest subject| description")
+                return messageDetail.ReplyToChat("Please use this format: /ZDRequest subject| description")
 
             try:
                 requestSubject = str(detail[0][:15]).replace("\ufffd", "")
                 botlog.LogSymphonyInfo("Request Subject: " + requestSubject)
             except:
                 return messageDetail.ReplyToChat(
-                    "You did not enter a Subject. Please use this format: /createRequest subject| description")
+                    "You did not enter a Subject. Please use this format: /ZDRequest subject| description")
 
             try:
                 requestComment = str(detail[1]).replace("\u200b", "").replace("\n", "\\n").replace("\ufffd", "")
@@ -6514,7 +8768,7 @@ def RequestCreate(messageDetail):
                 botlog.LogSymphonyInfo("**********")
             except:
                 return messageDetail.ReplyToChat(
-                    "You did not enter a description/comment. Please use this format: /createRequest subject| description")
+                    "You did not enter a description/comment. Please use this format: /ZDRequest subject| description")
 
             conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
 
@@ -6796,9 +9050,14 @@ def RequestCreate(messageDetail):
 
                 reply_raw = table_header + table_body
                 reply = str(reply_raw).replace("\ufffd", "")
-                return messageDetail.ReplyToChatV2_noBotLog(reply)
+                #return messageDetail.ReplyToChatV2_noBotLog(reply)
+                # return messageDetail.ReplyToChatV2_noBotLog(
+                #     "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the new Support Ticket</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog(
+                    "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find below the new Support Ticket</header><body>" + reply + "</body></card>")
 
-    ############################
+
+        ############################
         else:
             return messageDetail.ReplyToChat("You aren't authorised to use this command. Please consult Symphony Support team")
     except:
@@ -6810,793 +9069,801 @@ def newTicketToday(messageDetail):
     botlog.LogSymphonyInfo("Bot Call: Retrieve ticket(s) created based today")
     botlog.LogSymphonyInfo("################################################")
 
-    try:
-        isAllowed = False
-        render = ""
-        table_header = ""
-        table_bodyFull = ""
-        allTicket = ""
-        counter = True
-        totTickets = 0
-        commandCallerUID = messageDetail.FromUserId
+    #try:
+    isAllowed = False
+    render = ""
+    table_header = ""
+    table_bodyFull = ""
+    allTicket = ""
+    counter = True
+    totTickets = 0
+    todayMinusDays = 0
+    commandCallerUID = messageDetail.FromUserId
 
-        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+    connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+    resComp = connComp.getresponse()
+    dataComp = resComp.read()
+    data_raw = str(dataComp.decode('utf-8'))
+    data_dict = ast.literal_eval(data_raw)
 
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
+    dataRender = json.dumps(data_dict, indent=2)
+    d_org = json.loads(dataRender)
 
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+    for index_org in range(len(d_org["users"])):
+        firstName = d_org["users"][index_org]["firstName"]
+        lastName = d_org["users"][index_org]["lastName"]
+        displayName = d_org["users"][index_org]["displayName"]
+        #companyName = d_org["users"][index_org]["company"]
+        companyNameTemp = d_org["users"][index_org]["company"]
+        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+        companyName = str(companyTemp)
+        userID = str(d_org["users"][index_org]["id"])
 
-            ##############################
+        ##############################
+        try:
+            emailAddress = d_org["users"][index_org]["emailAddress"]
+            #print("User is connected: " + emailAddress)
+            emailZendesk = emailAddress
+            #print(emailZendesk)
+            connectionRequired = False
+            # isAllowed = True
+        except:
+            connectionRequired = True
+
+        # if connectionRequired:
+
+        data_lenght = len(dataComp)
+
+        if data_lenght > 450:
             try:
-                emailAddress = d_org["users"][index_org]["emailAddress"]
-                #print("User is connected: " + emailAddress)
-                emailZendesk = emailAddress
-                #print(emailZendesk)
-                connectionRequired = False
-                # isAllowed = True
+                #print("inside > 450")
+                query = "type:user " + emailAddress
             except:
-                connectionRequired = True
-
-            # if connectionRequired:
-
-            data_lenght = len(dataComp)
-
-            if data_lenght > 450:
-                try:
-                    #print("inside > 450")
-                    query = "type:user " + emailAddress
-                except:
-                    query = "type:user " + firstName + " " + lastName
-                #print(query)
-            elif data_lenght < 450:
-                try:
-                    #print("inside < 450")
-                    #query = "type:user " + emailAddress + " organization:" + companyName
-                    query = "type:user " + emailAddress
-                except:
-                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                    query = "type:user " + firstName + " " + lastName
-                #print(query)
-            else:
-                return messageDetail.ReplyToChat("No user information available")
-
+                query = "type:user " + firstName + " " + lastName
             #print(query)
-            results = zendesk.search(query=query)
-            #print(results)
+        elif data_lenght < 450:
+            try:
+                #print("inside < 450")
+                #query = "type:user " + emailAddress + " organization:" + companyName
+                query = "type:user " + emailAddress
+            except:
+                #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                query = "type:user " + firstName + " " + lastName
+            #print(query)
+        else:
+            return messageDetail.ReplyToChat("No user information available")
 
-            if str(results).startswith(
-                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
-            elif str(results).startswith(
-                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+        #print(query)
+        results = zendesk.search(query=query)
+        #print(results)
+
+        if str(results).startswith(
+                "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+            return messageDetail.ReplyToChat(
+                "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
+        elif str(results).startswith(
+                "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+            return messageDetail.ReplyToChat(
+                "This organisation/company does not exist in Zendesk or name is misspelled.")
+        else:
+
+            data = json.dumps(results, indent=2)
+            d = json.loads(data)
+
+            for index in range(len(d["results"])):
+                name = d["results"][index]["name"]
+                email = str(d["results"][index]["email"])
+                #print("EmailAddress from Zendesk: " + email)
+
+                role = str(d["results"][index]["role"])
+                botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                    isAllowed = True
+                    botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
+                else:
+                    isAllowed = False
+
+            emailZendesk = email
+
+        botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+        callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+
+    if callerCheck in AccessFile and isAllowed:
+        botlog.LogSymphonyInfo("User is an " + role + " on Zendesk and an Agent or Admin with the bot")
+
+        streamType = (messageDetail.ChatRoom.Type)
+        #print(streamType)
+
+        showRequest = (messageDetail.Command.MessageText)
+        message_split = showRequest.split()
+
+        try:
+            todayMinusDays = message_split[0]
+            todayTicket = int(todayMinusDays)
+        except:
+            todayTicket = 1
+            #botlog.LogSystemInfo("Please use number of days to check back such as /today 1")
+
+        if int(todayMinusDays) > 300:
+            return messageDetail.ReplyToChat("For optimal performance, please use 5 days or less in your query")
+
+        ticketdate_raw = datetime.today() - timedelta(days=int(todayTicket))
+        ticketdate = str(ticketdate_raw)[:-16]
+        #print(ticketdate)
+
+        conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
+        headers = {
+            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+            'password': _configDef['zdesk_config']['zdesk_password'],
+            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+            'cache-control': "no-cache",
+            'Content-Type': 'application/json',
+        }
+
+        # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+        # base64Enc = (base64Encoded.decode("utf-8"))
+        # print(str(base64Enc))
+        # base = ("Basic " + base64Enc)
+        # print(str(base))
+        #
+        # headers = {
+        #             'email_address': emailZendesk +"/token",
+        #             'password': (_configDef['zdesk_config']['zdesk_password']),
+        #             'authorization': base,
+        #             'cache-control': "no-cache",
+        #             'content-type': "application/json"
+        # }
+
+        conn.request("GET", "/api/v2/search?query=type%3Aticket%20created%3E" + str(ticketdate), headers=headers)
+
+        res = conn.getresponse()
+        #data = res.read().decode("utf-8")
+        data_raw = res.read()
+        data = remove_emoji(data_raw)
+        reply = str(data)
+
+        messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + " Please wait.")
+
+        if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
+            return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
+
+        data = json.dumps(reply, indent=2)
+        data_dict = ast.literal_eval(data)
+        d_tick = json.loads(data_dict)
+        #print(d_tick)
+
+        index = 1
+        dataLenght = 0
+        dataLenghtNew = 0
+
+        for index in range(len(d_tick["results"])):
+
+            totTickets += 1
+            #print(int(totTickets))
+
+            requestid = str(d_tick["results"][index]["id"])
+            #print(requestid)
+            requeststatus = str(d_tick["results"][index]["status"])
+            #print(requeststatus)
+            requestpriority = str(d_tick["results"][index]["priority"])
+            #print(requestpriority)
+            requestseverity = str(d_tick["results"][index]["tags"])
+
+            if (len(d_tick["results"][index]["tags"])) == 0:
+                noTag = True
             else:
+                noTag = False
 
-                data = json.dumps(results, indent=2)
-                d = json.loads(data)
+            notSet = True
 
-                for index in range(len(d["results"])):
-                    name = d["results"][index]["name"]
-                    email = str(d["results"][index]["email"])
-                    #print("EmailAddress from Zendesk: " + email)
+            if noTag:
+                sev = "Not set"
+                notSet = False
 
-                    role = str(d["results"][index]["role"])
-                    botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+            for index_tags in range(len(d_tick["results"][index]["tags"])):
+                tags = str((d_tick["results"][index]["tags"][index_tags]))
 
-                    #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                    if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                        isAllowed = True
-                        botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
-                    else:
-                        isAllowed = False
+                if tags.startswith("severity_1"):
+                    sev = "Severity 1"
+                    notSet = False
+                elif tags.startswith("severity_2"):
+                    sev = "Severity 2"
+                    notSet = False
+                elif tags.startswith("severity_3"):
+                    sev = "Severity 3"
+                    notSet = False
+                elif tags.startswith("severity_4"):
+                    sev = "Severity 4"
+                    notSet = False
 
-                emailZendesk = email
+            if notSet:
+                sev = "Not Set"
+                notSet = False
 
-            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+            requestseverity = sev
+            assignee_flag = False
+            #print(sev)
 
+            requestsubject_temps = str(d_tick["results"][index]["subject"])
+            requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            requestdescription_temps = str(d_tick["results"][index]["description"])
+            requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+            requestorganization_id = str(d_tick["results"][index]["organization_id"])
+            requestrequester_id = str(d_tick["results"][index]["requester_id"])
+            #print(requestrequester_id)
+            requestcreated_at = str(d_tick["results"][index]["created_at"]).replace("T", " ").replace("Z", "")
+            requestupdated_at = str(d_tick["results"][index]["updated_at"]).replace("T", " ").replace("Z", "")
+            requestassignee_id = str(d_tick["results"][index]["assignee_id"])
 
-        if callerCheck in AccessFile and isAllowed:
-            botlog.LogSymphonyInfo("User is an " + role + " on Zendesk and an Agent or Admin with the bot")
+            request_id = str(requestid)
+            #print(request_id)
+            request_status = str(requeststatus)
+            request_priority = str(requestpriority)
+            request_severity = str(requestseverity)
+            request_subject = str(requestsubject)
+            request_desc = str(requestdescription)
+            desc = str(request_desc)
+            request_org = str(requestorganization_id)
+            request_requestor = str(requestrequester_id)
+            #print(request_requestor)
+            request_created = str(requestcreated_at)
+            request_updated = str(requestupdated_at)
 
-            streamType = (messageDetail.ChatRoom.Type)
-            #print(streamType)
+            # To get the name of the requester given the requesterID
+            conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
+            res = conn.getresponse()
+            userRequesterId = res.read()
+            tempUserRequester = str(userRequesterId.decode('utf-8'))
 
-            showRequest = (messageDetail.Command.MessageText)
-            message_split = showRequest.split()
+            data = json.dumps(tempUserRequester, indent=2)
+            data_dict = ast.literal_eval(data)
+            d_req = json.loads(data_dict)
+            req_name = str(d_req["user"]["name"])
+            requesterName = req_name
+            #print(requesterName)
 
             try:
-                todayMinusDays = message_split[0]
-                todayTicket = int(todayMinusDays)
+                request_assignee = str(requestassignee_id)
+
+                # To get the name of the assignee given the assigneeID
+                conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
+                res = conn.getresponse()
+                userAssigneeId = res.read()
+                tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                data = json.dumps(tempUserAssignee, indent=2)
+                data_dict = ast.literal_eval(data)
+                d_user = json.loads(data_dict)
+                assign_name = str(d_user["user"]["name"])
+                assigneeName = assign_name
+                #print(assigneeName)
+
             except:
-                return messageDetail.ReplyToChat("Please use number of days to check back such as /today 1")
+                assigneeName = "None"
+                assignee_flag = True
 
-            if int(todayMinusDays) > 5:
-                return messageDetail.ReplyToChat("For optimal performance, please use 5 days or less in your query")
+            requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
+            assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(request_assignee) + "/assigned_tickets"
+            OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
 
-            ticketdate_raw = datetime.today() - timedelta(days=int(todayTicket))
-            ticketdate = str(ticketdate_raw)[:-16]
-            #print(ticketdate)
-
-            conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
-
-            headers = {
-                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
-                'password': _configDef['zdesk_config']['zdesk_password'],
-                'authorization': _configDef['zdesk_config']['zdesk_auth'],
-                'cache-control': "no-cache",
-                'Content-Type': 'application/json',
-            }
-
-            # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-            # base64Enc = (base64Encoded.decode("utf-8"))
-            # print(str(base64Enc))
-            # base = ("Basic " + base64Enc)
-            # print(str(base))
-            #
-            # headers = {
-            #             'email_address': emailZendesk +"/token",
-            #             'password': (_configDef['zdesk_config']['zdesk_password']),
-            #             'authorization': base,
-            #             'cache-control': "no-cache",
-            #             'content-type': "application/json"
-            # }
-
-            conn.request("GET", "/api/v2/search?query=type%3Aticket%20created%3E" + str(ticketdate), headers=headers)
-
+            # Convert the Zendesk ID to company name
+            conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
             res = conn.getresponse()
-            #data = res.read().decode("utf-8")
-            data_raw = res.read()
-            data = remove_emoji(data_raw)
-            reply = str(data)
+            companyID = res.read()
+            compNameRaw = str(companyID.decode("utf-8"))
 
-            messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + " Please wait.")
-
-            if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
-                return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
-
-            data = json.dumps(reply, indent=2)
+            data = json.dumps(compNameRaw, indent=2)
             data_dict = ast.literal_eval(data)
-            d_tick = json.loads(data_dict)
-            #print(d_tick)
+            d_org = json.loads(data_dict)
+            #print(str(d_org))
 
-            index = 1
-            dataLenght = 0
-            dataLenghtNew = 0
+            try:
+                org_Name = str(d_org["organizations"][0]["name"])
+                org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                orgName = str(org_name_temp)
+                #print(orgName)
+            except:
+                orgName = "Company not yet created"
 
-            for index in range(len(d_tick["results"])):
+            if assignee_flag:
 
-                totTickets += 1
-                print(int(totTickets))
-
-                requestid = str(d_tick["results"][index]["id"])
-                #print(requestid)
-                requeststatus = str(d_tick["results"][index]["status"])
-                #print(requeststatus)
-                requestpriority = str(d_tick["results"][index]["priority"])
-                #print(requestpriority)
-                requestseverity = str(d_tick["results"][index]["tags"])
-
-                if (len(d_tick["results"][index]["tags"])) == 0:
-                    noTag = True
-                else:
-                    noTag = False
-
-                notSet = True
-
-                if noTag:
-                    sev = "Not set"
-                    notSet = False
-
-                for index_tags in range(len(d_tick["results"][index]["tags"])):
-                    tags = str((d_tick["results"][index]["tags"][index_tags]))
-
-                    if tags.startswith("severity_1"):
-                        sev = "Severity 1"
-                        notSet = False
-                    elif tags.startswith("severity_2"):
-                        sev = "Severity 2"
-                        notSet = False
-                    elif tags.startswith("severity_3"):
-                        sev = "Severity 3"
-                        notSet = False
-                    elif tags.startswith("severity_4"):
-                        sev = "Severity 4"
-                        notSet = False
-
-                if notSet:
-                    sev = "Not Set"
-                    notSet = False
-
-                requestseverity = sev
-                assignee_flag = False
-                #print(sev)
-
-                requestsubject_temps = str(d_tick["results"][index]["subject"])
-                requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                requestdescription_temps = str(d_tick["results"][index]["description"])
-                requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                requestorganization_id = str(d_tick["results"][index]["organization_id"])
-                requestrequester_id = str(d_tick["results"][index]["requester_id"])
-                #print(requestrequester_id)
-                requestcreated_at = str(d_tick["results"][index]["created_at"]).replace("T", " ").replace("Z", "")
-                requestupdated_at = str(d_tick["results"][index]["updated_at"]).replace("T", " ").replace("Z", "")
-                requestassignee_id = str(d_tick["results"][index]["assignee_id"])
-
-                request_id = str(requestid)
-                #print(request_id)
-                request_status = str(requeststatus)
-                request_priority = str(requestpriority)
-                request_severity = str(requestseverity)
-                request_subject = str(requestsubject)
-                request_desc = str(requestdescription)
-                desc = str(request_desc)
-                request_org = str(requestorganization_id)
-                request_requestor = str(requestrequester_id)
-                #print(request_requestor)
-                request_created = str(requestcreated_at)
-                request_updated = str(requestupdated_at)
-
-                # To get the name of the requester given the requesterID
-                conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
-                res = conn.getresponse()
-                userRequesterId = res.read()
-                tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_req = json.loads(data_dict)
-                req_name = str(d_req["user"]["name"])
-                requesterName = req_name
-                #print(requesterName)
-
-                try:
-                    request_assignee = str(requestassignee_id)
-
-                    # To get the name of the assignee given the assigneeID
-                    conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
-                    res = conn.getresponse()
-                    userAssigneeId = res.read()
-                    tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                    data = json.dumps(tempUserAssignee, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_user = json.loads(data_dict)
-                    assign_name = str(d_user["user"]["name"])
-                    assigneeName = assign_name
-                    #print(assigneeName)
-
-                except:
-                    assigneeName = "Not assigned"
-                    assignee_flag = True
-
-                requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
-                assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(request_assignee) + "/assigned_tickets"
-                OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
-
-                # Convert the Zendesk ID to company name
-                conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
-                res = conn.getresponse()
-                companyID = res.read()
-                compNameRaw = str(companyID.decode("utf-8"))
-
-                data = json.dumps(compNameRaw, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_org = json.loads(data_dict)
-                try:
-                    org_Name = str(d_org["organizations"][0]["name"])
-                    org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                    orgName = str(org_name_temp)
-                    #print(orgName)
-                except:
-                    orgName = "Company not yet created"
-
-                if assignee_flag:
-
-                    table_body = ""
-                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                   "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
-                                   "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
-                                   "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
-                                   "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
-                                   "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td></tr><tr>" \
-                                   "</tr></thead><tbody></tbody></table>"
-
-                else:
-
-                    table_body = ""
-                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                   "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
-                                   "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
-                                   "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
-                                   "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
-                                   "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                   "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td></tr><tr>" \
-                                   "</tr></thead><tbody></tbody></table>"
-
-
-                allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> : " + str(request_subject) + " (assignee: " + str(assigneeName) + " created: " + str(request_created) + " Status: <b>" + str(request_status) + "</b>) <br/>"
-
-                # Checking for unique words (Tokens)
-                UniqueToken = len(set(table_header.split()))
-                #print("UniqueToken: " + str(UniqueToken))
-
-                dataLenght = len(str(table_header))
-                #print(str(dataLenght))
-                #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
-
-                # if dataLenght >= 80000:
-                #     print("Exeeded the limite")
-                #     #index = (len(d_tick["results"])) - 1
-
-                limitReached = False
-                if dataLenght >= 45000 or UniqueToken >= 850:
-                    #messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most recent tickets")
-                    #break
-                    limitReached = True
-                    if counter:
-                        messageDetail.ReplyToChatV2_noBotLog("There are " + str(totTickets) +" ticket(s). This search query exceed the character limit and therefore will show into seperate updates")
-
-                if limitReached:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                    reply = str(table_bodyFull)
-                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                    dataLenght = ""
-                    table_header = ""
-                    UniqueToken = ""
-                    table_bodyFull = ""
-                    allTicket = ""
-                    counter = False
-
-            if table_header == "":
-                return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search.")
+                table_body = ""
+                table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                               "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
+                               "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
+                               "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
+                               "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
+                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
+                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td></tr><tr>" \
+                               "</tr></thead><tbody></tbody></table>"
 
             else:
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                assigneeName = "<a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a>"
+                table_body = ""
+                table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                               "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
+                               "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
+                               "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
+                               "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
+                               "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
+                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                               "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
+                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
+                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                               "<td style='border:1px solid black;text-align:center'>" + str(assigneeName) + "</td></tr><tr>" \
+                               "</tr></thead><tbody></tbody></table>"
+
+
+            allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> : " + str(request_subject) + " (assignee: " + str(assigneeName) + " created: " + str(request_created) + " Status: <b>" + str(request_status) + "</b>) <br/>"
+
+            # Checking for unique words (Tokens)
+            UniqueToken = len(set(table_header.split()))
+            #print("UniqueToken: " + str(UniqueToken))
+
+            dataLenght = len(str(table_header))
+            #print("Lenght: " + str(dataLenght))
+            #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
+
+            # if dataLenght >= 80000:
+            #     print("Exeeded the limite")
+            #     #index = (len(d_tick["results"])) - 1
+
+            limitReached = False
+            #if dataLenght >= 45000 or UniqueToken >= 850:
+            if dataLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                #messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most recent tickets")
+                #break
+                limitReached = True
+                if counter:
+                    messageDetail.ReplyToChatV2_noBotLog("ticket(s). This search query exceed the character limit and therefore will show into seperate updates")
+
+            if limitReached:
+                # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
                 reply = str(table_bodyFull)
-                # return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                return messageDetail.ReplyToChatV2_noBotLog("End of Results")
+                dataLenght = ""
+                table_header = ""
+                UniqueToken = ""
+                table_bodyFull = ""
+                allTicket = ""
+                counter = False
+
+        if table_header == "":
+            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search.")
+
+        else:
+            # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+            reply = str(table_bodyFull)
+            # return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+            messageDetail.ReplyToChatV2_noBotLog(str(reply))
+            return messageDetail.ReplyToChatV2_noBotLog("There are " + str(totTickets) +" Results")
+            #return messageDetail.ReplyToChatV2_noBotLog("End of Result")
         # else:
         #     return messageDetail.ReplyToChat("You aren't authorised to use this command. You are either not added to the Agent list with the Bot or you are not an Admin or Agent/staff on Zendesk")
-    except:
-        try:
-            botlog.LogSymphonyInfo("Inside second try for newTicketToday")
-            isAllowed = False
-            render = ""
-            table_header = ""
-            table_bodyFull = ""
-            allTicket = ""
-            counter = True
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
-
-            for index_org in range(len(d_org["users"])):
-                firstName = d_org["users"][index_org]["firstName"]
-                lastName = d_org["users"][index_org]["lastName"]
-                displayName = d_org["users"][index_org]["displayName"]
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                ##############################
-                try:
-                    emailAddress = d_org["users"][index_org]["emailAddress"]
-                    #print("User is connected: " + emailAddress)
-                    emailZendesk = emailAddress
-                    #print(emailZendesk)
-                    connectionRequired = False
-                    # isAllowed = True
-                except:
-                    connectionRequired = True
-
-                # if connectionRequired:
-
-                data_lenght = len(dataComp)
-
-                if data_lenght > 450:
-                    try:
-                        #print("inside > 450")
-                        query = "type:user " + emailAddress
-                    except:
-                        query = "type:user " + firstName + " " + lastName
-                    #print(query)
-                elif data_lenght < 450:
-                    try:
-                        #print("inside < 450")
-                        #query = "type:user " + emailAddress + " organization:" + companyName
-                        query = "type:user " + emailAddress
-                    except:
-                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                        query = "type:user " + firstName + " " + lastName
-                    #print(query)
-                else:
-                    return messageDetail.ReplyToChat("No user information available")
-
-                #print(query)
-                results = zendesk.search(query=query)
-                #print(results)
-
-                if str(results).startswith(
-                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                    return messageDetail.ReplyToChat(
-                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
-                elif str(results).startswith(
-                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                    return messageDetail.ReplyToChat(
-                        "This organisation/company does not exist in Zendesk or name is misspelled.")
-                else:
-
-                    data = json.dumps(results, indent=2)
-                    d = json.loads(data)
-
-                    for index in range(len(d["results"])):
-                        name = d["results"][index]["name"]
-                        email = str(d["results"][index]["email"])
-                        #print("EmailAddress from Zendesk: " + email)
-
-                        role = str(d["results"][index]["role"])
-                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
-
-                        #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                            isAllowed = True
-                            botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
-                        else:
-                            isAllowed = False
-
-                    emailZendesk = email
-
-                botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-
-
-            if callerCheck in AccessFile and isAllowed:
-                botlog.LogSymphonyInfo("User is an " + role + " on Zendesk and an Agent or Admin with the bot")
-
-                streamType = (messageDetail.ChatRoom.Type)
-                #print(streamType)
-
-                showRequest = (messageDetail.Command.MessageText)
-                message_split = showRequest.split()
-
-                try:
-                    todayMinusDays = message_split[0]
-                    todayTicket = int(todayMinusDays)
-                except:
-                    return messageDetail.ReplyToChat("Please use number of days to check back such as /today 1")
-
-                if int(todayMinusDays) > 5:
-                    return messageDetail.ReplyToChat("For optimal performance, please use 5 days or less in your query")
-
-                ticketdate_raw = datetime.today() - timedelta(days=int(todayTicket))
-                ticketdate = str(ticketdate_raw)[:-16]
-                #print(ticketdate)
-
-                conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
-
-                headers = {
-                    'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
-                    'password': _configDef['zdesk_config']['zdesk_password'],
-                    'authorization': _configDef['zdesk_config']['zdesk_auth'],
-                    'cache-control': "no-cache",
-                    'Content-Type': 'application/json',
-                }
-
-                # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-                # base64Enc = (base64Encoded.decode("utf-8"))
-                # print(str(base64Enc))
-                # base = ("Basic " + base64Enc)
-                # print(str(base))
-                #
-                # headers = {
-                #             'email_address': emailZendesk +"/token",
-                #             'password': (_configDef['zdesk_config']['zdesk_password']),
-                #             'authorization': base,
-                #             'cache-control': "no-cache",
-                #             'content-type': "application/json"
-                # }
-
-                conn.request("GET", "/api/v2/search?query=type%3Aticket%20created%3E" + str(ticketdate), headers=headers)
-
-                res = conn.getresponse()
-                #data = res.read().decode("utf-8")
-                data_raw = res.read()
-                data = remove_emoji(data_raw)
-                reply = str(data)
-
-                #messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + " Please wait.")
-
-                if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
-                    return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
-
-                data = json.dumps(reply, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_tick = json.loads(data_dict)
-                #print(d_tick)
-
-                index = 1
-                dataLenght = 0
-                dataLenghtNew = 0
-                for index in range(len(d_tick["results"])):
-
-                    requestid = str(d_tick["results"][index]["id"])
-                    #print(requestid)
-                    requeststatus = str(d_tick["results"][index]["status"])
-                    #print(requeststatus)
-                    requestpriority = str(d_tick["results"][index]["priority"])
-                    #print(requestpriority)
-                    requestseverity = str(d_tick["results"][index]["tags"])
-
-                    if (len(d_tick["results"][index]["tags"])) == 0:
-                        noTag = True
-                    else:
-                        noTag = False
-
-                    notSet = True
-
-                    if noTag:
-                        sev = "Not set"
-                        notSet = False
-
-                    for index_tags in range(len(d_tick["results"][index]["tags"])):
-                        tags = str((d_tick["results"][index]["tags"][index_tags]))
-
-                        if tags.startswith("severity_1"):
-                            sev = "Severity 1"
-                            notSet = False
-                        elif tags.startswith("severity_2"):
-                            sev = "Severity 2"
-                            notSet = False
-                        elif tags.startswith("severity_3"):
-                            sev = "Severity 3"
-                            notSet = False
-                        elif tags.startswith("severity_4"):
-                            sev = "Severity 4"
-                            notSet = False
-
-                    if notSet:
-                        sev = "Not Set"
-                        notSet = False
-
-                    requestseverity = sev
-                    assignee_flag = False
-                    #print(sev)
-
-                    requestsubject_temps = str(d_tick["results"][index]["subject"])
-                    requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                    requestdescription_temps = str(d_tick["results"][index]["description"])
-                    requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                    requestorganization_id = str(d_tick["results"][index]["organization_id"])
-                    requestrequester_id = str(d_tick["results"][index]["requester_id"])
-                    #print(requestrequester_id)
-                    requestcreated_at = str(d_tick["results"][index]["created_at"]).replace("T", " ").replace("Z", "")
-                    requestupdated_at = str(d_tick["results"][index]["updated_at"]).replace("T", " ").replace("Z", "")
-                    requestassignee_id = str(d_tick["results"][index]["assignee_id"])
-
-                    request_id = str(requestid)
-                    #print(request_id)
-                    request_status = str(requeststatus)
-                    request_priority = str(requestpriority)
-                    request_severity = str(requestseverity)
-                    request_subject = str(requestsubject)
-                    request_desc = str(requestdescription)
-                    desc = str(request_desc)
-                    request_org = str(requestorganization_id)
-                    request_requestor = str(requestrequester_id)
-                    #print(request_requestor)
-                    request_created = str(requestcreated_at)
-                    request_updated = str(requestupdated_at)
-
-                    # To get the name of the requester given the requesterID
-                    conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
-                    res = conn.getresponse()
-                    userRequesterId = res.read()
-                    tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_req = json.loads(data_dict)
-                    req_name = str(d_req["user"]["name"])
-                    requesterName = req_name
-                    #print(requesterName)
-
-                    try:
-                        request_assignee = str(requestassignee_id)
-
-                        # To get the name of the assignee given the assigneeID
-                        conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
-                        res = conn.getresponse()
-                        userAssigneeId = res.read()
-                        tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_user = json.loads(data_dict)
-                        assign_name = str(d_user["user"]["name"])
-                        assigneeName = assign_name
-                        #print(assigneeName)
-
-                    except:
-                        assigneeName = "Not assigned"
-                        assignee_flag = True
-
-                    requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
-                    assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(request_assignee) + "/assigned_tickets"
-                    OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
-
-                    # Convert the Zendesk ID to company name
-                    conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
-                    res = conn.getresponse()
-                    companyID = res.read()
-                    compNameRaw = str(companyID.decode("utf-8"))
-
-                    data = json.dumps(compNameRaw, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_org = json.loads(data_dict)
-                    try:
-                        org_Name = str(d_org["organizations"][0]["name"])
-                        org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                        orgName = str(org_name_temp)
-                        #print(orgName)
-                    except:
-                        orgName = "Company not yet created"
-
-                    if assignee_flag:
-
-                        table_body = ""
-                        table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                        "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                        "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
-                                        "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
-                                        "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
-                                        "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
-                                        "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
-                                        "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
-                                        "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td></tr><tr>" \
-                                        "</tr></thead><tbody></tbody></table>"
-
-                    else:
-
-                        table_body = ""
-                        table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                        "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                        "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
-                                        "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
-                                        "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
-                                        "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
-                                        "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
-                                        "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
-                                        "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                        "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
-                                        "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                        "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td></tr><tr>" \
-                                        "</tr></thead><tbody></tbody></table>"
-
-
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> : " + str(request_subject) + " (assignee: " + str(assigneeName) + " created: " + str(request_created) + " Status: <b>" + str(request_status) + "</b>) <br/>"
-
-                    # Checking for unique words (Tokens)
-                    UniqueToken = len(set(table_header.split()))
-                    #print("UniqueToken: " + str(UniqueToken))
-
-                    dataLenght = len(str(table_header))
-                    #print(str(dataLenght))
-                    #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
-
-                    limitReached = False
-                    if dataLenght >= 55000 or UniqueToken >= 1500:
-                        #messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most recent tickets")
-                        #break
-                        limitReached = True
-                        if counter:
-                            messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
-
-                    if limitReached:
-                        table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                        reply = str(table_bodyFull)
-                        messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                        dataLenght = ""
-                        table_header = ""
-                        UniqueToken = ""
-                        table_bodyFull = ""
-                        allTicket = ""
-                        counter = False
-
-                if table_header == "":
-                    return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search.")
-
-                else:
-                    table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                    reply = str(table_bodyFull)
-                    # return messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                    return messageDetail.ReplyToChatV2_noBotLog("End of Results")
-            # else:
-            #     return messageDetail.ReplyToChat("You aren't authorised to use this command. You are either not added to the Agent list with the Bot or you are not an Admin or Agent/staff on Zendesk")
-        except:
-            return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+    # except:
+    #     try:
+    #         botlog.LogSymphonyInfo("Inside second try for newTicketToday")
+    #         isAllowed = False
+    #         render = ""
+    #         table_header = ""
+    #         table_bodyFull = ""
+    #         allTicket = ""
+    #         counter = True
+    #         commandCallerUID = messageDetail.FromUserId
+    #
+    #         connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+    #
+    #         resComp = connComp.getresponse()
+    #         dataComp = resComp.read()
+    #         data_raw = str(dataComp.decode('utf-8'))
+    #         data_dict = ast.literal_eval(data_raw)
+    #
+    #         dataRender = json.dumps(data_dict, indent=2)
+    #         d_org = json.loads(dataRender)
+    #
+    #         for index_org in range(len(d_org["users"])):
+    #             firstName = d_org["users"][index_org]["firstName"]
+    #             lastName = d_org["users"][index_org]["lastName"]
+    #             displayName = d_org["users"][index_org]["displayName"]
+    #             #companyName = d_org["users"][index_org]["company"]
+    #             companyNameTemp = d_org["users"][index_org]["company"]
+    #             companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+    #             companyName = str(companyTemp)
+    #             userID = str(d_org["users"][index_org]["id"])
+    #
+    #             ##############################
+    #             try:
+    #                 emailAddress = d_org["users"][index_org]["emailAddress"]
+    #                 #print("User is connected: " + emailAddress)
+    #                 emailZendesk = emailAddress
+    #                 #print(emailZendesk)
+    #                 connectionRequired = False
+    #                 # isAllowed = True
+    #             except:
+    #                 connectionRequired = True
+    #
+    #             # if connectionRequired:
+    #
+    #             data_lenght = len(dataComp)
+    #
+    #             if data_lenght > 450:
+    #                 try:
+    #                     #print("inside > 450")
+    #                     query = "type:user " + emailAddress
+    #                 except:
+    #                     query = "type:user " + firstName + " " + lastName
+    #                 #print(query)
+    #             elif data_lenght < 450:
+    #                 try:
+    #                     #print("inside < 450")
+    #                     #query = "type:user " + emailAddress + " organization:" + companyName
+    #                     query = "type:user " + emailAddress
+    #                 except:
+    #                     #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+    #                     query = "type:user " + firstName + " " + lastName
+    #                 #print(query)
+    #             else:
+    #                 return messageDetail.ReplyToChat("No user information available")
+    #
+    #             #print(query)
+    #             results = zendesk.search(query=query)
+    #             #print(results)
+    #
+    #             if str(results).startswith(
+    #                     "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+    #                 return messageDetail.ReplyToChat(
+    #                     "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
+    #             elif str(results).startswith(
+    #                     "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+    #                 return messageDetail.ReplyToChat(
+    #                     "This organisation/company does not exist in Zendesk or name is misspelled.")
+    #             else:
+    #
+    #                 data = json.dumps(results, indent=2)
+    #                 d = json.loads(data)
+    #
+    #                 for index in range(len(d["results"])):
+    #                     name = d["results"][index]["name"]
+    #                     email = str(d["results"][index]["email"])
+    #                     #print("EmailAddress from Zendesk: " + email)
+    #
+    #                     role = str(d["results"][index]["role"])
+    #                     botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+    #
+    #                     #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+    #                     if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+    #                         isAllowed = True
+    #                         botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
+    #                     else:
+    #                         isAllowed = False
+    #
+    #                 emailZendesk = email
+    #
+    #             botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+    #             callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+    #
+    #
+    #         if callerCheck in AccessFile and isAllowed:
+    #             botlog.LogSymphonyInfo("User is an " + role + " on Zendesk and an Agent or Admin with the bot")
+    #
+    #             streamType = (messageDetail.ChatRoom.Type)
+    #             #print(streamType)
+    #
+    #             showRequest = (messageDetail.Command.MessageText)
+    #             message_split = showRequest.split()
+    #
+    #             try:
+    #                 todayMinusDays = message_split[0]
+    #                 todayTicket = int(todayMinusDays)
+    #             except:
+    #                 return messageDetail.ReplyToChat("Please use number of days to check back such as /today 1")
+    #
+    #             if int(todayMinusDays) > 5:
+    #                 return messageDetail.ReplyToChat("For optimal performance, please use 5 days or less in your query")
+    #
+    #             ticketdate_raw = datetime.today() - timedelta(days=int(todayTicket))
+    #             ticketdate = str(ticketdate_raw)[:-16]
+    #             #print(ticketdate)
+    #
+    #             conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+    #
+    #             headers = {
+    #                 'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+    #                 'password': _configDef['zdesk_config']['zdesk_password'],
+    #                 'authorization': _configDef['zdesk_config']['zdesk_auth'],
+    #                 'cache-control': "no-cache",
+    #                 'Content-Type': 'application/json',
+    #             }
+    #
+    #             # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+    #             # base64Enc = (base64Encoded.decode("utf-8"))
+    #             # print(str(base64Enc))
+    #             # base = ("Basic " + base64Enc)
+    #             # print(str(base))
+    #             #
+    #             # headers = {
+    #             #             'email_address': emailZendesk +"/token",
+    #             #             'password': (_configDef['zdesk_config']['zdesk_password']),
+    #             #             'authorization': base,
+    #             #             'cache-control': "no-cache",
+    #             #             'content-type': "application/json"
+    #             # }
+    #
+    #             conn.request("GET", "/api/v2/search?query=type%3Aticket%20created%3E" + str(ticketdate), headers=headers)
+    #
+    #             res = conn.getresponse()
+    #             #data = res.read().decode("utf-8")
+    #             data_raw = res.read()
+    #             data = remove_emoji(data_raw)
+    #             reply = str(data)
+    #
+    #             #messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + " Please wait.")
+    #
+    #             if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
+    #                 return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
+    #
+    #             data = json.dumps(reply, indent=2)
+    #             data_dict = ast.literal_eval(data)
+    #             d_tick = json.loads(data_dict)
+    #             #print(d_tick)
+    #
+    #             index = 1
+    #             dataLenght = 0
+    #             dataLenghtNew = 0
+    #             for index in range(len(d_tick["results"])):
+    #
+    #                 requestid = str(d_tick["results"][index]["id"])
+    #                 #print(requestid)
+    #                 requeststatus = str(d_tick["results"][index]["status"])
+    #                 #print(requeststatus)
+    #                 requestpriority = str(d_tick["results"][index]["priority"])
+    #                 #print(requestpriority)
+    #                 requestseverity = str(d_tick["results"][index]["tags"])
+    #
+    #                 if (len(d_tick["results"][index]["tags"])) == 0:
+    #                     noTag = True
+    #                 else:
+    #                     noTag = False
+    #
+    #                 notSet = True
+    #
+    #                 if noTag:
+    #                     sev = "Not set"
+    #                     notSet = False
+    #
+    #                 for index_tags in range(len(d_tick["results"][index]["tags"])):
+    #                     tags = str((d_tick["results"][index]["tags"][index_tags]))
+    #
+    #                     if tags.startswith("severity_1"):
+    #                         sev = "Severity 1"
+    #                         notSet = False
+    #                     elif tags.startswith("severity_2"):
+    #                         sev = "Severity 2"
+    #                         notSet = False
+    #                     elif tags.startswith("severity_3"):
+    #                         sev = "Severity 3"
+    #                         notSet = False
+    #                     elif tags.startswith("severity_4"):
+    #                         sev = "Severity 4"
+    #                         notSet = False
+    #
+    #                 if notSet:
+    #                     sev = "Not Set"
+    #                     notSet = False
+    #
+    #                 requestseverity = sev
+    #                 assignee_flag = False
+    #                 #print(sev)
+    #
+    #                 requestsubject_temps = str(d_tick["results"][index]["subject"])
+    #                 requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+    #                 requestdescription_temps = str(d_tick["results"][index]["description"])
+    #                 requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+    #                 requestorganization_id = str(d_tick["results"][index]["organization_id"])
+    #                 requestrequester_id = str(d_tick["results"][index]["requester_id"])
+    #                 #print(requestrequester_id)
+    #                 requestcreated_at = str(d_tick["results"][index]["created_at"]).replace("T", " ").replace("Z", "")
+    #                 requestupdated_at = str(d_tick["results"][index]["updated_at"]).replace("T", " ").replace("Z", "")
+    #                 requestassignee_id = str(d_tick["results"][index]["assignee_id"])
+    #
+    #                 request_id = str(requestid)
+    #                 #print(request_id)
+    #                 request_status = str(requeststatus)
+    #                 request_priority = str(requestpriority)
+    #                 request_severity = str(requestseverity)
+    #                 request_subject = str(requestsubject)
+    #                 request_desc = str(requestdescription)
+    #                 desc = str(request_desc)
+    #                 request_org = str(requestorganization_id)
+    #                 request_requestor = str(requestrequester_id)
+    #                 #print(request_requestor)
+    #                 request_created = str(requestcreated_at)
+    #                 request_updated = str(requestupdated_at)
+    #
+    #                 # To get the name of the requester given the requesterID
+    #                 conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
+    #                 res = conn.getresponse()
+    #                 userRequesterId = res.read()
+    #                 tempUserRequester = str(userRequesterId.decode('utf-8'))
+    #
+    #                 data = json.dumps(tempUserRequester, indent=2)
+    #                 data_dict = ast.literal_eval(data)
+    #                 d_req = json.loads(data_dict)
+    #                 req_name = str(d_req["user"]["name"])
+    #                 requesterName = req_name
+    #                 #print(requesterName)
+    #
+    #                 try:
+    #                     request_assignee = str(requestassignee_id)
+    #
+    #                     # To get the name of the assignee given the assigneeID
+    #                     conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
+    #                     res = conn.getresponse()
+    #                     userAssigneeId = res.read()
+    #                     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+    #
+    #                     data = json.dumps(tempUserAssignee, indent=2)
+    #                     data_dict = ast.literal_eval(data)
+    #                     d_user = json.loads(data_dict)
+    #                     assign_name = str(d_user["user"]["name"])
+    #                     assigneeName = assign_name
+    #                     #print(assigneeName)
+    #
+    #                 except:
+    #                     assigneeName = "Not assigned"
+    #                     assignee_flag = True
+    #
+    #                 requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
+    #                 assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(request_assignee) + "/assigned_tickets"
+    #                 OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
+    #
+    #                 # Convert the Zendesk ID to company name
+    #                 conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
+    #                 res = conn.getresponse()
+    #                 companyID = res.read()
+    #                 compNameRaw = str(companyID.decode("utf-8"))
+    #
+    #                 data = json.dumps(compNameRaw, indent=2)
+    #                 data_dict = ast.literal_eval(data)
+    #                 d_org = json.loads(data_dict)
+    #                 try:
+    #                     org_Name = str(d_org["organizations"][0]["name"])
+    #                     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+    #                     orgName = str(org_name_temp)
+    #                     #print(orgName)
+    #                 except:
+    #                     orgName = "Company not yet created"
+    #
+    #                 if assignee_flag:
+    #
+    #                     table_body = ""
+    #                     table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+    #                                     "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+    #                                     "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
+    #                                     "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
+    #                                     "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
+    #                                     "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
+    #                                     "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
+    #                                     "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
+    #                                     "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td></tr><tr>" \
+    #                                     "</tr></thead><tbody></tbody></table>"
+    #
+    #                 else:
+    #
+    #                     table_body = ""
+    #                     table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+    #                                     "<td style='width:15%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+    #                                     "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td></tr><tr>" \
+    #                                     "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(desc) + "</td></tr><tr>" \
+    #                                     "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td></tr><tr>" \
+    #                                     "<td style='width:4%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_status + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td></tr><tr>" \
+    #                                     "<td style='width:4.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td></tr><tr>" \
+    #                                     "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_created + "</td></tr><tr>" \
+    #                                     "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td></tr><tr>" \
+    #                                     "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+    #                                     "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td></tr><tr>" \
+    #                                     "</tr></thead><tbody></tbody></table>"
+    #
+    #
+    #                 allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> : " + str(request_subject) + " (assignee: " + str(assigneeName) + " created: " + str(request_created) + " Status: <b>" + str(request_status) + "</b>) <br/>"
+    #
+    #                 # Checking for unique words (Tokens)
+    #                 UniqueToken = len(set(table_header.split()))
+    #                 #print("UniqueToken: " + str(UniqueToken))
+    #
+    #                 dataLenght = len(str(table_header))
+    #                 #print(str(dataLenght))
+    #                 #print("Ticket ID: " + str(request_id) + " Status: " + str(request_status))
+    #
+    #                 limitReached = False
+    #                 if dataLenght >= 55000 or UniqueToken >= 1500:
+    #                     #messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show only the most recent tickets")
+    #                     #break
+    #                     limitReached = True
+    #                     if counter:
+    #                         messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+    #
+    #                 if limitReached:
+    #                     table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+    #                     reply = str(table_bodyFull)
+    #                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
+    #                     dataLenght = ""
+    #                     table_header = ""
+    #                     UniqueToken = ""
+    #                     table_bodyFull = ""
+    #                     allTicket = ""
+    #                     counter = False
+    #
+    #             if table_header == "":
+    #                 return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search.")
+    #
+    #             else:
+    #                 table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+    #                 reply = str(table_bodyFull)
+    #                 # return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+    #                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
+    #                 return messageDetail.ReplyToChatV2_noBotLog("End of Results")
+    #         # else:
+    #         #     return messageDetail.ReplyToChat("You aren't authorised to use this command. You are either not added to the Agent list with the Bot or you are not an Admin or Agent/staff on Zendesk")
+    #     except:
+    #         return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 
 
 def ticketUpdate(messageDetail):
@@ -7607,6 +9874,16 @@ def ticketUpdate(messageDetail):
     try:
         isAllowed = False
         commandCallerUID = messageDetail.FromUserId
+
+        # att_list = []
+        # if messageDetail.Attachments:
+        #     for att in messageDetail.Attachments:
+        #         att_name = att.name
+        #         att_id = att.id
+        #         att_response = msg.getAttchment(messageDetail.StreamId, messageDetail.MessageId, att_id)
+        #         att_item = (att_name, att_response)
+        #         att_list.append(att_item)
+
 
         connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
         sessionTok = callout.GetSessionToken()
@@ -7815,6 +10092,56 @@ def ticketUpdate(messageDetail):
                 return messageDetail.ReplyToChatV2("Please enter all the required fields: <b>Ticket ID</b>| <b>comment</b>| <b>status (open/pending/hold/solved) </b>| <b>true (public)/false (private)</b>")
             else:
                 messageDetail.ReplyToChatV2(comment_status +" comment added to ticket <b>" + idt + "</b>")
+
+            ###########################
+
+
+            # # Ticket comments and uploads / attachments
+            # commentbody = "Attaching example Python file"
+            #
+            # # must be in the examples directory when executing so this file can be found
+            # fname = 'example.py'
+            #
+            # with open(fname, 'rb') as fp:
+            #     fdata = fp.read()
+            #
+            # # MIME types can be detected with the magic module:
+            # # import magic
+            # # mime_type = magic.from_file(fname, mime=True)
+            # # if type(mime_type) is bytes:
+            # #    mime_type = mime_type.decode()
+            #
+            # # But this file is known
+            # mime_type = 'text/plain'
+            #
+            # upload_result = zendesk.upload_create(
+            #     fdata, filename=fname, mime_type=mime_type, complete_response=True)
+            #
+            # # for making additional uploads
+            # upload_token = upload_result['content']['upload']['token']
+            #
+            # data = {
+            #     "ticket": {
+            #         "id": ticket_id,
+            #         "comment": {
+            #             "public": False,
+            #             "body": commentbody
+            #         }
+            #     }
+            # }
+            #
+            # # I like to add this separately, because it's not an uncommon use case
+            # # to have an automated ticket update that may or may not have uploads.
+            # if upload_token != "":
+            #     data['ticket']['comment']['uploads'] = [upload_token]
+            #
+            # # Post the comment to the ticket, which should reference the upload
+            # response = zendesk.ticket_update(ticket_id, data)
+
+            ###########################
+
+
+
         #
         #         try:
         #     #      Will show the Ticket details in a table format.
@@ -8672,193 +10999,193 @@ def assignTicket(messageDetail):
                     idt = ticketID
 
                     ##      Will show the Ticket details in a table format.
-
-                    base64Encoded = base64.b64encode(bytes((callingUserEMail + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
-                    base64Enc = (base64Encoded.decode("utf-8"))
-                    #print(str(base64Enc))
-                    base = ("Basic " + base64Enc)
-                    #print(str(base))
-
-                    headers = {
-                        'email_address': callingUserEMail + "/token",
-                        'password': (_configDef['zdesk_config']['zdesk_password']),
-                        'authorization': base,
-                        'cache-control': "no-cache",
-                        'content-type': "application/json"
-                    }
-
-                    conn.request("GET", "/api/v2/tickets/" + idt + ".json", headers=headers)
-                    res = conn.getresponse()
-                    data = res.read()
-                    request_raw = data.decode("utf-8")
-
-                    data_raw = json.dumps(request_raw, indent=2)
-                    data_dict = ast.literal_eval(data_raw)
-                    d = json.loads(data_dict)
-
-                    messageDetail.ReplyToChatV2("Zendesk Ticket <a href =\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a> is successfully asigned to " + name)
-
-                    requestid = str(d["ticket"]["id"])
-                    requeststatus = str(d["ticket"]["status"])
-                    requestpriority = str(d["ticket"]["priority"])
-                    requestseverity = str(d["ticket"]["tags"])
-
-                    if (len(d["ticket"]["tags"])) == 0:
-                        noTag = True
-                    else:
-                        noTag = False
-
-                    notSet = True
-
-                    if noTag:
-                        sev = "Not set"
-                        notSet = False
-
-                    for index_tags in range(len(d["ticket"]["tags"])):
-                        tags = str((d["ticket"]["tags"][index_tags]))
-
-                        if tags.startswith("severity_1"):
-                            sev = "Severity 1"
-                            notSet = False
-                        elif tags.startswith("severity_2"):
-                            sev = "Severity 2"
-                            notSet = False
-                        elif tags.startswith("severity_3"):
-                            sev = "Severity 3"
-                            notSet = False
-                        elif tags.startswith("severity_4"):
-                            sev = "Severity 4"
-                            notSet = False
-
-                    if notSet:
-                        sev = "Not Set"
-                        notSet = False
-
-                    requestseverity = sev
-
-                    requestsubject_temps = str(d["ticket"]["subject"])
-                    requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                    requestdescription_temps = str(d["ticket"]["description"])
-                    requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                    requestorganization_id = str(d["ticket"]["organization_id"])
-                    requestrequester_id = str(d["ticket"]["requester_id"])
-                    requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
-                    requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
-                    requestassignee_id = str(d["ticket"]["assignee_id"])
-
-                    request_id = str(requestid)
-                    request_status = str(requeststatus)
-                    request_priority = str(requestpriority)
-                    request_severity = str(requestseverity)
-                    request_subject = str(requestsubject)
-                    request_desc = str(requestdescription)
-                    desc = str(request_desc)
-                    request_org = str(requestorganization_id)
-                    request_requestor = str(requestrequester_id)
-                    request_created = str(requestcreated_at)
-                    request_updated = str(requestupdated_at)
-
-                    # To get the name of the requester given the requesterID
-                    conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
-                    res = conn.getresponse()
-                    userRequesterId = res.read()
-                    tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
-                    req_name = str(d["user"]["name"])
-                    requesterName = req_name
-
-                    try:
-                        request_assignee = str(requestassignee_id)
-
-                        # To get the name of the assignee given the assigneeID
-                        conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
-                        res = conn.getresponse()
-                        userAssigneeId = res.read()
-                        tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
-                        assign_name = str(d["user"]["name"])
-                        assigneeName = assign_name
-
-                    except:
-                        assigneeName = "Not assigned"
-                        assignee_flag = True
-
-                    requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
-                    assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + request_assignee + "/assigned_tickets"
-                    OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
-
-                    # Convert the Zendesk ID to company name
-                    conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
-                    res = conn.getresponse()
-                    companyID = res.read()
-                    compNameRaw = str(companyID.decode("utf-8"))
-
-                    data = json.dumps(compNameRaw, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
-                    try:
-                        org_Name = str(d["organizations"][0]["name"])
-                        org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                        orgName = str(org_name_temp)
-                        # print(orgName)
-                    except:
-                        orgName = "Company not yet created"
-
-                    table_body = ""
-                    table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                                   "<td style='width:20%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                                   "<td style='width:30%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
-                                   "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                                   "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                                   "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                                   "<td style='width:3.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                                   "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                                   "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                                   "</tr></thead><tbody>"
-
-                    if assignee_flag:
-
-                        table_body += "<tr>" \
-                                      "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
-                                      "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td>" \
-                                       "</tr>"
-
-                    else:
-                        table_body += "<tr>" \
-                                      "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
-                                      "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
-                                      "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td>" \
-                                      "</tr>"
-
-                    table_body += "</tbody></table>"
-                    reply = table_header + table_body
-                    return messageDetail.ReplyToChatV2_noBotLog(reply)
+                    #
+                    # base64Encoded = base64.b64encode(bytes((callingUserEMail + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+                    # base64Enc = (base64Encoded.decode("utf-8"))
+                    # #print(str(base64Enc))
+                    # base = ("Basic " + base64Enc)
+                    # #print(str(base))
+                    #
+                    # headers = {
+                    #     'email_address': callingUserEMail + "/token",
+                    #     'password': (_configDef['zdesk_config']['zdesk_password']),
+                    #     'authorization': base,
+                    #     'cache-control': "no-cache",
+                    #     'content-type': "application/json"
+                    # }
+                    #
+                    # conn.request("GET", "/api/v2/tickets/" + idt + ".json", headers=headers)
+                    # res = conn.getresponse()
+                    # data = res.read()
+                    # request_raw = data.decode("utf-8")
+                    #
+                    # data_raw = json.dumps(request_raw, indent=2)
+                    # data_dict = ast.literal_eval(data_raw)
+                    # d = json.loads(data_dict)
+                    #
+                    # messageDetail.ReplyToChatV2("Zendesk Ticket <a href =\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a> is successfully asigned to " + name)
+                    #
+                    # requestid = str(d["ticket"]["id"])
+                    # requeststatus = str(d["ticket"]["status"])
+                    # requestpriority = str(d["ticket"]["priority"])
+                    # requestseverity = str(d["ticket"]["tags"])
+                    #
+                    # if (len(d["ticket"]["tags"])) == 0:
+                    #     noTag = True
+                    # else:
+                    #     noTag = False
+                    #
+                    # notSet = True
+                    #
+                    # if noTag:
+                    #     sev = "Not set"
+                    #     notSet = False
+                    #
+                    # for index_tags in range(len(d["ticket"]["tags"])):
+                    #     tags = str((d["ticket"]["tags"][index_tags]))
+                    #
+                    #     if tags.startswith("severity_1"):
+                    #         sev = "Severity 1"
+                    #         notSet = False
+                    #     elif tags.startswith("severity_2"):
+                    #         sev = "Severity 2"
+                    #         notSet = False
+                    #     elif tags.startswith("severity_3"):
+                    #         sev = "Severity 3"
+                    #         notSet = False
+                    #     elif tags.startswith("severity_4"):
+                    #         sev = "Severity 4"
+                    #         notSet = False
+                    #
+                    # if notSet:
+                    #     sev = "Not Set"
+                    #     notSet = False
+                    #
+                    # requestseverity = sev
+                    #
+                    # requestsubject_temps = str(d["ticket"]["subject"])
+                    # requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    # requestdescription_temps = str(d["ticket"]["description"])
+                    # requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                    # requestorganization_id = str(d["ticket"]["organization_id"])
+                    # requestrequester_id = str(d["ticket"]["requester_id"])
+                    # requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
+                    # requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
+                    # requestassignee_id = str(d["ticket"]["assignee_id"])
+                    #
+                    # request_id = str(requestid)
+                    # request_status = str(requeststatus)
+                    # request_priority = str(requestpriority)
+                    # request_severity = str(requestseverity)
+                    # request_subject = str(requestsubject)
+                    # request_desc = str(requestdescription)
+                    # desc = str(request_desc)
+                    # request_org = str(requestorganization_id)
+                    # request_requestor = str(requestrequester_id)
+                    # request_created = str(requestcreated_at)
+                    # request_updated = str(requestupdated_at)
+                    #
+                    # # To get the name of the requester given the requesterID
+                    # conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
+                    # res = conn.getresponse()
+                    # userRequesterId = res.read()
+                    # tempUserRequester = str(userRequesterId.decode('utf-8'))
+                    #
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    # d = json.loads(data_dict)
+                    # req_name = str(d["user"]["name"])
+                    # requesterName = req_name
+                    #
+                    # try:
+                    #     request_assignee = str(requestassignee_id)
+                    #
+                    #     # To get the name of the assignee given the assigneeID
+                    #     conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
+                    #     res = conn.getresponse()
+                    #     userAssigneeId = res.read()
+                    #     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                    #
+                    #     data = json.dumps(tempUserAssignee, indent=2)
+                    #     data_dict = ast.literal_eval(data)
+                    #     d = json.loads(data_dict)
+                    #     assign_name = str(d["user"]["name"])
+                    #     assigneeName = assign_name
+                    #
+                    # except:
+                    #     assigneeName = "Not assigned"
+                    #     assignee_flag = True
+                    #
+                    # requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
+                    # assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + request_assignee + "/assigned_tickets"
+                    # OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
+                    #
+                    # # Convert the Zendesk ID to company name
+                    # conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
+                    # res = conn.getresponse()
+                    # companyID = res.read()
+                    # compNameRaw = str(companyID.decode("utf-8"))
+                    #
+                    # data = json.dumps(compNameRaw, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    # d = json.loads(data_dict)
+                    # try:
+                    #     org_Name = str(d["organizations"][0]["name"])
+                    #     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    #     orgName = str(org_name_temp)
+                    #     # print(orgName)
+                    # except:
+                    #     orgName = "Company not yet created"
+                    #
+                    # table_body = ""
+                    # table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                    #                "<td style='width:20%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                    #                "<td style='width:30%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
+                    #                "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                    #                "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                    #                "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                    #                "<td style='width:3.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                    #                "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                    #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                    #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                    #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                    #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                    #                "</tr></thead><tbody>"
+                    #
+                    # if assignee_flag:
+                    #
+                    #     table_body += "<tr>" \
+                    #                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td>" \
+                    #                    "</tr>"
+                    #
+                    # else:
+                    #     table_body += "<tr>" \
+                    #                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
+                    #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td>" \
+                    #                   "</tr>"
+                    #
+                    # table_body += "</tbody></table>"
+                    # reply = table_header + table_body
+                    # return messageDetail.ReplyToChatV2_noBotLog(reply)
 
             else:
                 botlog.LogSymphonyInfo("User is connected with the bot - Email Address: " + emailZendesk)
@@ -9020,176 +11347,176 @@ def assignTicket(messageDetail):
                 idt = ticketID
 
                 ##      Will show the Ticket details in a table format.
-                conn.request("GET", "/api/v2/tickets/" + idt + ".json", headers=headers)
-                res = conn.getresponse()
-                data = res.read()
-                request_raw = data.decode("utf-8")
-
-                data_raw = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data_raw)
-                d = json.loads(data_dict)
-
-                requestid = str(d["ticket"]["id"])
-                requeststatus = str(d["ticket"]["status"])
-                requestpriority = str(d["ticket"]["priority"])
-                requestseverity = str(d["ticket"]["tags"])
-
-                if (len(d["ticket"]["tags"])) == 0:
-                    noTag = True
-                else:
-                    noTag = False
-
-                notSet = True
-
-                if noTag:
-                    sev = "Not set"
-                    notSet = False
-
-                for index_tags in range(len(d["ticket"]["tags"])):
-                    tags = str((d["ticket"]["tags"][index_tags]))
-
-                    if tags.startswith("severity_1"):
-                        sev = "Severity 1"
-                        notSet = False
-                    elif tags.startswith("severity_2"):
-                        sev = "Severity 2"
-                        notSet = False
-                    elif tags.startswith("severity_3"):
-                        sev = "Severity 3"
-                        notSet = False
-                    elif tags.startswith("severity_4"):
-                        sev = "Severity 4"
-                        notSet = False
-
-                if notSet:
-                    sev = "Not Set"
-                    notSet = False
-
-                requestseverity = sev
-
-                requestsubject_temps = str(d["ticket"]["subject"])
-                requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                requestdescription_temps = str(d["ticket"]["description"])
-                requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
-                requestorganization_id = str(d["ticket"]["organization_id"])
-                requestrequester_id = str(d["ticket"]["requester_id"])
-                requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
-                requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
-                requestassignee_id = str(d["ticket"]["assignee_id"])
-
-                request_id = str(requestid)
-                request_status = str(requeststatus)
-                request_priority = str(requestpriority)
-                request_severity = str(requestseverity)
-                request_subject = str(requestsubject)
-                request_desc = str(requestdescription)
-                desc = str(request_desc)
-                request_org = str(requestorganization_id)
-                request_requestor = str(requestrequester_id)
-                request_created = str(requestcreated_at)
-                request_updated = str(requestupdated_at)
-
-                # To get the name of the requester given the requesterID
-                conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
-                res = conn.getresponse()
-                userRequesterId = res.read()
-                tempUserRequester = str(userRequesterId.decode('utf-8'))
-
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
-                req_name = str(d["user"]["name"])
-                requesterName = req_name
-
-                try:
-                    request_assignee = str(requestassignee_id)
-
-                    # To get the name of the assignee given the assigneeID
-                    conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
-                    res = conn.getresponse()
-                    userAssigneeId = res.read()
-                    tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                    data = json.dumps(tempUserAssignee, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
-                    assign_name = str(d["user"]["name"])
-                    assigneeName = assign_name
-
-                except:
-                    assigneeName = "Not assigned"
-                    assignee_flag = True
-
-                requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
-                assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + request_assignee + "/assigned_tickets"
-                OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
-
-                # Convert the Zendesk ID to company name
-                conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
-                res = conn.getresponse()
-                companyID = res.read()
-                compNameRaw = str(companyID.decode("utf-8"))
-
-                data = json.dumps(compNameRaw, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
-                try:
-                    org_Name = str(d["organizations"][0]["name"])
-                    org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                    orgName = str(org_name_temp)
-                    # print(orgName)
-                except:
-                    orgName = "Company not yet created"
-
-                table_body = ""
-                table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td style='width:20%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
-                               "<td style='width:30%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
-                               "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
-                               "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
-                               "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
-                               "<td style='width:3.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
-                               "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
-                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
-                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
-                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
-                               "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
-                               "</tr></thead><tbody>"
-
-                if assignee_flag:
-
-                    table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td>" \
-                                  "</tr>"
-
-                else:
-                    table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td>" \
-                                  "</tr>"
-
-                table_body += "</tbody></table>"
-                reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog(reply)
+                # conn.request("GET", "/api/v2/tickets/" + idt + ".json", headers=headers)
+                # res = conn.getresponse()
+                # data = res.read()
+                # request_raw = data.decode("utf-8")
+                #
+                # data_raw = json.dumps(request_raw, indent=2)
+                # data_dict = ast.literal_eval(data_raw)
+                # d = json.loads(data_dict)
+                #
+                # requestid = str(d["ticket"]["id"])
+                # requeststatus = str(d["ticket"]["status"])
+                # requestpriority = str(d["ticket"]["priority"])
+                # requestseverity = str(d["ticket"]["tags"])
+                #
+                # if (len(d["ticket"]["tags"])) == 0:
+                #     noTag = True
+                # else:
+                #     noTag = False
+                #
+                # notSet = True
+                #
+                # if noTag:
+                #     sev = "Not set"
+                #     notSet = False
+                #
+                # for index_tags in range(len(d["ticket"]["tags"])):
+                #     tags = str((d["ticket"]["tags"][index_tags]))
+                #
+                #     if tags.startswith("severity_1"):
+                #         sev = "Severity 1"
+                #         notSet = False
+                #     elif tags.startswith("severity_2"):
+                #         sev = "Severity 2"
+                #         notSet = False
+                #     elif tags.startswith("severity_3"):
+                #         sev = "Severity 3"
+                #         notSet = False
+                #     elif tags.startswith("severity_4"):
+                #         sev = "Severity 4"
+                #         notSet = False
+                #
+                # if notSet:
+                #     sev = "Not Set"
+                #     notSet = False
+                #
+                # requestseverity = sev
+                #
+                # requestsubject_temps = str(d["ticket"]["subject"])
+                # requestsubject = str(requestsubject_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                # requestdescription_temps = str(d["ticket"]["description"])
+                # requestdescription = str(requestdescription_temps).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                # requestorganization_id = str(d["ticket"]["organization_id"])
+                # requestrequester_id = str(d["ticket"]["requester_id"])
+                # requestcreated_at = str(d["ticket"]["created_at"]).replace("T", " ").replace("Z", "")
+                # requestupdated_at = str(d["ticket"]["updated_at"]).replace("T", " ").replace("Z", "")
+                # requestassignee_id = str(d["ticket"]["assignee_id"])
+                #
+                # request_id = str(requestid)
+                # request_status = str(requeststatus)
+                # request_priority = str(requestpriority)
+                # request_severity = str(requestseverity)
+                # request_subject = str(requestsubject)
+                # request_desc = str(requestdescription)
+                # desc = str(request_desc)
+                # request_org = str(requestorganization_id)
+                # request_requestor = str(requestrequester_id)
+                # request_created = str(requestcreated_at)
+                # request_updated = str(requestupdated_at)
+                #
+                # # To get the name of the requester given the requesterID
+                # conn.request("GET", "/api/v2/users/" + request_requestor, headers=headers)
+                # res = conn.getresponse()
+                # userRequesterId = res.read()
+                # tempUserRequester = str(userRequesterId.decode('utf-8'))
+                #
+                # data = json.dumps(tempUserRequester, indent=2)
+                # data_dict = ast.literal_eval(data)
+                # d = json.loads(data_dict)
+                # req_name = str(d["user"]["name"])
+                # requesterName = req_name
+                #
+                # try:
+                #     request_assignee = str(requestassignee_id)
+                #
+                #     # To get the name of the assignee given the assigneeID
+                #     conn.request("GET", "/api/v2/users/" + request_assignee, headers=headers)
+                #     res = conn.getresponse()
+                #     userAssigneeId = res.read()
+                #     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                #
+                #     data = json.dumps(tempUserAssignee, indent=2)
+                #     data_dict = ast.literal_eval(data)
+                #     d = json.loads(data_dict)
+                #     assign_name = str(d["user"]["name"])
+                #     assigneeName = assign_name
+                #
+                # except:
+                #     assigneeName = "Not assigned"
+                #     assignee_flag = True
+                #
+                # requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/requester/requested_tickets"
+                # assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + request_assignee + "/assigned_tickets"
+                # OrgTicket = (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "/organization/tickets"
+                #
+                # # Convert the Zendesk ID to company name
+                # conn.request("GET", "/api/v2/users/" + requestrequester_id + "/organizations.json", headers=headers)
+                # res = conn.getresponse()
+                # companyID = res.read()
+                # compNameRaw = str(companyID.decode("utf-8"))
+                #
+                # data = json.dumps(compNameRaw, indent=2)
+                # data_dict = ast.literal_eval(data)
+                # d = json.loads(data_dict)
+                # try:
+                #     org_Name = str(d["organizations"][0]["name"])
+                #     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                #     orgName = str(org_name_temp)
+                #     # print(orgName)
+                # except:
+                #     orgName = "Company not yet created"
+                #
+                # table_body = ""
+                # table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                #                "<td style='width:20%;border:1px solid blue;border-bottom: double blue;text-align:center'>SUBJECT</td>" \
+                #                "<td style='width:30%;border:1px solid blue;border-bottom: double blue;text-align:center'>DESCRIPTION</td>" \
+                #                "<td style='width:2.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>ID</td>" \
+                #                "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>STATUS</td>" \
+                #                "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>PRIORITY</td>" \
+                #                "<td style='width:3.5%;border:1px solid blue;border-bottom: double blue;text-align:center'>SEVERITY</td>" \
+                #                "<td style='width:5%;border:1px solid blue;border-bottom: double blue;text-align:center'>COMPANY</td>" \
+                #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>REQUESTER</td>" \
+                #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED</td>" \
+                #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>UPDATED</td>" \
+                #                "<td style='width:7%;border:1px solid blue;border-bottom: double blue;text-align:center'>ASSIGNEE</td>" \
+                #                "</tr></thead><tbody>"
+                #
+                # if assignee_flag:
+                #
+                #     table_body += "<tr>" \
+                #                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + assigneeName + "</td>" \
+                #                   "</tr>"
+                #
+                # else:
+                #     table_body += "<tr>" \
+                #                   "<td style='border:1px solid black;text-align:left'>" + request_subject + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:left'>" + desc + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_status + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_priority + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_severity + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + OrgTicket + "\">" + orgName + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + requesterTicket + "\">" + str(requesterName) + "</a></td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_created + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'>" + request_updated + "</td>" \
+                #                   "<td style='border:1px solid black;text-align:center'><a href=\"" + assigneeTicket + "\">" + str(assigneeName) + "</a></td>" \
+                #                   "</tr>"
+                #
+                # table_body += "</tbody></table>"
+                # reply = table_header + table_body
+                # return messageDetail.ReplyToChatV2_noBotLog(reply)
 
         else:
             return messageDetail.ReplyToChat("You aren't authorised to use this command. If required, please review your Zendesk Role with your Zendesk Administrator")
@@ -9973,7 +12300,7 @@ def searchKb(messageDetail):
                     table_body += "<tr>" \
                                   "<td style='border:1px solid black;text-align:left'><a href=\"" + str(kb_html_url) + "\">" + str(kb_title) + "</a></td>" \
                                   "<td style='border:1px solid black;text-align:center'>" + str(kb_author_name) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + str(kb_edited_at).replace("T", "").replace("Z","") + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(kb_edited_at).replace("T", " ").replace("Z","") + "</td>" \
                                   "</tr>"
 
                 table_body += "</tbody></table>"
@@ -10016,7 +12343,7 @@ def searchKb(messageDetail):
                 #response = requests.request("GET", url, headers=headers, params=querystring)
                 response = requests.request("GET", url, headers=headers, params=querystring)
                 kb = response.json()
-                #print(str(kb))
+                print(str(kb))
 
                 noResult = "{'count': 0, 'next_page': None, 'page': 1, 'page_count': 0, 'per_page': 25, 'previous_page': None, 'results': []}"
 
@@ -10079,7 +12406,7 @@ def searchKb(messageDetail):
                     table_body += "<tr>" \
                                   "<td style='border:1px solid black;text-align:left'><a href=\"" + str(kb_html_url) + "\">" + str(kb_title) + "</a></td>" \
                                   "<td style='border:1px solid black;text-align:center'>" + str(kb_author_name) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:center'>" + str(kb_edited_at).replace("T", "").replace("Z","") + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(kb_edited_at).replace("T", " ").replace("Z","") + "</td>" \
                                   "</tr>"
 
                 table_body += "</tbody></table>"

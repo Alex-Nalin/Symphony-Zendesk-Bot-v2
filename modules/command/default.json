@@ -86,7 +86,7 @@
       "description": "Finds existing acronym",
       "param":"acronym",
       "example":"/findAcronym VIP",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -97,7 +97,7 @@
       "description": "List all the existing acronym",
       "param":"None",
       "example":"/listAllAcronyms",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -108,7 +108,7 @@
       "description": "Repeats whatever chat data is sent to the bot. Useful for testing the bot connection.",
       "param":"[Text]",
       "example":"/echo hello world",
-      "category": "General Bot command",
+      "category": "Info lookup",
       "permission": "Authorised List",
       "immediate": true
     },
@@ -120,7 +120,7 @@
       "description": "Uses Google Translate to translate the search word or phrase.",
       "param":"Text",
       "example":"/translate bonjour",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -131,7 +131,7 @@
       "description": "Pulls the most recent open and close prices for the specified ticker symbol from Alpha Vantage.",
       "param":"tickerSymbol",
       "example":"/quote $appl",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -142,7 +142,7 @@
       "description": "Searches and brings a funny gif from Giphy. If search text is blank this command will return a random GIF. (using Card)",
       "param":"Text (optional)",
       "example":"/gif Symphony",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -153,7 +153,7 @@
       "description": "Gives the weather forecast for the given location from 1 to 7 days.",
       "param":"location + dys to forecast",
       "example":"/weather london or /weather london 5",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -164,7 +164,7 @@
       "description": "Retrieves a Quote of the Day to ponder on. /qod .",
       "param":"None",
       "example":"/qod",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -175,7 +175,7 @@
       "description": "Displays quotes from famous movies and person.",
       "param":"None",
       "example":"/funQuote",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -186,7 +186,7 @@
       "description": "Displays random joke",
       "param":"None",
       "example":"/joke",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -197,7 +197,7 @@
       "description": "Finds top 3 results from Wikipedia",
       "param":"Search Term",
       "example":"/wikiSearch Symphony Communication",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -207,7 +207,7 @@
       "helptext": "<b>/whois</b>",
       "param": "@mentioned user",
       "example": "/whois @alex nalin",
-      "category": "Information lookup",
+      "category": "Info lookup",
       "permission": "Authorised List"
     },
     {
@@ -217,7 +217,7 @@
       "helptext": "<b>/UIDCheck</b>",
       "param": "UID",
       "example": "/UIDCheck 71811853189765",
-      "category": "Information lookupl",
+      "category": "Info lookupl",
       "permission": "Authorised List"
     },
     {
@@ -227,7 +227,51 @@
       "helptext": "<b>/streamCheck</b>",
       "param": "streamID",
       "example": "/streamCheck 5fEubxc6pMHqioicBamPZ3___qN3RFcKdA",
-      "category": "Information lookup",
+      "category": "Info lookup",
+      "permission": "Authorised List"
+    },
+    {
+      "name": "addTask",
+      "triggers": ["addTask", "addtask"],
+      "function": "addTask",
+      "helptext": "<b>/addTask</b>",
+      "description": "Add Task to the scheduler",
+      "param":"Org | StreamId | Weekday/w (0-6) | hour/hh | min/mm",
+      "example":"/addTask acme - io9JEbq8VoqiuoEHTVVYpX___ppcNNVKdA | 0 | 09 | 00",
+      "category": "Create/update",
+      "permission": "Authorised List"
+    },
+    {
+      "name": "removeTask",
+      "triggers": ["removeTask","removetask", "remTask", "remtask", "delTask", "deltask", "stopTask", "stoptask"],
+      "function": "removeTask",
+      "helptext": "<b>/removeTask</b>",
+      "description": "Removes the Task from the Scheduler",
+      "param":"Org",
+      "example":"/removeTask acme",
+      "category": "Create/update",
+      "permission": "Authorised List"
+    },
+    {
+      "name": "findTask",
+      "triggers": ["findTask","findtask", "FindTask", "Findtask", "Task", "task"],
+      "function": "findTask",
+      "helptext": "<b>/findTask</b>",
+      "description": "Finds scheduled Task",
+      "param":"Org",
+      "example":"/findTask acme",
+      "category": "Info lookup",
+      "permission": "Authorised List"
+    },
+    {
+      "name": "listAllTasks",
+      "triggers": ["listAllTasks", "listAllTask", "listalltasks", "listalltask", "listTasks", "listTask"],
+      "function": "listAllTasks",
+      "helptext": "<b>/listAllTask</b>",
+      "description": "List all scheduled Task(s)",
+      "param":"None",
+      "example":"/listAllTasks",
+      "category": "Info lookup",
       "permission": "Authorised List"
     }
   ],

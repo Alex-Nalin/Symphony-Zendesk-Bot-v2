@@ -8,26 +8,28 @@ Symphony Zendesk Bot is an example of a multi-function command and chat-bot for 
 The main purpose of Symphony Zendesk Bot is to assist the Support team and other Symphony Teams with their daily work
 
 These are the functions added for this to integrate to Zendesk Support Ticket Management:
-* searchCompanyTickets (`/searchCompanyTickets company <open/new/pending/solved/closed/unresolved/all> (optional)`) to get a list of Zendesk tickets for a given company and filtered by status, if needed.
-* searchUserTickets (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket or (`/searchUserTickets <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket by status.
-* Show Zendesk Comments (`/showComments <ticket_id>`) will show the updates made to a ticket and its author. This will show attachments and their respective size
-* Create Zendesk Ticket (`/createTicket subject| description`) as an agent and, this will use the agent as the ticket requester with default values.
-* Create Zendesk Request (`/createRequest <@mention user>| <subject>| <description>`) by @mentioning a Symphony user, the bot will cross check the user on Zendesk and once validated, it will create a Zendesk ticket with the provided title and description of the issue/problem.
-* Recent Zendesk ticket (`/recentZD`), this will show all the recent ticket the agents have reviewed.
-* User (`/user alex| Symphony`) will return all the users named Alex on the Symphony Zendesk account. (`/user alex nalin| symphony`) will return all users name Alex Nalin on the Symphony Zendesk account. If you want to get the full list of users on a given account use this method (`/user | symphony`) (to look for all users on the Symphony Zendesk account)
-* Show Zendesk  (`/show <ticketid>`) is a call to display a given Zendesk ticket by its ID.
-* Today call (`/today`) will show all the tickets raised today, you can also specify how many days back to go (`/today 1`) to get a bigger list of recently raised support issue from 5 days ago.
-* Ticket Update (`/ticketUpdate <ticketID>| comment| status| public/private`) will allow the caller to add a public or private update to an existing Support Ticket.
-* Assign Ticket (`assignTicket` <ticketID> <@mention user>) will assign the Zendesk ticket to the @mentioned Zendesk Agent who is also a Symphony user.
+* Search Org Ticket (`/ZDOrgTicket org <open/new/pending/solved/closed/unresolved/all> (optional)`) to get a list of Zendesk tickets for a given company and filtered by status, if needed.
+* Search Ticket as requester (`/ZDUserTicket <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket as a requester or (`/ZDUserTicket <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket as requester by status.
+* Search Ticket as assignee (`/ZDAssigneeTicket <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket as an assignee/agent or (`/ZDAssigneeTicket <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket as assignee by status.
+* Search Ticket as CCed/contributor (`/ZDCCTicket <open/new/pending/solved/closed/unresolved/all> (optional)`) to search for your own Zendesk ticket as a CCed/contributor person or (`/ZDCCTicket <open/new/pending/solved/closed/unresolved/all> @mention`) to search for a colleague's Zendesk ticket as a CCed/contributor person by status.
+* Search by KeyWord (`/ZDKeyWord KEYWORD`) to search Zendesk by a given keyword
+* Show Zendesk Comments (`/ZDComments <ticket_id>`) will show the updates made to a ticket and its author. This will show attachments and their respective size
+* Create Zendesk Ticket (`/ZDTicket subject| description`) as an agent and, this will use the agent as the ticket requester with default values.
+* Create Zendesk Request (`/ZDRequest <@mention user>| <subject>| <description>`) by @mentioning a Symphony user, the bot will cross check the user on Zendesk and once validated, it will create a Zendesk ticket with the provided title and description of the issue/problem.
+* Recent Zendesk ticket (`/ZDRecent`), this will show all the recent ticket the agents have reviewed.
+* Search Zendesk User (`/ZDUser alex| Symphony`) will return all the users named Alex on the Symphony Zendesk account. (`/ZDUser alex nalin| symphony`) will return all users name Alex Nalin on the Symphony Zendesk account. If you want to get the full list of users on a given account use this method (`/user | symphony`) (to look for all users on the Symphony Zendesk account)
+* Show Zendesk ticket by id  (`/ZDShow <ticketid>`) is a call to display a given Zendesk ticket by its ID.
+* Search ticket open until today (`/ZDToday`) will show all the tickets raised today, you can also specify how many days back to go (`/ZDToday 3`) to get a bigger list of recently raised support issue from 3 days ago.
+* Ticket Update (`/ZDUpdate <ticketID>| comment| status| public/private`) will allow the caller to add a public or private update to an existing Support Ticket.
+* Assign Ticket (`ZDAssign` <ticketID> <@mention user>) will assign the Zendesk ticket to the @mentioned Zendesk Agent who is also a Symphony user.
 
-* Add Access (`/addAccess <@mention user(s)>`) to the list of authorised users to communicate with the Bot to execute commands. It will also sort the list when adding new user. This is an Admin restricted function
-* Remove Access (`/removeAccess <@mention user>`) of the user to remove from the list of authorised users. This is an Admin restricted function
-* List All Access (`/listallaccess`) as its function states, this will return all the authorised user list. This is an Admin restricted function
-* Give a list of all the Bot Symphnony streams (`/botStream`) that exist with users, this include IM, MIM and ROOMs
-* Send Bot message (`/botMessage IM/ROOM/ALL <message>`) to IM/MIM/ROOMs where the bot is a member of to inform or an update or else.
-* Shutdown bot (`/shutdown IM/ROOM/ALL <message>(optional)`) with or without a message to IM/MIM or Rooms
-* Create a Zendesk user (`/createZendeskUser @mention`) by @mentioning the Symphony User, the user needs to be connected with the bot in order to do this a it requires the email address.
-* Knowledge Base Article search (`/kb <search query> `) will return the list of article with that text query
+* Add Access (`/ZDAccessAdd <@mention user(s)>`) to the list of authorised users to communicate with the Bot to execute commands. It will also sort the list when adding new user. This is an Admin restricted function
+* Remove Access (`/ZDAccessRemove <@mention user>`) of the user to remove from the list of authorised users. This is an Admin restricted function
+* List All Access (`/ZDAccessList`) as its function states, this will return all the authorised user list. This is an Admin restricted function
+* Give a list of all the Bot Symphnony streams (`/ZDStream`) that exist with users, this include IM, MIM and ROOMs
+* Send Bot message as blast (`/ZDBlast IM/ROOM/ALL <message>`) to IM/MIM/ROOMs where the bot is a member of to inform or an update or else.
+* Create a Zendesk user (`/ZDCreateUser @mention`) by @mentioning the Symphony User, the user needs to be connected with the bot in order to do this a it requires the email address.
+* Knowledge Base Article search (`/ZDKB <search query> `) will return the list of article with that text query
 
 ## Requirements
 

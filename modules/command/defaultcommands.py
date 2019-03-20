@@ -15,10 +15,28 @@ import ast
 import modules.symphony.callout as callout
 import modules.symphony.messagereader as symreader
 import modules.utility_date_time as utdt
+from Data.tasker import Tasker
 
 from requests_toolbelt import MultipartEncoder
 import requests
 import mimetypes
+
+# Init task variables
+# searchOrgTicketorg = ""
+# searchOrgTicketstream_id = ""
+# searchOrgTicketweekday = ""
+# searchOrgTickethour = ""
+# searchOrgTicketmin = ""
+
+searchOrgTicketorg = []
+searchOrgTicketstream_id = []
+searchOrgTicketweekday = []
+searchOrgTickethour = []
+searchOrgTicketmin = []
+
+task = ""
+taskIndex = ""
+
 
 #Grab the config.json Symphony parameters
 # _configPath = os.path.abspath('modules/command/default.json')
@@ -161,7 +179,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
                 caterory = _configZen["commands"][index]["category"]
 
-                if caterory == "Information lookup":
+                if caterory == "Info lookup":
                     caterory_bg_color = "cyan"
                 if caterory == "Zendesk":
                     caterory_bg_color = "cyan"
@@ -208,7 +226,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
                 caterory = _moreconfig["commands"][index]["category"]
 
-                if caterory == "Information lookup":
+                if caterory == "Info lookup":
                     caterory_bg_color = "cyan"
                 if caterory == "Zendesk":
                     caterory_bg_color = "cyan"
@@ -410,7 +428,7 @@ def SymphonyZendeskBotHelpCheat(messageDetail):
 
                 caterory = _configZen["commands"][index]["category"]
 
-                if caterory == "Information lookup":
+                if caterory == "Info lookup":
                     caterory_bg_color = "cyan"
                 if caterory == "Zendesk":
                     caterory_bg_color = "cyan"
@@ -458,7 +476,7 @@ def SymphonyZendeskBotHelpCheat(messageDetail):
 
                 caterory = _moreconfig["commands"][index]["category"]
 
-                if caterory == "Information lookup":
+                if caterory == "Info lookup":
                     caterory_bg_color = "cyan"
                 if caterory == "Zendesk":
                     caterory_bg_color = "cyan"
@@ -666,9 +684,8 @@ def botStream(messageDetail):
             table_body += "</tbody></table>"
             reply = table_header + table_body
 
-            return messageDetail.ReplyToChatV2_noBotLog(
-                "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(
-                    count) + "</b> </header><body>" + reply + "</body></card>")
+            #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(count) + "</b> </header><body>" + reply + "</body></card>")
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(count) + "</b> </header><body>" + reply + "</body></card>")
 
         else:
             #return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -788,9 +805,8 @@ def botStream(messageDetail):
                 table_body += "</tbody></table>"
                 reply = table_header + table_body
 
-                return messageDetail.ReplyToChatV2_noBotLog(
-                    "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(
-                        count) + "</b> </header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(count) + "</b> </header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the result below. Total number of stream with the Bot <b>" + str(count) + "</b> </header><body>" + reply + "</body></card>")
 
             else:
                 #return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -1315,7 +1331,9 @@ def GetGiphyImage(messageDetail):
                 if isRandom:
                     #msg = "<img src='" + response['data']['image_original_url'] + "'/>"
                     gifimagelink = (response['data']['image_original_url'])
-                    msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    #msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    msg = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+
 
                 else:
                     gifimagelink = (response['data']['images']['original']['url'])
@@ -1324,7 +1342,8 @@ def GetGiphyImage(messageDetail):
                     #joins all the elements of the array
                     header = ' '.join(paramList)
 
-                    msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    #msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    msg = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
 
                 messaging.SendSymphonyMessageV2(messageDetail.StreamId, msg)
 
@@ -1357,7 +1376,8 @@ def GetGiphyImage(messageDetail):
                 if isRandom:
                     #msg = "<img src='" + response['data']['image_original_url'] + "'/>"
                     gifimagelink = (response['data']['image_original_url'])
-                    msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    #msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    msg = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>(Click to view the GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
 
                 else:
                     gifimagelink = (response['data']['images']['original']['url'])
@@ -1366,7 +1386,9 @@ def GetGiphyImage(messageDetail):
                     #joins all the elements of the array
                     header = ' '.join(paramList)
 
-                    msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    #msg = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+                    msg = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header> You searched Giphy for: \"<b>"+ header +"</b>\" (click to view GIF)</header><body><img src=\"" + gifimagelink + "\"/><br/><a href=\"" + gifimagelink + "\"/></body></card>"
+
 
                 messaging.SendSymphonyMessageV2(messageDetail.StreamId, msg)
 
@@ -1505,6 +1527,71 @@ def QoD (messageDetail):
                 botlog.LogSymphonyInfo("Quote of the Day did not work")
         except:
             botlog.LogSymphonyInfo("Quote of the Day did not work entirely")
+
+
+##########################
+
+def QoDTask ():
+
+    try:
+        conn = http.client.HTTPConnection("quotes.rest")
+        headers = {
+            'cache-control': "no-cache",
+        }
+        conn.request("GET", "/qod", headers=headers)
+        res = conn.getresponse()
+        data = res.read()
+        parsed = json.loads(data)
+        parsedData = (json.dumps(parsed, indent=4))
+        #print("parsedData: " + parsedData)
+        qodraw = (data.decode("utf-8")).replace("\n", "")
+        #print("qodraw: " + str(qodraw))
+
+        qodrawsplit = qodraw.split("\":")
+        checklen = len(qodrawsplit)
+
+        if checklen == 4:
+            msg = "Quote of the Day will be live again tomorrow :)"
+        else:
+            qodrawsplitdata = str(qodrawsplit[5][2:][:-23])
+            qodrawsplitdata = qodrawsplitdata.replace("\",", "")
+            qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
+            qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
+
+            msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+        messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
+        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
+
+    except:
+        conn = http.client.HTTPConnection("quotes.rest")
+        headers = {
+            'cache-control': "no-cache",
+        }
+        conn.request("GET", "/qod", headers=headers)
+        res = conn.getresponse()
+        data = res.read()
+        parsed = json.loads(data)
+        parsedData = (json.dumps(parsed, indent=4))
+        #print("parsedData: " + parsedData)
+        qodraw = (data.decode("utf-8")).replace("\n", "")
+        #print("qodraw: " + str(qodraw))
+
+        qodrawsplit = qodraw.split("\":")
+        checklen = len(qodrawsplit)
+
+        if checklen == 4:
+            msg = "Quote of the Day will be live again tomorrow :)"
+        else:
+            qodrawsplitdata = str(qodrawsplit[5][2:][:-23])
+            qodrawsplitdata = qodrawsplitdata.replace("\",", "")
+            qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
+            qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
+
+            msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+        messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
+        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
+
+##########################
 
 
 def weather(messageDetail):
@@ -3152,7 +3239,8 @@ def listAllAcronyms(messageDetail):
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
 
             except:
                 return messageDetail.ReplyToChat("Acronyms not found")
@@ -3440,7 +3528,9 @@ def whois(messageDetail):
                     table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+
             # else:
             #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
             except:
@@ -3526,7 +3616,9 @@ def whois(messageDetail):
                 table_body += "</tbody></table>"
 
             reply = table_header + table_body
-            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+
             # else:
             #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
         except:
@@ -3675,8 +3767,9 @@ def streamCheck(messageDetail):
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog(
-                    "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+
             # else:
             #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
             except:
@@ -3780,8 +3873,9 @@ def streamCheck(messageDetail):
             table_body += "</tbody></table>"
 
             reply = table_header + table_body
-            return messageDetail.ReplyToChatV2_noBotLog(
-                "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+            #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Stream details</header><body>" + reply + "</body></card>")
+
             # else:
             #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
         except:
@@ -3921,8 +4015,10 @@ def UIDCheck(messageDetail):
                     table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
-        # else:
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+
+            # else:
         #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
             except:
                 botlog.LogSymphonyInfo("UIDCheck did not work")
@@ -4020,8 +4116,400 @@ def UIDCheck(messageDetail):
                 table_body += "</tbody></table>"
 
             reply = table_header + table_body
-            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+            return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>User details</header><body>" + reply + "</body></card>")
+
         # else:
         #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
         except:
             botlog.LogSymphonyInfo("UIDCheck did not work entirely")
+
+
+#########################
+
+def addTask(messageDetail):
+
+    try:
+
+        botlog.LogSymphonyInfo("Bot Call: Add Task")
+
+        try:
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            try:
+                botlog.LogSystemInfo("Inside Second try for user check")
+                commandCallerUID = messageDetail.FromUserId
+
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                for index_org in range(len(d_org["users"])):
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                    displayName = d_org["users"][index_org]["displayName"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                    userID = str(d_org["users"][index_org]["id"])
+
+                    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                    callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+            except:
+                return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+
+            try:
+                #message = (messageDetail.Command.MessageText)
+                message_raw = (messageDetail.Command.MessageFlattened)
+                message = str(message_raw).replace("/addtask ", "").replace("/addTask ", "")
+                #print(str(message))
+                info = message.split("|")
+                #print(str(info))
+                orgTask = str(info[0]).strip()
+                streamTask = str(info[1][1:]).replace("+", "-").replace("/", "_").replace("=", "")
+                weekDayTask = str(info[2][1:])
+                hourTask = str(info[3][1:])
+                minTask = str(info[4][1:])
+
+                #AcronymsDictionary.update({acronym.upper(): str(answer)})
+                Tasker.update({orgTask.upper(): str(streamTask) + ": " + str(weekDayTask) + ": " + str(hourTask) + ": " + str(minTask)})
+                sortTask(messageDetail)
+
+                weekday = ""
+                if int(weekDayTask) == 0:
+                    weekday = "Monday"
+                elif int(weekDayTask) == 1:
+                    weekday = "Tuesday"
+                elif int(weekDayTask) == 2:
+                    weekday = "Wednesday"
+                elif int(weekDayTask) == 3:
+                    weekday = "Thursday"
+                elif int(weekDayTask) == 4:
+                    weekday = "Friday"
+                elif int(weekDayTask) == 5:
+                    weekday = "Saturday"
+                elif int(weekDayTask) == 6:
+                    weekday = "Sunday"
+
+                return messageDetail.ReplyToChatV2("<b>" + orgTask.upper() + "</b> task was successfully added to the Scheduler as <b>" + orgTask.upper() + " room with streamID: " + streamTask + " on every " + str(weekday) + " at " + hourTask + ":" + minTask + "</b>")
+
+            except:
+                return messageDetail.ReplyToChat("Invalid format, please use /addTask org | streamid | weekday | hour | min")
+        else:
+            return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+    except:
+        botlog.LogSymphonyInfo("AddTask did not work entirely")
+
+def removeTask(messageDetail):
+
+    try:
+
+        botlog.LogSymphonyInfo("Bot Call: Remove Task")
+
+        try:
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+
+            try:
+
+                remTask = (messageDetail.Command.MessageText)[1:]
+
+                del Tasker[remTask.upper()]
+
+                updatedTasker = 'Tasker = ' + str(Tasker)
+
+                #file = open("modules/command/dictionary.py", "w+")
+                file = open("Data/tasker.py", "w+")
+                file.write(updatedTasker)
+                file.close()
+
+                return messageDetail.ReplyToChat(remTask + " was successfully removed.")
+            except:
+                return messageDetail.ReplyToChat(remTask + " was not found.")
+        # else:
+        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+    except:
+        botlog.LogSymphonyInfo("Remove Accronym did not work entirely")
+
+def findTask(messageDetail):
+
+    try:
+        botlog.LogSymphonyInfo("Bot Call: Find Task")
+
+        try:
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                botlog.LogSymphonyInfo(
+                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+
+            try:
+                findTask = str((messageDetail.Command.MessageText)[1:]).strip()
+
+                return messageDetail.ReplyToChat(findTask.upper() + " - " + str(Tasker[findTask.upper()]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b",""))
+            except:
+                return messageDetail.ReplyToChat("No result for " + str(findTask) + " found")
+        else:
+            return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+    except:
+        botlog.LogSymphonyInfo("Find Accronym did not work entirely")
+
+def listAllTasks(messageDetail):
+
+    try:
+
+        botlog.LogSymphonyInfo("Bot Call: List All Task")
+
+        try:
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                botlog.LogSymphonyInfo(
+                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
+            return messageDetail.ReplyToChat("Cannot validate user access")
+
+        if callerCheck in AccessFile:
+
+            try:
+                sortTask(messageDetail)
+                table_body = ""
+                table_header = "<table style='max-width:100%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                               "<td style='max-width:10%'>Task(s) on Scheduler</td>" \
+                               "</tr></thead><tbody>"
+
+                for task in Tasker:
+                    tasklist = task + " : " + str(Tasker[task])
+                    #print(tasklist)
+
+                    table_body += "<tr>" \
+                                  "<td><b>" + task + "</b> - " + str(Tasker[task]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
+                                  "</tr>"
+                table_body += "</tbody></table>"
+
+                reply = table_header + table_body
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
+
+            except:
+                return messageDetail.ReplyToChat("Acronyms not found")
+        # else:
+        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+    except:
+        botlog.LogSymphonyInfo("List All Tasks did not work entirely")
+
+# def listAllTasksTask():
+#
+#     # global taskIndex
+#     # taskIndex = 0
+#
+#     for task in Tasker:
+#         print("Test inside tasker")
+#         #print(int(taskIndex))
+#         # print(task)
+#        #print(Tasker)
+#         tasklist = task + " : " + str(Tasker[task])
+#         tasklist_split = str(tasklist).split(":")
+#         #print(tasklist_split)
+#         # _configDef['searchOrgTicket']['org'] = tasklist_split[0]
+#         # print(str(_configDef['searchOrgTicket']['org']).strip())
+#         # _configDef['searchOrgTicket']['stream_id'] = tasklist_split[1]
+#         # print(str(_configDef['searchOrgTicket']['stream']).strip())
+#         # _configDef['searchOrgTicket']['weekday'] = tasklist_split[2]
+#         # print(str(_configDef['searchOrgTicket']['weekday']).strip())
+#         # _configDef['searchOrgTicket']['hour'] = tasklist_split[3]
+#         # print(str(_configDef['searchOrgTicket']['hour']).strip())
+#         # _configDef['searchOrgTicket']['min'] = tasklist_split[4]
+#         # print(str(_configDef['searchOrgTicket']['minute']).strip())
+#
+#         global searchOrgTicketorg
+#         searchOrgTicketorg = tasklist_split[0]
+#         #print(str(searchOrgTicketorg).strip())
+#         global searchOrgTicketstream_id
+#         searchOrgTicketstream_id = tasklist_split[1]
+#         #print(str(searchOrgTicketstream_id).strip())
+#         global searchOrgTicketweekday
+#         searchOrgTicketweekday = tasklist_split[2]
+#         #print(str(searchOrgTicketweekday).strip())
+#         global searchOrgTickethour
+#         searchOrgTickethour = tasklist_split[3]
+#         #print(str(searchOrgTickethour).strip())
+#         global searchOrgTicketmin
+#         searchOrgTicketmin = tasklist_split[4]
+#         #print(str(searchOrgTicketmin).strip())
+#
+#         # global searchOrgTicketorg
+#         # searchOrgTicketorg[taskIndex] = tasklist_split[0]
+#         # #print(str(searchOrgTicketorg).strip())
+#         # global searchOrgTicketstream_id
+#         # searchOrgTicketstream_id[taskIndex] = tasklist_split[1]
+#         # #print(str(searchOrgTicketstream_id).strip())
+#         # global searchOrgTicketweekday
+#         # searchOrgTicketweekday[taskIndex] = tasklist_split[2]
+#         # #print(str(searchOrgTicketweekday).strip())
+#         # global searchOrgTickethour
+#         # searchOrgTickethour[taskIndex] = tasklist_split[3]
+#         # #print(str(searchOrgTickethour).strip())
+#         # global searchOrgTicketmin
+#         # searchOrgTicketmin[taskIndex] = tasklist_split[4]
+#         # #print(str(searchOrgTicketmin).strip())
+#
+#         # taskIndex += 1
+
+def sortTask(messageDetail):
+
+    sortedTask = {}
+
+    for key in sorted(Tasker.keys()):
+
+        sortedTask.update({key : Tasker[key]})
+
+
+    updatedTask = 'Tasker = ' + str(sortedTask)
+    file = open("Data/tasker.py","w+")
+    file.write(updatedTask)
+    file.close()

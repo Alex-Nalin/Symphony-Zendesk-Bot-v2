@@ -2,7 +2,7 @@ from zdesk import Zendesk
 import json
 import os
 import codecs
-import modules.symphony.messaging as msg
+import modules.symphony.messaging as messaging
 import http.client
 import requests
 import base64
@@ -72,6 +72,7 @@ def remove_emoji(emoji):
                                u"\U0001f926-\U0001f937"
                                u"\u200d"
                                u"\u2640-\u2642"
+                               u"\u22c6"
                                "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', emoji.decode("utf-8"))
 
@@ -316,6 +317,7 @@ def searchCompanyTickets(messageDetail):
         query = ""
         isIMRequired = False
         limitReached = False
+        showSearchOrgTicket = False
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -514,6 +516,17 @@ def searchCompanyTickets(messageDetail):
                 streamType = (messageDetail.ChatRoom.Type)
                 #print(streamType)
 
+                streamId = (messageDetail.StreamId)
+                #print(streamId)
+
+                if streamId in _configDef['searchorgticket_streamid']:
+                    showSearchOrgTicket = True
+                    #print("inside allowed room")
+                else:
+                    showSearchOrgTicket = False
+                    #print("inside not allowed room")
+                #print(showComment)
+
                 # Parse the messages received
                 for index in range(len(message_split)):
                     #print("index: "+ str(index))
@@ -555,7 +568,12 @@ def searchCompanyTickets(messageDetail):
                         sendUser = True
                         notNeeded = True
 
-                        if streamType == "IM":
+                        if showSearchOrgTicket:
+                            messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
+                            botlog.LogSystemInfo("Allowed room via streamid in Config")
+                            sendUser = False
+
+                        elif streamType == "IM":
                             messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         else:
                             messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
@@ -750,13 +768,13 @@ def searchCompanyTickets(messageDetail):
                         if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                             limitReached = True
                             if counter:
-                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate message")
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
                     else:
                         limitReached = False
                         if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                             limitReached = True
                             if counter:
-                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate message")
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
 
                     if sendUser:
                         if limitReached:
@@ -810,7 +828,8 @@ def searchCompanyTickets(messageDetail):
         except:
             try:
                 botlog.LogSymphonyInfo("Inside seccond try for searchCompanytickets.")
-                # if callerCheck in AccessFile and isAllowed:
+
+                 # if callerCheck in AccessFile and isAllowed:
                 if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
 
                     callername = messageDetail.Sender.Name
@@ -828,6 +847,17 @@ def searchCompanyTickets(messageDetail):
 
                     streamType = (messageDetail.ChatRoom.Type)
                     #print(streamType)
+
+                    streamId = (messageDetail.StreamId)
+                    #print(streamId)
+
+                    if streamId in _configDef['searchorgticket_streamid']:
+                        showSearchOrgTicket = True
+                        #print("inside allowed room")
+                    else:
+                        showSearchOrgTicket = False
+                        #print("inside not allowed room")
+                    #print(showComment)
 
                     # Parse the messages received
                     for index in range(len(message_split)):
@@ -870,7 +900,12 @@ def searchCompanyTickets(messageDetail):
                             sendUser = True
                             notNeeded = True
 
-                            if streamType == "IM":
+                            if showSearchOrgTicket:
+                                messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
+                                botlog.LogSystemInfo("Allowed room via streamid in Config")
+                                sendUser = False
+
+                            elif streamType == "IM":
                                 messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                             else:
                                 messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
@@ -887,7 +922,7 @@ def searchCompanyTickets(messageDetail):
                         if index == 1:
                             botlog.LogSymphonyInfo("Search query: " + str(query))
                             if org_length < 2:
-                                return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as knwon on your Zendesk instance")
+                                return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
 
             ################################
                         try:
@@ -915,6 +950,7 @@ def searchCompanyTickets(messageDetail):
             #################################
 
                     for result in data['results']:
+                        #print(result["priority"])
 
                         try:
                             assignee_flag = False
@@ -957,7 +993,7 @@ def searchCompanyTickets(messageDetail):
                             data_dict = ast.literal_eval(data)
                             d_assign = json.loads(data_dict)
                             assign_name = str(d_assign["user"]["name"])
-                            assigneeName = assign_name
+                            assigneeName = str(assign_name)
 
                         except:
                             assigneeName = "N/A"
@@ -968,6 +1004,7 @@ def searchCompanyTickets(messageDetail):
 
                         ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
 
                         if (len(result["tags"])) == 0:
                             noTag = True
@@ -1048,6 +1085,7 @@ def searchCompanyTickets(messageDetail):
                                             "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
                                             "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
+
                         allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
 
                         # Checking for unique words (Tokens)
@@ -1062,13 +1100,13 @@ def searchCompanyTickets(messageDetail):
                             if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                                 limitReached = True
                                 if counter:
-                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate message")
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
                         else:
                             limitReached = False
                             if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                                 limitReached = True
                                 if counter:
-                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate message")
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
 
                         if sendUser:
                             if limitReached:
@@ -1119,10 +1157,270 @@ def searchCompanyTickets(messageDetail):
                 else:
                     # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
                     botlog.LogSymphonyInfo("You aren't authorised to use this command.")
+
             except:
                 botlog.LogSymphonyInfo("SearchCompanyTickets did not work")
     except:
         return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+############################
+
+def searchCompanyTicketsTask(organization, stream_id):
+
+    table_header = ""
+    allTicket = ""
+    table_bodyFull = ""
+    myTicketLenght = ""
+    UniqueToken = ""
+    counter = True
+    notNeeded = False
+    status = ""
+    indexB= ""
+    query = ""
+    limitReached = False
+
+    # messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "Pulling <b>unresolved tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
+    messaging.SendSymphonyMessageV2(str(stream_id), "<b>Report for " + str(organization).upper() + " unresolved Support Tickets</b>. Rendering the result now, please wait.")
+
+    query = ("status<solved type:ticket sort:desc organization:" + str(organization))
+
+    org_length = len(str(organization))-1
+    #print(str(org_length))
+
+    try:
+        headers = {
+            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+            'password': _configDef['zdesk_config']['zdesk_password'],
+            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+            'cache-control': "no-cache",
+            'Content-Type': 'application/json',
+        }
+
+        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+        #querystring = {"query": "status:open type:ticket organization:hsbc", "sort_by": "status", "sort_order": "desc"}
+        #querystring = {"query": "status:" + str(status_message) + " type:ticket organization:" + str(organization) + "", "sort_by": "status","sort_order": "desc"}
+        # querystring = {"query": ""+ query + "", "sort_by": "status", "sort_order": "desc"}
+        querystring = {"query": ""+ str(query)}
+        #print(querystring)
+
+        response = requests.request("GET", str(url), headers=headers, params=querystring)
+        data = response.json()
+        #print(str(data))
+    except:
+        try:
+            headers = {
+                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                'password': _configDef['zdesk_config']['zdesk_password'],
+                'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                'cache-control': "no-cache",
+                'Content-Type': 'application/json',
+            }
+
+            url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+            #querystring = {"query": "status:open type:ticket organization:hsbc", "sort_by": "status", "sort_order": "desc"}
+            #querystring = {"query": "status:" + str(status_message) + " type:ticket organization:" + str(organization) + "", "sort_by": "status","sort_order": "desc"}
+            # querystring = {"query": ""+ query + "", "sort_by": "status", "sort_order": "desc"}
+            querystring = {"query": ""+ str(query)}
+            #print(querystring)
+
+            response = requests.request("GET", str(url), headers=headers, params=querystring)
+            data = response.json()
+            #print(str(data))
+        except:
+            # return messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "I was not able to run the zendesk query, please try again")
+            return messaging.SendSymphonyMessageV2(str(stream_id), "I was not able to run the zendesk query, please try again")
+
+
+    for result in data['results']:
+
+        try:
+            assignee_flag = False
+            # strip out conflicting HTML tags in descriptions
+            description_temp = str(result["description"])
+            description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+            ticketid = str(result["id"])
+
+            # Getting IDs of requesters to be processed
+            requesterid = str(result["requester_id"])
+        except:
+            botlog.LogSymphonyInfo("Cannot get ticket info")
+
+        try:
+            # To get the name of the requester given the requesterID
+            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+            res = conn.getresponse()
+            userRequesterId = res.read()
+            tempUserRequester = str(userRequesterId.decode('utf-8'))
+            data = json.dumps(tempUserRequester, indent=2)
+            data_dict = ast.literal_eval(data)
+            d_req = json.loads(data_dict)
+            req_name = str(d_req["user"]["name"])
+            requesterName = req_name
+        except:
+            requesterName = "N/A"
+            botlog.LogSymphonyInfo("Cannot get requester info")
+
+        # Getting IDs of assignee to be processed
+        try:
+            assigneeid = str(result["assignee_id"])
+
+            # To get the name of the assignee given the assigneeID
+            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+            res = conn.getresponse()
+            userAssigneeId = res.read()
+            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+            data = json.dumps(tempUserAssignee, indent=2)
+            data_dict = ast.literal_eval(data)
+            d_assign = json.loads(data_dict)
+            assign_name = str(d_assign["user"]["name"])
+            assigneeName = str(assign_name)
+
+        except:
+            assigneeName = "N/A"
+            assignee_flag = True
+
+        requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+        assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+
+        ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+        updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+
+        if (len(result["tags"])) == 0:
+            noTag = True
+        else:
+            noTag = False
+
+        notSet = True
+        if noTag:
+            notSet = False
+
+        sev = "Not Set"
+        for index_tags in range(len(result["tags"])):
+            tags = str((result["tags"][index_tags]))
+
+            #"<b class=\"tempo-bg-color--green\"><b class=\"tempo-text-color--red\">Testing Text Color</b><b class=\"tempo-text-color--blue\">Sev 1</b></b>"
+
+            if tags.startswith("severity_1"):
+                sev = "Severity 1"
+                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
+                notSet = False
+            elif tags.startswith("severity_2"):
+                sev = "Severity 2"
+                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
+                notSet = False
+            elif tags.startswith("severity_3"):
+                sev = "Severity 3"
+                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
+                notSet = False
+            elif tags.startswith("severity_4"):
+                sev = "Severity 4"
+                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
+                notSet = False
+
+        if notSet:
+            sev = "Not set"
+            notSet = False
+
+
+        requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
+        if assignee_flag:
+
+            assignee = str(assigneeName)
+            table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                            "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                            "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:2%;text-align:center'>ID</td>" \
+                            "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:10.5%;text-align:center'>REQUESTER</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>REQUESTED</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>ASSIGNEE</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>UPDATED</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
+
+        else:
+
+            assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+            table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                            "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                            "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:2%;text-align:center'>ID</td>" \
+                            "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:10.5%;text-align:center'>REQUESTER</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>REQUESTED</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>ASSIGNEE</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>UPDATED</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                            "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                            "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
+
+
+        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+
+        # Checking for unique words (Tokens)
+        UniqueToken = len(set(table_header.split()))
+        #print(str(UniqueToken))
+
+        myTicketLenght = len(str(table_header))
+        #print(str(myTicketLenght))
+
+
+        limitReached = False
+        if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+            limitReached = True
+            if counter:
+                # messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "This search query exceed the character limit and therefore will show into separate message")
+                messaging.SendSymphonyMessageV2(str(stream_id), "This search query exceed the character limit and therefore will show into separate message")
+
+
+        if limitReached:
+            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+            reply = str(table_bodyFull)
+            #messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], str(reply))
+            messaging.SendSymphonyMessageV2(str(stream_id), str(reply))
+            myTicketLenght = ""
+            table_header = ""
+            UniqueToken = ""
+            table_bodyFull = ""
+            allTicket = ""
+            counter = False
+
+    if table_header == "":
+        # return messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
+        return messaging.SendSymphonyMessageV2(str(stream_id), "There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
+
+    else:
+        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+        reply = str(table_bodyFull)
+        #messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], str(reply))
+        messaging.SendSymphonyMessageV2(str(stream_id), str(reply))
+        #return messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "End of Result")
+        return messaging.SendSymphonyMessageV2(str(stream_id), "End of Result")
 
 
 def searchUserTickets(messageDetail):
@@ -1215,7 +1513,7 @@ def searchUserTickets(messageDetail):
             if companyName in _configDef['AuthCompany']['PodList']:
 
                 streamType = (messageDetail.ChatRoom.Type)
-                #print(streamType)
+                print(streamType)
 
                 callername = messageDetail.Sender.Name
                 table_body = ""
@@ -1231,6 +1529,7 @@ def searchUserTickets(messageDetail):
                 counter = True
                 limitReached = False
                 imRequired = False
+
                 message = (messageDetail.Command.MessageText)
                 message_split = message.split()
 
@@ -1617,9 +1916,9 @@ def searchUserTickets(messageDetail):
                         limitReached = True
                         if counter:
                             if imRequired:
-                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             else:
-                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                         # break
 
                     if limitReached:
@@ -2082,9 +2381,9 @@ def searchUserTickets(messageDetail):
                             limitReached = True
                             if counter:
                                 if imRequired:
-                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                                 else:
-                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             # break
 
                         if limitReached:
@@ -2639,9 +2938,9 @@ def searchAssigneeTickets(messageDetail):
                         limitReached = True
                         if counter:
                             if imRequired:
-                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             else:
-                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                         # break
 
                     if limitReached:
@@ -3105,9 +3404,9 @@ def searchAssigneeTickets(messageDetail):
                             limitReached = True
                             if counter:
                                 if imRequired:
-                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                                 else:
-                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             # break
 
                         if limitReached:
@@ -3665,9 +3964,9 @@ def searchCCTickets(messageDetail):
                         limitReached = True
                         if counter:
                             if imRequired:
-                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             else:
-                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                         # break
 
                     if limitReached:
@@ -4131,9 +4430,9 @@ def searchCCTickets(messageDetail):
                             limitReached = True
                             if counter:
                                 if imRequired:
-                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                                 else:
-                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                             # break
 
                         if limitReached:
@@ -4642,12 +4941,13 @@ def searchKeyWord(messageDetail):
                 limitReached = True
                 if counter:
                     if imRequired:
-                        messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                        messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
                     else:
-                        messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into seperate updates")
+                        messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
 
             if limitReached:
-                table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
                 reply = str(table_bodyFull)
                 if imRequired:
                     messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -4670,7 +4970,8 @@ def searchKeyWord(messageDetail):
             return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /searchUserTickets open or /searchUserTickets open @alex nalin")
 
         else:
-            table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+            #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
+            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_body) + "</body></card>")
             reply = str(table_bodyFull)
             #print("reply: " + reply)
 
@@ -5986,11 +6287,11 @@ def showTicketComments (messageDetail):
 
                     if counter and prvCom:
                         #print("Not A")
-                        messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                        messageDetail.ReplyToSenderv2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in separate message")
 
                     elif counter and prvCom is False:
                         #print("Not B")
-                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in separate message")
                 #break
 
                 if limitReached and prvCom:
@@ -6260,7 +6561,7 @@ def showTicketComments (messageDetail):
                 if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                     limitReached = True
                     if limitMessageNeeded:
-                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in seperate message")
+                        messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in separate message")
                     #break
 
                 if limitReached:
@@ -6690,11 +6991,11 @@ def userZD(messageDetail):
                 reply = table_header + table_body
 
                 if isIM:
-                    return messageDetail.ReplyToSenderv2_noBotLog(
-                        "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
+                    #return messageDetail.ReplyToSenderv2_noBotLog("<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
+                    return messageDetail.ReplyToSenderv2_noBotLog("<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
                 else:
-                    return messageDetail.ReplyToChatV2_noBotLog(
-                        "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+                    #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+                    return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
         else:
             return messageDetail.ReplyToChat(
                 "You aren't authorised to use this command. You are either not Added to the Bot as an Agent or you are not an Agent/Staff on Zendesk")
@@ -6992,10 +7293,11 @@ def userZD(messageDetail):
                     reply = table_header + table_body
 
                     if isIM:
-                        return messageDetail.ReplyToSenderv2_noBotLog(
-                            "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
+                        #return messageDetail.ReplyToSenderv2_noBotLog("<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
+                        return messageDetail.ReplyToSenderv2_noBotLog("<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>These are all the users under the organisation <b>" + organization[1:] + "</b></header><body>" + reply + "</body></card>")
                     else:
-                        return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+                        #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
+                        return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
             else:
                 return messageDetail.ReplyToChat("You aren't authorised to use this command. You are either not Added to the Bot as an Agent or you are not an Agent/Staff on Zendesk")
         except:
@@ -7334,7 +7636,7 @@ def recentZD(messageDetail):
                 if dataLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                     limitReached = True
                     if counter:
-                        messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
+                        messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into separate message")
 
                 if limitReached:
                     # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + allTicket + "</header><body>" + str(table_header) + "</body></card>")
@@ -7687,7 +7989,7 @@ def recentZD(messageDetail):
                     if dataLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
                         limitReached = True
                         if counter:
-                            messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into seperate message")
+                            messageDetail.ReplyToChatV2_noBotLog("This result exceed the character limit and therefore will show into separate message")
 
                     if limitReached:
                         # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
@@ -9446,7 +9748,8 @@ def newTicketToday(messageDetail):
                 #break
                 limitReached = True
                 if counter:
-                    messageDetail.ReplyToChatV2_noBotLog("ticket(s). This search query exceed the character limit and therefore will show into seperate updates")
+                    #messageDetail.ReplyToChatV2_noBotLog("There are " + str(totTickets) +" ticket(s). This search query exceed the character limit and therefore will show into seperate updates")
+                    messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate updates")
 
             if limitReached:
                 # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
@@ -10590,113 +10893,222 @@ def assignTicket(messageDetail):
     botlog.LogSymphonyInfo("#############################")
 
     try:
-        isAllowed = False
-        callerCheck = ""
-        assign_email =""
-        commandCallerUID = messageDetail.FromUserId
-
-        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-        sessionTok = callout.GetSessionToken()
-
-        headersCompany = {
-            'sessiontoken': sessionTok,
-            'cache-control': "no-cache"
-        }
-
         try:
+            isAllowed = False
+            callerCheck = ""
+            assign_email =""
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+            sessionTok = callout.GetSessionToken()
+
+            headersCompany = {
+                'sessiontoken': sessionTok,
+                'cache-control': "no-cache"
+            }
+
             connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            assignee_flag = ""
+
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
+
+                try:
+                    emailAddress = d_org["users"][index_org]["emailAddress"]
+                    botlog.LogSymphonyInfo("User is connected: " + emailAddress)
+                    emailZendesk = emailAddress
+                    connectionRequired = False
+                except:
+                    #print("User is not connected")
+                    connectionRequired = True
+
+            #if connectionRequired:
+                #print("inside not connected")
+                data_lenght = len(dataComp)
+                #print(data_lenght)
+
+                if data_lenght > 450:
+                    # query = "type:user " + firstName + " " + lastName
+                    try:
+                        query = "type:user " + emailAddress
+                    except:
+                        query = "type:user " + firstName + " " + lastName
+                    botlog.LogSymphonyInfo(query)
+                elif data_lenght < 450:
+                    #This will only work if the pod name is the same as the zendesk org/account
+                    #query = "type:user " + firstName + " " + lastName + " organization:" + company
+                    # query = "type:user " + firstName + " " + lastName
+                    try:
+                        query = "type:user " + emailAddress
+                    except:
+                        query = "type:user " + firstName + " " + lastName
+                    botlog.LogSymphonyInfo(query)
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                results = zendesk.search(query=query)
+                #print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user, <b>" + firstName + " " + lastName + "</b>, does not exist on Zendesk, the name is misspelled.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name, <b>" + firstName + " " + lastName + "</b>, is misspelled. Only Agents can be assigned ticket to. Please use this format: /ticketUpdate ticketid, subject, description")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+                    #print(d)
+
+                    for index in range(len(d["results"])):
+                        name = d["results"][index]["name"]
+                        email = str(d["results"][index]["email"])
+                        ZDuserId = str(d["results"][index]["id"])
+                        role = str(d["results"][index]["role"])
+                        emailAddress = email
+                        if role == "end-user" or role == "End-user":
+                            botlog.LogSymphonyInfo("The user's Zendesk role is " + role)
+                            isAllowed = False
+                            return messageDetail.ReplyToChatV2("This user, <b>" + name + " (" + email + "</b>), is Not an Agent on this Zendesk instance, please check via <b> /user </b> to find more information about Zensesk users and their role")
+                        elif role == "Admin" or role == "admin" or role == "Agent" or role == "agent":
+                            isAllowed = True
+
+
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+            callingUser = firstName + " " + lastName
+            callingUserEMail = emailAddress
+
         except:
-            return messageDetail.ReplyToChat("I am having difficulty to find this user id: " + commandCallerUID)
-
-        resComp = connComp.getresponse()
-        dataComp = resComp.read()
-        data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
-
-        dataRender = json.dumps(data_dict, indent=2)
-        d_org = json.loads(dataRender)
-
-        assignee_flag = ""
-
-        for index_org in range(len(d_org["users"])):
-            firstName = d_org["users"][index_org]["firstName"]
-            lastName = d_org["users"][index_org]["lastName"]
-            displayName = d_org["users"][index_org]["displayName"]
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
-
             try:
-                emailAddress = d_org["users"][index_org]["emailAddress"]
-                botlog.LogSymphonyInfo("User is connected: " + emailAddress)
-                emailZendesk = emailAddress
-                connectionRequired = False
+                botlog.LogSymphonyInfo("Inside second try for user check")
+                isAllowed = False
+                callerCheck = ""
+                assign_email =""
+                commandCallerUID = messageDetail.FromUserId
+
+                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+                sessionTok = callout.GetSessionToken()
+
+                headersCompany = {
+                    'sessiontoken': sessionTok,
+                    'cache-control': "no-cache"
+                }
+
+                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
+
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+
+                assignee_flag = ""
+
+                for index_org in range(len(d_org["users"])):
+                    firstName = d_org["users"][index_org]["firstName"]
+                    lastName = d_org["users"][index_org]["lastName"]
+                    displayName = d_org["users"][index_org]["displayName"]
+                    #companyName = d_org["users"][index_org]["company"]
+                    companyNameTemp = d_org["users"][index_org]["company"]
+                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                    companyName = str(companyTemp)
+                    userID = str(d_org["users"][index_org]["id"])
+
+                    try:
+                        emailAddress = d_org["users"][index_org]["emailAddress"]
+                        botlog.LogSymphonyInfo("User is connected: " + emailAddress)
+                        emailZendesk = emailAddress
+                        connectionRequired = False
+                    except:
+                        #print("User is not connected")
+                        connectionRequired = True
+
+                    #if connectionRequired:
+                    #print("inside not connected")
+                    data_lenght = len(dataComp)
+                    #print(data_lenght)
+
+                    if data_lenght > 450:
+                        # query = "type:user " + firstName + " " + lastName
+                        try:
+                            query = "type:user " + emailAddress
+                        except:
+                            query = "type:user " + firstName + " " + lastName
+                        botlog.LogSymphonyInfo(query)
+                    elif data_lenght < 450:
+                        #This will only work if the pod name is the same as the zendesk org/account
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + company
+                        # query = "type:user " + firstName + " " + lastName
+                        try:
+                            query = "type:user " + emailAddress
+                        except:
+                            query = "type:user " + firstName + " " + lastName
+                        botlog.LogSymphonyInfo(query)
+                    else:
+                        return messageDetail.ReplyToChat("No user information available")
+
+                    results = zendesk.search(query=query)
+                    #print(results)
+
+                    if str(results).startswith(
+                            "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                        return messageDetail.ReplyToChat(
+                            "This user, <b>" + firstName + " " + lastName + "</b>, does not exist on Zendesk, the name is misspelled.")
+                    elif str(results).startswith(
+                            "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                        return messageDetail.ReplyToChat(
+                            "This organisation/company does not exist in Zendesk or name, <b>" + firstName + " " + lastName + "</b>, is misspelled. Only Agents can be assigned ticket to. Please use this format: /ticketUpdate ticketid, subject, description")
+                    else:
+
+                        data = json.dumps(results, indent=2)
+                        d = json.loads(data)
+                        #print(d)
+
+                        for index in range(len(d["results"])):
+                            name = d["results"][index]["name"]
+                            email = str(d["results"][index]["email"])
+                            ZDuserId = str(d["results"][index]["id"])
+                            role = str(d["results"][index]["role"])
+                            emailAddress = email
+                            if role == "end-user" or role == "End-user":
+                                botlog.LogSymphonyInfo("The user's Zendesk role is " + role)
+                                isAllowed = False
+                                return messageDetail.ReplyToChatV2("This user, <b>" + name + " (" + email + "</b>), is Not an Agent on this Zendesk instance, please check via <b> /user </b> to find more information about Zensesk users and their role")
+                            elif role == "Admin" or role == "admin" or role == "Agent" or role == "agent":
+                                isAllowed = True
+
+
+                botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+                callingUser = firstName + " " + lastName
+                callingUserEMail = emailAddress
+
             except:
-                #print("User is not connected")
-                connectionRequired = True
-
-        #if connectionRequired:
-            #print("inside not connected")
-            data_lenght = len(dataComp)
-            #print(data_lenght)
-
-            if data_lenght > 450:
-                # query = "type:user " + firstName + " " + lastName
-                try:
-                    query = "type:user " + emailAddress
-                except:
-                    query = "type:user " + firstName + " " + lastName
-                botlog.LogSymphonyInfo(query)
-            elif data_lenght < 450:
-                #This will only work if the pod name is the same as the zendesk org/account
-                #query = "type:user " + firstName + " " + lastName + " organization:" + company
-                # query = "type:user " + firstName + " " + lastName
-                try:
-                    query = "type:user " + emailAddress
-                except:
-                    query = "type:user " + firstName + " " + lastName
-                botlog.LogSymphonyInfo(query)
-            else:
-                return messageDetail.ReplyToChat("No user information available")
-
-            results = zendesk.search(query=query)
-            #print(results)
-
-            if str(results).startswith(
-                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This user, <b>" + firstName + " " + lastName + "</b>, does not exist on Zendesk, the name is misspelled.")
-            elif str(results).startswith(
-                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This organisation/company does not exist in Zendesk or name, <b>" + firstName + " " + lastName + "</b>, is misspelled. Only Agents can be assigned ticket to. Please use this format: /ticketUpdate ticketid, subject, description")
-            else:
-
-                data = json.dumps(results, indent=2)
-                d = json.loads(data)
-                #print(d)
-
-                for index in range(len(d["results"])):
-                    name = d["results"][index]["name"]
-                    email = str(d["results"][index]["email"])
-                    ZDuserId = str(d["results"][index]["id"])
-                    role = str(d["results"][index]["role"])
-                    emailAddress = email
-                    if role == "end-user" or role == "End-user":
-                        botlog.LogSymphonyInfo("The user's Zendesk role is " + role)
-                        isAllowed = False
-                        return messageDetail.ReplyToChatV2("This user, <b>" + name + " (" + email + "</b>), is Not an Agent on this Zendesk instance, please check via <b> /user </b> to find more information about Zensesk users and their role")
-                    elif role == "Admin" or role == "admin" or role == "Agent" or role == "agent":
-                        isAllowed = True
-
-
-        botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-        callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-
-        callingUser = firstName + " " + lastName
-        callingUserEMail = emailAddress
+                botlog.LogSymphonyInfo("Could not verify user details")
 
         if callerCheck in AccessFile and isAllowed:
             botlog.LogSymphonyInfo("User is Agent with the bot as well as with Zendesk")
@@ -11739,8 +12151,8 @@ def addAccess(messageDetail):
                         table_body += "</tbody></table>"
 
                         reply = table_header + table_body
-                        return messageDetail.ReplyToChatV2_noBotLog(
-                            "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
+                        #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
+                        return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
 
                     except:
                         return messageDetail.ReplyToChat("Access not found")
@@ -11963,8 +12375,8 @@ def removeAccess(messageDetail):
                         table_body += "</tbody></table>"
 
                         reply = table_header + table_body
-                        return messageDetail.ReplyToChatV2_noBotLog(
-                            "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
+                        #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
+                        return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Access List</header><body>" + reply + "</body></card>")
 
                     except:
                         return messageDetail.ReplyToChat("Access not found")
@@ -12034,8 +12446,8 @@ def listAllAccess(messageDetail):
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog(
-                    "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Zendesk Agent Access List</header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Zendesk Agent Access List</header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Zendesk Agent Access List</header><body>" + reply + "</body></card>")
 
             except:
                 return messageDetail.ReplyToChat("Access not found")
@@ -12306,7 +12718,8 @@ def searchKb(messageDetail):
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
 
     # else:
     #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -12412,6 +12825,8 @@ def searchKb(messageDetail):
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
+                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find below the result for KB search <b>" + str(kb_query) + "</b></header><body>" + reply + "</body></card>")
+
         except:
             return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")

@@ -12,7 +12,7 @@ import modules.symphony.messaging as messaging
 import os
 import codecs
 import json
-from Data.wordcloud import WordCloud
+#from Data.wordcloud import WordCloud
 import random
 
 

@@ -268,30 +268,32 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             table_body += "</tbody></table>"
 
-            AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
-            #print(str(AdminHelp))
 
-            f = open('Temp/help.html', 'w')
-            f.write(str(AdminHelp))
-            #f.write("Test")
-            f.close()
-            upload_raw = os.path.abspath("Temp/help.html")
-            f = open(upload_raw, 'rb')
-            fdata = f.read()
-            #print(fdata.title())
-
-            ctype, encoding = mimetypes.guess_type(upload_raw)
-            att = ("SupportBot help.html", fdata, ctype)
-            att_list = [att]
-
-            message = "Bot Help file"
+            ## Some Pod do not allow HTML file type
+            # AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
+            # #print(str(AdminHelp))
             #
-            # ##########################
+            # f = open('Temp/help.html', 'w')
+            # f.write(str(AdminHelp))
+            # #f.write("Test")
+            # f.close()
+            # upload_raw = os.path.abspath("Temp/help.html")
+            # f = open(upload_raw, 'rb')
+            # fdata = f.read()
+            # #print(fdata.title())
             #
-            botlog.LogSymphonyInfo(messageDetail.MessageRaw)
-            messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+            # ctype, encoding = mimetypes.guess_type(upload_raw)
+            # att = ("SupportBot help.html", fdata, ctype)
+            # att_list = [att]
             #
-            # ##########################
+            # message = "Bot Help file"
+            # #
+            # # ##########################
+            # #
+            # botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+            # messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+            # #
+            # # ##########################
 
             ###################
             #
@@ -313,7 +315,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
 
             messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
-            f.close()
+            #f.close()
 
             # except:
             #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")

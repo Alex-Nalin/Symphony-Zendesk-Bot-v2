@@ -9,6 +9,7 @@ config.json
 modules/plugins/wordcloud/
 modules/plugins/wordcloud/commands.py
 Data/wordcloud.py
+Data/tasker.py
 Data/zendesk_trend.py
 Data/dictionary.py
 Data/access.py

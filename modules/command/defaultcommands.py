@@ -4129,390 +4129,390 @@ def UIDCheck(messageDetail):
 
 
 #########################
-
-def addTask(messageDetail):
-
-    try:
-
-        botlog.LogSymphonyInfo("Bot Call: Add Task")
-
-        try:
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-            sessionTok = callout.GetSessionToken()
-
-            headersCompany = {
-                'sessiontoken': sessionTok,
-                'cache-control': "no-cache"
-            }
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
-
-            for index_org in range(len(d_org["users"])):
-                firstName = d_org["users"][index_org]["firstName"]
-                lastName = d_org["users"][index_org]["lastName"]
-                displayName = d_org["users"][index_org]["displayName"]
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
-        except:
-            try:
-                botlog.LogSystemInfo("Inside Second try for user check")
-                commandCallerUID = messageDetail.FromUserId
-
-                connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-                sessionTok = callout.GetSessionToken()
-
-                headersCompany = {
-                    'sessiontoken': sessionTok,
-                    'cache-control': "no-cache"
-                }
-
-                connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-                resComp = connComp.getresponse()
-                dataComp = resComp.read()
-                data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
-
-                dataRender = json.dumps(data_dict, indent=2)
-                d_org = json.loads(dataRender)
-
-                for index_org in range(len(d_org["users"])):
-                    firstName = d_org["users"][index_org]["firstName"]
-                    lastName = d_org["users"][index_org]["lastName"]
-                    displayName = d_org["users"][index_org]["displayName"]
-                    #companyName = d_org["users"][index_org]["company"]
-                    companyNameTemp = d_org["users"][index_org]["company"]
-                    companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                    companyName = str(companyTemp)
-                    userID = str(d_org["users"][index_org]["id"])
-
-                    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                    callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
-            except:
-                return messageDetail.ReplyToChat("Cannot validate user access")
-
-        if callerCheck in AccessFile:
-
-            try:
-                #message = (messageDetail.Command.MessageText)
-                message_raw = (messageDetail.Command.MessageFlattened)
-                message = str(message_raw).replace("/addtask ", "").replace("/addTask ", "")
-                #print(str(message))
-                info = message.split("|")
-                #print(str(info))
-                orgTask = str(info[0]).strip()
-                streamTask = str(info[1][1:]).replace("+", "-").replace("/", "_").replace("=", "")
-                weekDayTask = str(info[2][1:])
-                hourTask = str(info[3][1:])
-                minTask = str(info[4][1:])
-
-                #AcronymsDictionary.update({acronym.upper(): str(answer)})
-                Tasker.update({orgTask.upper(): str(streamTask) + ": " + str(weekDayTask) + ": " + str(hourTask) + ": " + str(minTask)})
-                sortTask(messageDetail)
-
-                weekday = ""
-                if int(weekDayTask) == 0:
-                    weekday = "Monday"
-                elif int(weekDayTask) == 1:
-                    weekday = "Tuesday"
-                elif int(weekDayTask) == 2:
-                    weekday = "Wednesday"
-                elif int(weekDayTask) == 3:
-                    weekday = "Thursday"
-                elif int(weekDayTask) == 4:
-                    weekday = "Friday"
-                elif int(weekDayTask) == 5:
-                    weekday = "Saturday"
-                elif int(weekDayTask) == 6:
-                    weekday = "Sunday"
-
-                return messageDetail.ReplyToChatV2("<b>" + orgTask.upper() + "</b> task was successfully added to the Scheduler as <b>" + orgTask.upper() + " room with streamID: " + streamTask + " on every " + str(weekday) + " at " + hourTask + ":" + minTask + "</b>")
-
-            except:
-                return messageDetail.ReplyToChat("Invalid format, please use /addTask org | streamid | weekday | hour | min")
-        else:
-            return messageDetail.ReplyToChat("You aren't authorised to use this command.")
-    except:
-        botlog.LogSymphonyInfo("AddTask did not work entirely")
-
-def removeTask(messageDetail):
-
-    try:
-
-        botlog.LogSymphonyInfo("Bot Call: Remove Task")
-
-        try:
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-            sessionTok = callout.GetSessionToken()
-
-            headersCompany = {
-                'sessiontoken': sessionTok,
-                'cache-control': "no-cache"
-            }
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
-
-            for index_org in range(len(d_org["users"])):
-                firstName = d_org["users"][index_org]["firstName"]
-                lastName = d_org["users"][index_org]["lastName"]
-                displayName = d_org["users"][index_org]["displayName"]
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-
-        except:
-            return messageDetail.ReplyToChat("Cannot validate user access")
-
-        if callerCheck in AccessFile:
-
-            try:
-
-                remTask = (messageDetail.Command.MessageText)[1:]
-
-                del Tasker[remTask.upper()]
-
-                updatedTasker = 'Tasker = ' + str(Tasker)
-
-                #file = open("modules/command/dictionary.py", "w+")
-                file = open("Data/tasker.py", "w+")
-                file.write(updatedTasker)
-                file.close()
-
-                return messageDetail.ReplyToChat(remTask + " was successfully removed.")
-            except:
-                return messageDetail.ReplyToChat(remTask + " was not found.")
-        # else:
-        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
-    except:
-        botlog.LogSymphonyInfo("Remove Accronym did not work entirely")
-
-def findTask(messageDetail):
-
-    try:
-        botlog.LogSymphonyInfo("Bot Call: Find Task")
-
-        try:
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-            sessionTok = callout.GetSessionToken()
-
-            headersCompany = {
-                'sessiontoken': sessionTok,
-                'cache-control': "no-cache"
-            }
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
-
-            for index_org in range(len(d_org["users"])):
-                firstName = d_org["users"][index_org]["firstName"]
-                lastName = d_org["users"][index_org]["lastName"]
-                displayName = d_org["users"][index_org]["displayName"]
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                botlog.LogSymphonyInfo(
-                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-
-        except:
-            return messageDetail.ReplyToChat("Cannot validate user access")
-
-        if callerCheck in AccessFile:
-
-            try:
-                findTask = str((messageDetail.Command.MessageText)[1:]).strip()
-
-                return messageDetail.ReplyToChat(findTask.upper() + " - " + str(Tasker[findTask.upper()]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b",""))
-            except:
-                return messageDetail.ReplyToChat("No result for " + str(findTask) + " found")
-        else:
-            return messageDetail.ReplyToChat("You aren't authorised to use this command.")
-    except:
-        botlog.LogSymphonyInfo("Find Accronym did not work entirely")
-
-def listAllTasks(messageDetail):
-
-    try:
-
-        botlog.LogSymphonyInfo("Bot Call: List All Task")
-
-        try:
-            commandCallerUID = messageDetail.FromUserId
-
-            connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
-            sessionTok = callout.GetSessionToken()
-
-            headersCompany = {
-                'sessiontoken': sessionTok,
-                'cache-control': "no-cache"
-            }
-
-            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
-
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
-
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
-
-            for index_org in range(len(d_org["users"])):
-                firstName = d_org["users"][index_org]["firstName"]
-                lastName = d_org["users"][index_org]["lastName"]
-                displayName = d_org["users"][index_org]["displayName"]
-                #companyName = d_org["users"][index_org]["company"]
-                companyNameTemp = d_org["users"][index_org]["company"]
-                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-                companyName = str(companyTemp)
-                userID = str(d_org["users"][index_org]["id"])
-
-                botlog.LogSymphonyInfo(
-                    firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
-        except:
-            return messageDetail.ReplyToChat("Cannot validate user access")
-
-        if callerCheck in AccessFile:
-
-            try:
-                sortTask(messageDetail)
-                table_body = ""
-                table_header = "<table style='max-width:100%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                               "<td style='max-width:10%'>Task(s) on Scheduler</td>" \
-                               "</tr></thead><tbody>"
-
-                for task in Tasker:
-                    tasklist = task + " : " + str(Tasker[task])
-                    #print(tasklist)
-
-                    table_body += "<tr>" \
-                                  "<td><b>" + task + "</b> - " + str(Tasker[task]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
-                                  "</tr>"
-                table_body += "</tbody></table>"
-
-                reply = table_header + table_body
-                #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
-                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
-
-            except:
-                return messageDetail.ReplyToChat("Acronyms not found")
-        # else:
-        #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
-    except:
-        botlog.LogSymphonyInfo("List All Tasks did not work entirely")
-
-# def listAllTasksTask():
 #
-#     # global taskIndex
-#     # taskIndex = 0
+# def addTask(messageDetail):
 #
-#     for task in Tasker:
-#         print("Test inside tasker")
-#         #print(int(taskIndex))
-#         # print(task)
-#        #print(Tasker)
-#         tasklist = task + " : " + str(Tasker[task])
-#         tasklist_split = str(tasklist).split(":")
-#         #print(tasklist_split)
-#         # _configDef['searchOrgTicket']['org'] = tasklist_split[0]
-#         # print(str(_configDef['searchOrgTicket']['org']).strip())
-#         # _configDef['searchOrgTicket']['stream_id'] = tasklist_split[1]
-#         # print(str(_configDef['searchOrgTicket']['stream']).strip())
-#         # _configDef['searchOrgTicket']['weekday'] = tasklist_split[2]
-#         # print(str(_configDef['searchOrgTicket']['weekday']).strip())
-#         # _configDef['searchOrgTicket']['hour'] = tasklist_split[3]
-#         # print(str(_configDef['searchOrgTicket']['hour']).strip())
-#         # _configDef['searchOrgTicket']['min'] = tasklist_split[4]
-#         # print(str(_configDef['searchOrgTicket']['minute']).strip())
+#     try:
 #
-#         global searchOrgTicketorg
-#         searchOrgTicketorg = tasklist_split[0]
-#         #print(str(searchOrgTicketorg).strip())
-#         global searchOrgTicketstream_id
-#         searchOrgTicketstream_id = tasklist_split[1]
-#         #print(str(searchOrgTicketstream_id).strip())
-#         global searchOrgTicketweekday
-#         searchOrgTicketweekday = tasklist_split[2]
-#         #print(str(searchOrgTicketweekday).strip())
-#         global searchOrgTickethour
-#         searchOrgTickethour = tasklist_split[3]
-#         #print(str(searchOrgTickethour).strip())
-#         global searchOrgTicketmin
-#         searchOrgTicketmin = tasklist_split[4]
-#         #print(str(searchOrgTicketmin).strip())
+#         botlog.LogSymphonyInfo("Bot Call: Add Task")
 #
-#         # global searchOrgTicketorg
-#         # searchOrgTicketorg[taskIndex] = tasklist_split[0]
-#         # #print(str(searchOrgTicketorg).strip())
-#         # global searchOrgTicketstream_id
-#         # searchOrgTicketstream_id[taskIndex] = tasklist_split[1]
-#         # #print(str(searchOrgTicketstream_id).strip())
-#         # global searchOrgTicketweekday
-#         # searchOrgTicketweekday[taskIndex] = tasklist_split[2]
-#         # #print(str(searchOrgTicketweekday).strip())
-#         # global searchOrgTickethour
-#         # searchOrgTickethour[taskIndex] = tasklist_split[3]
-#         # #print(str(searchOrgTickethour).strip())
-#         # global searchOrgTicketmin
-#         # searchOrgTicketmin[taskIndex] = tasklist_split[4]
-#         # #print(str(searchOrgTicketmin).strip())
+#         try:
+#             commandCallerUID = messageDetail.FromUserId
 #
-#         # taskIndex += 1
-
-def sortTask(messageDetail):
-
-    sortedTask = {}
-
-    for key in sorted(Tasker.keys()):
-
-        sortedTask.update({key : Tasker[key]})
-
-
-    updatedTask = 'Tasker = ' + str(sortedTask)
-    file = open("Data/tasker.py","w+")
-    file.write(updatedTask)
-    file.close()
+#             connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+#             sessionTok = callout.GetSessionToken()
+#
+#             headersCompany = {
+#                 'sessiontoken': sessionTok,
+#                 'cache-control': "no-cache"
+#             }
+#
+#             connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+#
+#             resComp = connComp.getresponse()
+#             dataComp = resComp.read()
+#             data_raw = str(dataComp.decode('utf-8'))
+#             data_dict = ast.literal_eval(data_raw)
+#
+#             dataRender = json.dumps(data_dict, indent=2)
+#             d_org = json.loads(dataRender)
+#
+#             for index_org in range(len(d_org["users"])):
+#                 firstName = d_org["users"][index_org]["firstName"]
+#                 lastName = d_org["users"][index_org]["lastName"]
+#                 displayName = d_org["users"][index_org]["displayName"]
+#                 #companyName = d_org["users"][index_org]["company"]
+#                 companyNameTemp = d_org["users"][index_org]["company"]
+#                 companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                 companyName = str(companyTemp)
+#                 userID = str(d_org["users"][index_org]["id"])
+#
+#                 botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+#                 callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+#         except:
+#             try:
+#                 botlog.LogSystemInfo("Inside Second try for user check")
+#                 commandCallerUID = messageDetail.FromUserId
+#
+#                 connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+#                 sessionTok = callout.GetSessionToken()
+#
+#                 headersCompany = {
+#                     'sessiontoken': sessionTok,
+#                     'cache-control': "no-cache"
+#                 }
+#
+#                 connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+#
+#                 resComp = connComp.getresponse()
+#                 dataComp = resComp.read()
+#                 data_raw = str(dataComp.decode('utf-8'))
+#                 data_dict = ast.literal_eval(data_raw)
+#
+#                 dataRender = json.dumps(data_dict, indent=2)
+#                 d_org = json.loads(dataRender)
+#
+#                 for index_org in range(len(d_org["users"])):
+#                     firstName = d_org["users"][index_org]["firstName"]
+#                     lastName = d_org["users"][index_org]["lastName"]
+#                     displayName = d_org["users"][index_org]["displayName"]
+#                     #companyName = d_org["users"][index_org]["company"]
+#                     companyNameTemp = d_org["users"][index_org]["company"]
+#                     companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                     companyName = str(companyTemp)
+#                     userID = str(d_org["users"][index_org]["id"])
+#
+#                     botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+#                     callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+#             except:
+#                 return messageDetail.ReplyToChat("Cannot validate user access")
+#
+#         if callerCheck in AccessFile:
+#
+#             try:
+#                 #message = (messageDetail.Command.MessageText)
+#                 message_raw = (messageDetail.Command.MessageFlattened)
+#                 message = str(message_raw).replace("/addtask ", "").replace("/addTask ", "")
+#                 #print(str(message))
+#                 info = message.split("|")
+#                 #print(str(info))
+#                 orgTask = str(info[0]).strip()
+#                 streamTask = str(info[1][1:]).replace("+", "-").replace("/", "_").replace("=", "")
+#                 weekDayTask = str(info[2][1:])
+#                 hourTask = str(info[3][1:])
+#                 minTask = str(info[4][1:])
+#
+#                 #AcronymsDictionary.update({acronym.upper(): str(answer)})
+#                 Tasker.update({orgTask.upper(): str(streamTask) + ": " + str(weekDayTask) + ": " + str(hourTask) + ": " + str(minTask)})
+#                 sortTask(messageDetail)
+#
+#                 weekday = ""
+#                 if int(weekDayTask) == 0:
+#                     weekday = "Monday"
+#                 elif int(weekDayTask) == 1:
+#                     weekday = "Tuesday"
+#                 elif int(weekDayTask) == 2:
+#                     weekday = "Wednesday"
+#                 elif int(weekDayTask) == 3:
+#                     weekday = "Thursday"
+#                 elif int(weekDayTask) == 4:
+#                     weekday = "Friday"
+#                 elif int(weekDayTask) == 5:
+#                     weekday = "Saturday"
+#                 elif int(weekDayTask) == 6:
+#                     weekday = "Sunday"
+#
+#                 return messageDetail.ReplyToChatV2("<b>" + orgTask.upper() + "</b> task was successfully added to the Scheduler as <b>" + orgTask.upper() + " room with streamID: " + streamTask + " on every " + str(weekday) + " at " + hourTask + ":" + minTask + "</b>")
+#
+#             except:
+#                 return messageDetail.ReplyToChat("Invalid format, please use /addTask org | streamid | weekday | hour | min")
+#         else:
+#             return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+#     except:
+#         botlog.LogSymphonyInfo("AddTask did not work entirely")
+#
+# def removeTask(messageDetail):
+#
+#     try:
+#
+#         botlog.LogSymphonyInfo("Bot Call: Remove Task")
+#
+#         try:
+#             commandCallerUID = messageDetail.FromUserId
+#
+#             connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+#             sessionTok = callout.GetSessionToken()
+#
+#             headersCompany = {
+#                 'sessiontoken': sessionTok,
+#                 'cache-control': "no-cache"
+#             }
+#
+#             connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+#
+#             resComp = connComp.getresponse()
+#             dataComp = resComp.read()
+#             data_raw = str(dataComp.decode('utf-8'))
+#             data_dict = ast.literal_eval(data_raw)
+#
+#             dataRender = json.dumps(data_dict, indent=2)
+#             d_org = json.loads(dataRender)
+#
+#             for index_org in range(len(d_org["users"])):
+#                 firstName = d_org["users"][index_org]["firstName"]
+#                 lastName = d_org["users"][index_org]["lastName"]
+#                 displayName = d_org["users"][index_org]["displayName"]
+#                 #companyName = d_org["users"][index_org]["company"]
+#                 companyNameTemp = d_org["users"][index_org]["company"]
+#                 companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                 companyName = str(companyTemp)
+#                 userID = str(d_org["users"][index_org]["id"])
+#
+#                 botlog.LogSymphonyInfo(firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+#                 callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+#
+#         except:
+#             return messageDetail.ReplyToChat("Cannot validate user access")
+#
+#         if callerCheck in AccessFile:
+#
+#             try:
+#
+#                 remTask = (messageDetail.Command.MessageText)[1:]
+#
+#                 del Tasker[remTask.upper()]
+#
+#                 updatedTasker = 'Tasker = ' + str(Tasker)
+#
+#                 #file = open("modules/command/dictionary.py", "w+")
+#                 file = open("Data/tasker.py", "w+")
+#                 file.write(updatedTasker)
+#                 file.close()
+#
+#                 return messageDetail.ReplyToChat(remTask + " was successfully removed.")
+#             except:
+#                 return messageDetail.ReplyToChat(remTask + " was not found.")
+#         # else:
+#         #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+#     except:
+#         botlog.LogSymphonyInfo("Remove Accronym did not work entirely")
+#
+# def findTask(messageDetail):
+#
+#     try:
+#         botlog.LogSymphonyInfo("Bot Call: Find Task")
+#
+#         try:
+#             commandCallerUID = messageDetail.FromUserId
+#
+#             connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+#             sessionTok = callout.GetSessionToken()
+#
+#             headersCompany = {
+#                 'sessiontoken': sessionTok,
+#                 'cache-control': "no-cache"
+#             }
+#
+#             connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+#
+#             resComp = connComp.getresponse()
+#             dataComp = resComp.read()
+#             data_raw = str(dataComp.decode('utf-8'))
+#             data_dict = ast.literal_eval(data_raw)
+#
+#             dataRender = json.dumps(data_dict, indent=2)
+#             d_org = json.loads(dataRender)
+#
+#             for index_org in range(len(d_org["users"])):
+#                 firstName = d_org["users"][index_org]["firstName"]
+#                 lastName = d_org["users"][index_org]["lastName"]
+#                 displayName = d_org["users"][index_org]["displayName"]
+#                 #companyName = d_org["users"][index_org]["company"]
+#                 companyNameTemp = d_org["users"][index_org]["company"]
+#                 companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                 companyName = str(companyTemp)
+#                 userID = str(d_org["users"][index_org]["id"])
+#
+#                 botlog.LogSymphonyInfo(
+#                     firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+#                 callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+#
+#         except:
+#             return messageDetail.ReplyToChat("Cannot validate user access")
+#
+#         if callerCheck in AccessFile:
+#
+#             try:
+#                 findTask = str((messageDetail.Command.MessageText)[1:]).strip()
+#
+#                 return messageDetail.ReplyToChat(findTask.upper() + " - " + str(Tasker[findTask.upper()]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b",""))
+#             except:
+#                 return messageDetail.ReplyToChat("No result for " + str(findTask) + " found")
+#         else:
+#             return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+#     except:
+#         botlog.LogSymphonyInfo("Find Accronym did not work entirely")
+#
+# def listAllTasks(messageDetail):
+#
+#     try:
+#
+#         botlog.LogSymphonyInfo("Bot Call: List All Task")
+#
+#         try:
+#             commandCallerUID = messageDetail.FromUserId
+#
+#             connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+#             sessionTok = callout.GetSessionToken()
+#
+#             headersCompany = {
+#                 'sessiontoken': sessionTok,
+#                 'cache-control': "no-cache"
+#             }
+#
+#             connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+#
+#             resComp = connComp.getresponse()
+#             dataComp = resComp.read()
+#             data_raw = str(dataComp.decode('utf-8'))
+#             data_dict = ast.literal_eval(data_raw)
+#
+#             dataRender = json.dumps(data_dict, indent=2)
+#             d_org = json.loads(dataRender)
+#
+#             for index_org in range(len(d_org["users"])):
+#                 firstName = d_org["users"][index_org]["firstName"]
+#                 lastName = d_org["users"][index_org]["lastName"]
+#                 displayName = d_org["users"][index_org]["displayName"]
+#                 #companyName = d_org["users"][index_org]["company"]
+#                 companyNameTemp = d_org["users"][index_org]["company"]
+#                 companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#                 companyName = str(companyTemp)
+#                 userID = str(d_org["users"][index_org]["id"])
+#
+#                 botlog.LogSymphonyInfo(
+#                     firstName + " " + lastName + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+#                 callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+#         except:
+#             return messageDetail.ReplyToChat("Cannot validate user access")
+#
+#         if callerCheck in AccessFile:
+#
+#             try:
+#                 sortTask(messageDetail)
+#                 table_body = ""
+#                 table_header = "<table style='max-width:100%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+#                                "<td style='max-width:10%'>Task(s) on Scheduler</td>" \
+#                                "</tr></thead><tbody>"
+#
+#                 for task in Tasker:
+#                     tasklist = task + " : " + str(Tasker[task])
+#                     #print(tasklist)
+#
+#                     table_body += "<tr>" \
+#                                   "<td><b>" + task + "</b> - " + str(Tasker[task]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
+#                                   "</tr>"
+#                 table_body += "</tbody></table>"
+#
+#                 reply = table_header + table_body
+#                 #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
+#                 return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Task List</header><body>" + reply + "</body></card>")
+#
+#             except:
+#                 return messageDetail.ReplyToChat("Acronyms not found")
+#         # else:
+#         #     return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+#     except:
+#         botlog.LogSymphonyInfo("List All Tasks did not work entirely")
+#
+# # def listAllTasksTask():
+# #
+# #     # global taskIndex
+# #     # taskIndex = 0
+# #
+# #     for task in Tasker:
+# #         print("Test inside tasker")
+# #         #print(int(taskIndex))
+# #         # print(task)
+# #        #print(Tasker)
+# #         tasklist = task + " : " + str(Tasker[task])
+# #         tasklist_split = str(tasklist).split(":")
+# #         #print(tasklist_split)
+# #         # _configDef['searchOrgTicket']['org'] = tasklist_split[0]
+# #         # print(str(_configDef['searchOrgTicket']['org']).strip())
+# #         # _configDef['searchOrgTicket']['stream_id'] = tasklist_split[1]
+# #         # print(str(_configDef['searchOrgTicket']['stream']).strip())
+# #         # _configDef['searchOrgTicket']['weekday'] = tasklist_split[2]
+# #         # print(str(_configDef['searchOrgTicket']['weekday']).strip())
+# #         # _configDef['searchOrgTicket']['hour'] = tasklist_split[3]
+# #         # print(str(_configDef['searchOrgTicket']['hour']).strip())
+# #         # _configDef['searchOrgTicket']['min'] = tasklist_split[4]
+# #         # print(str(_configDef['searchOrgTicket']['minute']).strip())
+# #
+# #         global searchOrgTicketorg
+# #         searchOrgTicketorg = tasklist_split[0]
+# #         #print(str(searchOrgTicketorg).strip())
+# #         global searchOrgTicketstream_id
+# #         searchOrgTicketstream_id = tasklist_split[1]
+# #         #print(str(searchOrgTicketstream_id).strip())
+# #         global searchOrgTicketweekday
+# #         searchOrgTicketweekday = tasklist_split[2]
+# #         #print(str(searchOrgTicketweekday).strip())
+# #         global searchOrgTickethour
+# #         searchOrgTickethour = tasklist_split[3]
+# #         #print(str(searchOrgTickethour).strip())
+# #         global searchOrgTicketmin
+# #         searchOrgTicketmin = tasklist_split[4]
+# #         #print(str(searchOrgTicketmin).strip())
+# #
+# #         # global searchOrgTicketorg
+# #         # searchOrgTicketorg[taskIndex] = tasklist_split[0]
+# #         # #print(str(searchOrgTicketorg).strip())
+# #         # global searchOrgTicketstream_id
+# #         # searchOrgTicketstream_id[taskIndex] = tasklist_split[1]
+# #         # #print(str(searchOrgTicketstream_id).strip())
+# #         # global searchOrgTicketweekday
+# #         # searchOrgTicketweekday[taskIndex] = tasklist_split[2]
+# #         # #print(str(searchOrgTicketweekday).strip())
+# #         # global searchOrgTickethour
+# #         # searchOrgTickethour[taskIndex] = tasklist_split[3]
+# #         # #print(str(searchOrgTickethour).strip())
+# #         # global searchOrgTicketmin
+# #         # searchOrgTicketmin[taskIndex] = tasklist_split[4]
+# #         # #print(str(searchOrgTicketmin).strip())
+# #
+# #         # taskIndex += 1
+#
+# def sortTask(messageDetail):
+#
+#     sortedTask = {}
+#
+#     for key in sorted(Tasker.keys()):
+#
+#         sortedTask.update({key : Tasker[key]})
+#
+#
+#     updatedTask = 'Tasker = ' + str(sortedTask)
+#     file = open("Data/tasker.py","w+")
+#     file.write(updatedTask)
+#     file.close()

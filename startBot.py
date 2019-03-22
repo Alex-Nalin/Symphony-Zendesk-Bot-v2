@@ -63,7 +63,7 @@ def Main():
 
             now = datetime.datetime.now()
             ## Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
-            week = datetime.datetime.today().weekday()
+            #week = datetime.datetime.today().weekday()
 
             #print(week)
             #print("###############################")

@@ -14,7 +14,7 @@ import modules.plugins.Zendesk.commands as comm
 import modules.command.defaultcommands as deff
 
 #Grab the config.json main parameters
-from Data.tasker import Tasker
+#from Data.tasker import Tasker
 
 _configPathdDefault = os.path.abspath('config.json')
 
@@ -61,9 +61,9 @@ def Main():
             #################################
 
 
-            # now = datetime.datetime.now()
-            # ## Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
-            # week = datetime.datetime.today().weekday()
+            now = datetime.datetime.now()
+            ## Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
+            week = datetime.datetime.today().weekday()
 
             #print(week)
             #print("###############################")
@@ -71,28 +71,28 @@ def Main():
 
             #deff.listAllTasksTask()
 
-            for deff.task in Tasker:
+            # for deff.task in Tasker:
+            #
+            #     tasklist = deff.task + " : " + str(Tasker[deff.task])
+            #     tasklist_split = str(tasklist).split(":")
+            #     #print(tasklist_split)
+            #
+            #     searchOrgTicketorg = tasklist_split[0]
+            #     #print(str(searchOrgTicketorg).strip())
+            #     searchOrgTicketstream_id = tasklist_split[1]
+            #     #print(str(searchOrgTicketstream_id).strip())
+            #     searchOrgTicketweekday = tasklist_split[2]
+            #     #print(str(searchOrgTicketweekday).strip())
+            #     searchOrgTickethour = tasklist_split[3]
+            #     #print(str(searchOrgTickethour).strip())
+            #     searchOrgTicketmin = tasklist_split[4]
+            #     #print(str(searchOrgTicketmin).strip())
 
-                tasklist = deff.task + " : " + str(Tasker[deff.task])
-                tasklist_split = str(tasklist).split(":")
-                #print(tasklist_split)
-
-                searchOrgTicketorg = tasklist_split[0]
-                #print(str(searchOrgTicketorg).strip())
-                searchOrgTicketstream_id = tasklist_split[1]
-                #print(str(searchOrgTicketstream_id).strip())
-                searchOrgTicketweekday = tasklist_split[2]
-                #print(str(searchOrgTicketweekday).strip())
-                searchOrgTickethour = tasklist_split[3]
-                #print(str(searchOrgTickethour).strip())
-                searchOrgTicketmin = tasklist_split[4]
-                #print(str(searchOrgTicketmin).strip())
-
-
-                if now.hour == int(_configDef['quoteOfTheDay']['hour']) and now.minute == int(_configDef['quoteOfTheDay']['minute']) and once:
-                    once = False
-                    deff.QoDTask()
-                    # messaging.SendSymphonyMessage(_configDef['quoteofthedayStream'], "Hello, test for QOD")
+            ## Need to intent if used with tasker to be in side for loop
+            if now.hour == int(_configDef['quoteOfTheDay']['hour']) and now.minute == int(_configDef['quoteOfTheDay']['minute']) and once:
+                once = False
+                deff.QoDTask()
+                # messaging.SendSymphonyMessage(_configDef['quoteofthedayStream'], "Hello, test for QOD")
 
                 ## TODO Scheduler to continue next stream when executed once
 

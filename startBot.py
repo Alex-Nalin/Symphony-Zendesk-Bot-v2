@@ -13,9 +13,10 @@ import json
 import modules.plugins.Zendesk.commands as comm
 import modules.command.defaultcommands as deff
 
-#Grab the config.json main parameters
+
 #from Data.tasker import Tasker
 
+#Grab the config.json main parameters
 _configPathdDefault = os.path.abspath('config.json')
 
 with codecs.open(_configPathdDefault, 'r', 'utf-8-sig') as json_file:

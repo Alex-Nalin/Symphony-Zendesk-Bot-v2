@@ -3456,7 +3456,8 @@ def whois(messageDetail):
             try:
                 try:
                     flat = messageDetail.Command.MessageFlattened.split("_u_")
-                    UID = flat[1][:int(_configDef['UID'])]
+                    #UID = flat[1][:int(_configDef['UID'])]
+                    UID = flat[1]
                     botlog.LogSymphonyInfo("User UI: " + UID)
                     connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
                 except:
@@ -3544,7 +3545,8 @@ def whois(messageDetail):
 
             try:
                 flat = messageDetail.Command.MessageFlattened.split("_u_")
-                UID = flat[1][:int(_configDef['UID'])]
+                #UID = flat[1][:int(_configDef['UID'])]
+                UID = flat[1]
                 botlog.LogSymphonyInfo("User UI: " + UID)
                 connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
             except:
@@ -3930,13 +3932,13 @@ def UIDCheck(messageDetail):
                 try:
                     UID_raw = messageDetail.Command.MessageText
                     UID = str(UID_raw).replace(" ", "")
-                    UID_lenght = len(str(UID))
+                    #UID_lenght = len(str(UID))
                 except:
                     return messageDetail.ReplyToChat("Please use enter UID of the Symphony user to lookup")
 
-                # if str(UID_lenght) != "14":
-                if str(UID_lenght) != _configDef['UID']:
-                    return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
+                # # if str(UID_lenght) != "14":
+                # if str(UID_lenght) != _configDef['UID']:
+                #     return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
 
                 connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
                 sessionTok = callout.GetSessionToken()
@@ -3948,21 +3950,25 @@ def UIDCheck(messageDetail):
 
                 connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
 
-                resComp = connComp.getresponse()
-                dataComp = resComp.read()
-                data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                try:
+                    resComp = connComp.getresponse()
+                    dataComp = resComp.read()
+                    data_raw = str(dataComp.decode('utf-8'))
+                    data_dict = ast.literal_eval(data_raw)
 
-                dataRender = json.dumps(data_dict, indent=2)
-                d_org = json.loads(dataRender)
+                    dataRender = json.dumps(data_dict, indent=2)
+                    d_org = json.loads(dataRender)
+
+                except:
+                    return messageDetail.ReplyToChat("Please enter a valid UID")
 
                 notValidUI = "{'code': 400, 'message': 'At least one query paramemer (uid or email) needs to be present.'}"
                 notValidUID = "{'code': 400, 'message': 'All uids are invalid.'}"
 
                 if str(d_org).startswith(notValidUI):
-                    return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+                    return messageDetail.ReplyToChat("Please enter the UID of the Symphony User to Lookup")
                 if str(d_org).startswith(notValidUID):
-                    return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+                    return messageDetail.ReplyToChat("Please enter the UID of the Symphony User to Lookup")
 
                 table_body = ""
                 table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
@@ -4031,13 +4037,13 @@ def UIDCheck(messageDetail):
             try:
                 UID_raw = messageDetail.Command.MessageText
                 UID = str(UID_raw).replace(" ", "")
-                UID_lenght = len(str(UID))
+                #UID_lenght = len(str(UID))
             except:
                 return messageDetail.ReplyToChat("Please use enter UID of the Symphony user to lookup")
 
-            # if str(UID_lenght) != "14":
-            if str(UID_lenght) != _configDef['UID']:
-                return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
+            # # if str(UID_lenght) != "14":
+            # if str(UID_lenght) != _configDef['UID']:
+            #     return messageDetail.ReplyToChat("Please enter a valid UID, with " + _configDef['UID'] + " digits")
 
             connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
             sessionTok = callout.GetSessionToken()
@@ -4049,21 +4055,24 @@ def UIDCheck(messageDetail):
 
             connComp.request("GET", "/pod/v3/users?uid=" + UID + "&local=false", headers=headersCompany)
 
-            resComp = connComp.getresponse()
-            dataComp = resComp.read()
-            data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            try:
+                resComp = connComp.getresponse()
+                dataComp = resComp.read()
+                data_raw = str(dataComp.decode('utf-8'))
+                data_dict = ast.literal_eval(data_raw)
 
-            dataRender = json.dumps(data_dict, indent=2)
-            d_org = json.loads(dataRender)
+                dataRender = json.dumps(data_dict, indent=2)
+                d_org = json.loads(dataRender)
+            except:
+                return messageDetail.ReplyToChat("Please enter a valid UID")
 
             notValidUI = "{'code': 400, 'message': 'At least one query paramemer (uid or email) needs to be present.'}"
             notValidUID = "{'code': 400, 'message': 'All uids are invalid.'}"
 
             if str(d_org).startswith(notValidUI):
-                return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+                return messageDetail.ReplyToChat("Please enter the UID of the Symphony User to Lookup")
             if str(d_org).startswith(notValidUID):
-                return messageDetail.ReplyToChat("Please use enter UID of the Symphony User to Lookup")
+                return messageDetail.ReplyToChat("Please enter the UID of the Symphony User to Lookup")
 
             table_body = ""
             table_header = "<table style='max-width:100%;table-layout:auto'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \

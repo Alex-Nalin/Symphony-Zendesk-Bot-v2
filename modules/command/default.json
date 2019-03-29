@@ -151,7 +151,7 @@
       "function": "weather",
       "helptext": "<b>/weather</b>",
       "description": "Gives the weather forecast for the given location from 1 to 7 days.",
-      "param":"location + dys to forecast",
+      "param":"location + days to forecast",
       "example":"/weather london or /weather london 5",
       "category": "Info lookup",
       "permission": "Authorised List"

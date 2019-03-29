@@ -13,6 +13,7 @@ import ast
 from datetime import date, datetime, timedelta
 from Data.access import AccessFile
 import time
+import modules.utility_date_time as util
 from hurry.filesize import size
 from string import punctuation
 #from xml.sax.saxutils import escape
@@ -54,6 +55,7 @@ headers = {
 #Symphony API call Config/header
 connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
 sessionTok = callout.GetSessionToken()
+kmTok = callout.GetKeyManagerToken()
 
 headersCompany = {
     'sessiontoken': sessionTok,
@@ -5543,7 +5545,7 @@ def showZD (messageDetail):
                     # print(str(myTicketLenght))
 
                     # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
-                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a>) " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
                     reply = table_bodyFull
                     characterLimit = len(str(table_bodyFull))
 
@@ -5915,7 +5917,7 @@ def showZD (messageDetail):
                         # print(str(myTicketLenght))
 
                         # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
-                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + ")</a> " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(request_id) + "\">" + str(request_id) + "</a> (<a href=\"" + str(OrgTicket) + "\">" + str(orgName) + "</a>) " + str(request_subject) + " (assigned: " + "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a> Updated: " + str(request_updated) + " Status: " + str(requeststatus) + ")</header><body>" + table_header + "</body></card>")
                         reply = table_bodyFull
                         characterLimit = len(str(table_bodyFull))
 
@@ -12830,3 +12832,340 @@ def searchKb(messageDetail):
 
         except:
             return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+################
+
+def querySFDC(messageDetail):
+    botlog.LogSymphonyInfo("####################")
+    botlog.LogSymphonyInfo("Bot Call: Query SFDC")
+    botlog.LogSymphonyInfo("####################")
+
+    # try:
+
+    organization = ""
+    timeStamp = ""
+    getBot2BotStream = ""
+    bot2BotStreamID = ""
+    messageFromBot = ""
+    table_header = ""
+    allTicket = ""
+    table_bodyFull = ""
+    myTicketLenght = ""
+    UniqueToken = ""
+    counter = True
+    sendUser = False
+    notNeeded = False
+    status = ""
+    indexB= ""
+    organization = ""
+    query = ""
+    isIMRequired = False
+    limitReached = False
+    showSearchOrgTicket = False
+
+    try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            # firstName = str(d_org["users"][index_org]["firstName"])
+            # lastName = str(d_org["users"][index_org]["lastName"])
+            # displayName = str(d_org["users"][index_org]["displayName"])
+            companyName = str(d_org["users"][index_org]["company"])
+            # userID = str(d_org["users"][index_org]["id"])
+
+            # ###########################
+            #
+            # try:
+            #     emailAddress = str(d_org["users"][index_org]["emailAddress"])
+            #     botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+            #     emailZendesk = str(emailAddress)
+            #     connectionRequired = False
+            # except:
+            #     connectionRequired = True
+            #
+            # # if connectionRequired:
+            #
+            # data_lenght = len(dataComp)
+            #
+            # if data_lenght > 450:
+            #     try:
+            #         #print("inside > 450")
+            #         query = "type:user " + str(emailAddress)
+            #     except:
+            #         query = "type:user " + str(firstName) + " " + str(lastName)
+            #     botlog.LogSymphonyInfo(str(query))
+            # elif data_lenght < 450:
+            #     try:
+            #         #print("inside < 450")
+            #         #query = "type:user " + emailAddress + " organization:" + companyName
+            #         query = "type:user " + str(emailAddress)
+            #     except:
+            #         #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+            #         query = "type:user " + str(firstName) + " " + str(lastName)
+            #     botlog.LogSymphonyInfo(str(query))
+            # else:
+            #     return messageDetail.ReplyToChat("No user information available")
+            #
+            #     botlog.LogSymphonyInfo(query)
+            # results = zendesk.search(query=query)
+            # #print(results)
+            #
+            # if str(results).startswith(
+            #         "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+            #     return messageDetail.ReplyToChat(
+            #         "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+            # elif str(results).startswith(
+            #         "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+            #     return messageDetail.ReplyToChat(
+            #         "This organisation/company does not exist in Zendesk or name is misspelled.")
+            # else:
+            #
+            #     data = json.dumps(results, indent=2)
+            #     d = json.loads(data)
+            #
+            #     for index in range(len(d["results"])):
+            #         # name = d["results"][index]["name"]
+            #         # email = str(d["results"][index]["email"])
+            #         role = str(d["results"][index]["role"])
+            #         #print(role)
+            #         botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+            #
+            #         if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+            #             isAllowed = True
+            #             #print(role)
+            #             botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+            #
+            # ###########################
+            #
+            # botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            # callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for userAccess Check")
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                # firstName = str(d_org["users"][index_org]["firstName"])
+                # lastName = str(d_org["users"][index_org]["lastName"])
+                # displayName = str(d_org["users"][index_org]["displayName"])
+                companyName = str(d_org["users"][index_org]["company"])
+                # userID = str(d_org["users"][index_org]["id"])
+
+                # ###########################
+                #
+                # try:
+                #     emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                #     botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+                #     emailZendesk = str(emailAddress)
+                #     connectionRequired = False
+                # except:
+                #     connectionRequired = True
+                #
+                # # if connectionRequired:
+                #
+                # data_lenght = len(dataComp)
+                #
+                # if data_lenght > 450:
+                #     try:
+                #         #print("inside > 450")
+                #         query = "type:user " + str(emailAddress)
+                #     except:
+                #         query = "type:user " + str(firstName) + " " + str(lastName)
+                #     botlog.LogSymphonyInfo(str(query))
+                # elif data_lenght < 450:
+                #     try:
+                #         #print("inside < 450")
+                #         #query = "type:user " + emailAddress + " organization:" + companyName
+                #         query = "type:user " + str(emailAddress)
+                #     except:
+                #         #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                #         query = "type:user " + str(firstName) + " " + str(lastName)
+                #     botlog.LogSymphonyInfo(str(query))
+                # else:
+                #     return messageDetail.ReplyToChat("No user information available")
+                #
+                #     botlog.LogSymphonyInfo(query)
+                # results = zendesk.search(query=query)
+                # #print(results)
+                #
+                # if str(results).startswith(
+                #         "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                #     return messageDetail.ReplyToChat(
+                #         "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                # elif str(results).startswith(
+                #         "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                #     return messageDetail.ReplyToChat(
+                #         "This organisation/company does not exist in Zendesk or name is misspelled.")
+                # else:
+                #
+                #     data = json.dumps(results, indent=2)
+                #     d = json.loads(data)
+                #
+                #     for index in range(len(d["results"])):
+                #         # name = d["results"][index]["name"]
+                #         # email = str(d["results"][index]["email"])
+                #         role = str(d["results"][index]["role"])
+                #         #print(role)
+                #         botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+                #
+                #         if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+                #             isAllowed = True
+                #             #print(role)
+                #             botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+                #
+                # ###########################
+                #
+                # botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                # callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            botlog.LogSymphonyInfo("I was not able to validate the user access, please try again")
+
+    # try:
+    # if callerCheck in AccessFile and isAllowed:
+    # if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
+    if companyName in _configDef['AuthCompany']['PodList']:
+
+        callername = messageDetail.Sender.Name
+
+        message = (messageDetail.Command.MessageText)
+        message_split = message.split()
+
+        statusCheck = str(len(message_split))
+        #print(statusCheck)
+
+        streamType = (messageDetail.ChatRoom.Type)
+        #print(streamType)
+
+        streamId = (messageDetail.StreamId)
+        #print(streamId)
+
+        if streamId in _configDef['searchorgticket_streamid']:
+            showSearchOrgTicket = True
+            #print("inside allowed room")
+        else:
+            showSearchOrgTicket = False
+            #print("inside not allowed room")
+        #print(showComment)
+
+        # Parse the messages received
+        for index in range(len(message_split)):
+            #print("index: "+ str(index))
+
+            if str(message_split[index][:4]) == "Role" or str(message_split[index][:6]) == "role" or str(message_split[index][:5]) == "Roles" or str(message_split[index][:5]) == "roles":
+                status = "/roles "
+            elif str(message_split[index][:4]) == "Team" or str(message_split[index][:4]) == "team":
+                status = "/team "
+            elif str(message_split[index][:7]) == "Summary" or str(message_split[index][:7]) == "summary":
+                status = "/summary "
+            else:
+                organization += message_split[index]+ " "
+
+        reply = (str(status) + str(organization))
+
+################################
+
+        #connecting with the bot and getting streamid:
+
+        #######
+
+        url_createIM = _configDef['symphonyinfo']['apiHost'] + "/pod/v1/im/create"
+
+        payload_createIM = "[" + _configDef['sfdcBotUID'] + "]"
+        headers_createIM = {
+            'sessiontoken': sessionTok,
+            'content-type': "application/json",
+            'cache-control': "no-cache"
+        }
+
+        response = requests.request("POST", url_createIM, data=payload_createIM, headers=headers_createIM)
+
+        getBot2BotStream = response.json()
+        bot2BotStream = str(getBot2BotStream).split(":")
+        bot2BotStreamID = bot2BotStream[1].replace("'","").replace("}","").replace(" ", "")
+        #print(str(bot2BotStreamID))
+
+        #######
+
+        # Send message to SFDC Bot
+        messaging.SendSymphonyMessageV2(str(bot2BotStreamID), str(reply))
+        now = datetime.now()
+        # print(now)
+
+        timeStamp = util.ConvertDateTimeToMilliseconds(now)
+        #print(str(timeStamp))
+
+        messageSent = "Communication started with the <b>SDFC Bot</b>, please wait"
+        messaging.SendSymphonyMessageV2(str(streamId), str(messageSent))
+
+        time.sleep(5)
+
+        # Read message from SFDC Bot stream with this bot
+        ### Using v4 search with timestamp from bot message, limit 1 and stream id
+
+        url = _configDef['symphonyinfo']['apiHost'] + "/agent/v4/stream/" + str(bot2BotStreamID) + "/message"
+        querystring = {"since":timeStamp,"limit":"1"}
+
+        headers = {
+            'sessiontoken': str(sessionTok),
+            'keymanagertoken': str(kmTok),
+            'content-type': "application/json",
+            'cache-control': "no-cache"
+            }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+
+        data = response.json()
+        #print(data)
+
+        for result in data:
+            try:
+                messageFromBot = str(result["message"])
+            except:
+                messageFromBot = "No response from the SFDC bot, please try again again"
+
+        repLenght = len(messageFromBot)
+        #print(int(repLenght))
+
+        if repLenght == 0 or repLenght == None:
+            messageFromBot = "No response from the SFDC bot, please try again again"
+
+        # Removing the non messageML formating for posting
+        msgFromBot = str(messageFromBot[:-6]).replace("<div data-format=\"PresentationML\" data-version=\"2.0\" class=\"wysiwyg\">", "").replace("<div data-format=\"PresentationML\" data-version=\"2.0\">","")
+        #print(msgFromBot)
+
+
+        # Send reply back to the main incoming request stream
+        replyToRequest = msgFromBot
+        messaging.SendSymphonyMessageV2(str(streamId), str(replyToRequest))
+
+#################################
+
+    else:
+        # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        botlog.LogSymphonyInfo("You aren't authorised to use this command.")
+    # except:
+    #     botlog.LogSymphonyInfo("QuerySFDC did not work")
+    # except:
+    #     return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+

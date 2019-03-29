@@ -1,6 +1,16 @@
 {
   "commands": [
     {
+      "triggers": ["querySFDC", "querysfdc", "SFDC", "sfdc"],
+      "function": "querySFDC",
+      "description": "Search SFDC via SDFC Bot integration",
+      "helptext": "<b>/SFDC</b> TYPE ORG",
+      "param":"TYPE = roles | team",
+      "example":"/SFDC teams symphony",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
       "triggers": ["searchCompanyTickets", "ZDOrgTicket", "ZDorgTicket", "ZDorgticket", "zdorgticket"],
       "function": "searchCompanyTickets",
       "description": "Search Zendesk tickets by specific organization. Filter results to specific ticket status (e.g. open, unresolved)",

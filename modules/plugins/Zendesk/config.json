@@ -1,7 +1,7 @@
 {
   "commands": [
     {
-      "triggers": ["querySFDC", "querysfdc", "SFDC", "sfdc"],
+      "triggers": ["querySFDC", "querysfdc", "SFDC", "sfdc", "SFDCBOT", "sfdcbot"],
       "function": "querySFDC",
       "description": "Search SFDC via SDFC Bot integration",
       "helptext": "<b>/SFDC</b> TYPE ORG",
@@ -17,6 +17,16 @@
       "helptext": "<b>/ZDOrgTicket</b> STATUS ORG",
       "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk",
       "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
+      "category": "Info lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["searchCategoryTickets", "ZDCatTicket", "ZDcatTicket", "ZDcatticket", "zdcatticket"],
+      "function": "searchCompanyTicketsCategory",
+      "description": "Search Zendesk tickets by specific category. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDCatTicket</b> STATUS ORG | CAT",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. CAT is the Product Category and ORG is the company name as it appears on Zendesk",
+      "example":"/ZDCatTicket open symphony | WebRTC<br></br>/ZDCatTicket symphony |WebRTC",
       "category": "Info lookup",
       "permission": "Zendesk Agent"
     },

@@ -129,8 +129,8 @@ while loopCount < 10:
         pass
     except Exception as ex:
         botlog.LogSystemError('Error: ' + str(ex))
-        botlog.LogSymphonyError('Unhandled error, probably network difficulties at the Agent. Retrying in 5s.')
+        botlog.LogSymphonyError('Unhandled error, probably network difficulties at the Agent. Retrying in 30s.')
         #messaging.SendSymphonyMessage(_configDef['BotStreamForPing'],"There seems to be some network difficulties at the Agent. Please try again in 5s.")
 
-        time.sleep(5)
+        time.sleep(30)
         loopCount += 1

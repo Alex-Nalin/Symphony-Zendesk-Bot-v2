@@ -563,34 +563,47 @@ def searchCompanyTickets(messageDetail):
                         isIMRequired = True
                     else:
                         organization += message_split[index]+ " "
-                        #if index == int(statusCheck) - 1:
-                        isIMRequired = True
+                        if status == "" or status == None:
+                            status = "status<solved "
+                            status_message = "unresolved"
+                        # isIMRequired = False
 
                     if isIMRequired and index == int(statusCheck) - 1:
                         sendUser = True
                         notNeeded = True
 
                         if showSearchOrgTicket:
+                            #print("A")
                             messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                             botlog.LogSystemInfo("Allowed room via streamid in Config")
                             sendUser = False
 
                         elif streamType == "IM":
+                            #print("B")
                             messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         else:
+                            #print("C")
                             messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
                             messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                     else:
+                        #print("D")
                         if index == int(statusCheck) - 1:
+                            #print("E")
                             messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
-                    query = (str(status) + "type:ticket sort:desc organization:" + str(organization))
+                    org_render_raw = str(organization).replace(" ", "_")
+                    org_render = org_render_raw[:-1]
+                    #print(str(org_render))
+
+                    # query = (str(status) + "type:ticket sort:desc organization:" + str(organization))
+                    query = (str(status) + "type:ticket sort:desc organization:" + str(org_render))
+                    #botlog.LogSystemInfo(query)
 
                     org_length = len(str(organization))-1
                     #print(str(org_length))
 
                     if index == 1:
-                        botlog.LogSymphonyInfo("Search query: " + str(query))
+                        #botlog.LogSymphonyInfo("Search query: " + str(query))
                         if org_length < 2:
                             return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
 
@@ -610,6 +623,7 @@ def searchCompanyTickets(messageDetail):
                         #querystring = {"query": "status:" + str(status_message) + " type:ticket organization:" + str(organization) + "", "sort_by": "status","sort_order": "desc"}
                         # querystring = {"query": ""+ query + "", "sort_by": "status", "sort_order": "desc"}
                         querystring = {"query": ""+ str(query)}
+                        botlog.LogSystemInfo(str(querystring))
                         #print(querystring)
 
                         response = requests.request("GET", str(url), headers=headers, params=querystring)
@@ -691,21 +705,26 @@ def searchCompanyTickets(messageDetail):
 
                         if tags.startswith("severity_1"):
                             sev = "Severity 1"
+                            sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                             notSet = False
                         elif tags.startswith("severity_2"):
                             sev = "Severity 2"
+                            sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                             notSet = False
                         elif tags.startswith("severity_3"):
                             sev = "Severity 3"
+                            sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                             notSet = False
                         elif tags.startswith("severity_4"):
                             sev = "Severity 4"
+                            sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                             notSet = False
 
                     if notSet:
                         sev = "Not set"
                         notSet = False
 
+                    requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
 
                     if assignee_flag:
 
@@ -756,7 +775,9 @@ def searchCompanyTickets(messageDetail):
                                         "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
 
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
+                    #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+
 
                     # Checking for unique words (Tokens)
                     UniqueToken = len(set(table_header.split()))
@@ -893,28 +914,44 @@ def searchCompanyTickets(messageDetail):
                             status = ""
                             status_message = "all"
                             isIMRequired = True
+                        elif str(message_split[index][:0]) == "":
+                            status = "status<solved"
+                            status_message = "unresolved"
+                            isIMRequired = False
                         else:
                             organization += message_split[index]+ " "
-                            #if index == int(statusCheck) - 1:
-                            isIMRequired = True
+                            if status == "" or status == None:
+                                status = "status<solved "
+                                status_message = "unresolved"
+                            # isIMRequired = False
+
 
                         if isIMRequired and index == int(statusCheck) - 1:
                             sendUser = True
                             notNeeded = True
 
                             if showSearchOrgTicket:
+                                #print("A")
                                 messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                                 botlog.LogSystemInfo("Allowed room via streamid in Config")
                                 sendUser = False
 
                             elif streamType == "IM":
+                                #print("B")
                                 messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                             else:
+                                #print("C")
                                 messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
                                 messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         else:
+                            #print("D")
                             if index == int(statusCheck) - 1:
+                                #print("E")
                                 messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
+
+                        org_render_raw = str(organization).replace(" ", "_")
+                        org_render = org_render_raw[:-1]
+                        #print(str(org_render))
 
                         query = (str(status) + "type:ticket sort:desc organization:" + str(organization))
 
@@ -922,7 +959,8 @@ def searchCompanyTickets(messageDetail):
                         #print(str(org_length))
 
                         if index == 1:
-                            botlog.LogSymphonyInfo("Search query: " + str(query))
+                            #print("F")
+                            #botlog.LogSymphonyInfo("Search query: " + str(query))
                             if org_length < 2:
                                 return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
 
@@ -1023,21 +1061,26 @@ def searchCompanyTickets(messageDetail):
 
                             if tags.startswith("severity_1"):
                                 sev = "Severity 1"
+                                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                                 notSet = False
                             elif tags.startswith("severity_2"):
                                 sev = "Severity 2"
+                                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                                 notSet = False
                             elif tags.startswith("severity_3"):
                                 sev = "Severity 3"
+                                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                                 notSet = False
                             elif tags.startswith("severity_4"):
                                 sev = "Severity 4"
+                                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                                 notSet = False
 
                         if notSet:
                             sev = "Not set"
                             notSet = False
 
+                        requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
 
                         if assignee_flag:
 
@@ -1088,7 +1131,8 @@ def searchCompanyTickets(messageDetail):
                                             "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
 
-                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
+                        #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
+                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
                         # Checking for unique words (Tokens)
                         UniqueToken = len(set(table_header.split()))
@@ -1165,6 +1209,833 @@ def searchCompanyTickets(messageDetail):
     except:
         return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 
+
+################
+
+def searchCompanyTicketsCategory(messageDetail):
+    botlog.LogSymphonyInfo("##########################################")
+    botlog.LogSymphonyInfo("Bot Call: SearchCompanyTickets by category")
+    botlog.LogSymphonyInfo("##########################################")
+
+    # try:
+
+    organization = ""
+    table_header = ""
+    allTicket = ""
+    ticketid = ""
+    table_bodyFull = ""
+    myTicketLenght = ""
+    UniqueToken = ""
+    counter = True
+    sendUser = False
+    notNeeded = False
+    status = ""
+    indexB= ""
+    query = ""
+    isIMRequired = False
+    limitReached = False
+    showSearchOrgTicket = False
+    filter = False
+    catTag = ""
+    rem = ""
+    orgCat = ""
+    noComp = False
+
+    try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = str(d_org["users"][index_org]["firstName"])
+            lastName = str(d_org["users"][index_org]["lastName"])
+            displayName = str(d_org["users"][index_org]["displayName"])
+            companyName = str(d_org["users"][index_org]["company"])
+            userID = str(d_org["users"][index_org]["id"])
+
+            ###########################
+
+            try:
+                emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+                emailZendesk = str(emailAddress)
+                connectionRequired = False
+            except:
+                connectionRequired = True
+
+            # if connectionRequired:
+
+            data_lenght = len(dataComp)
+
+            if data_lenght > 450:
+                try:
+                    #print("inside > 450")
+                    query = "type:user " + str(emailAddress)
+                except:
+                    query = "type:user " + str(firstName) + " " + str(lastName)
+                botlog.LogSymphonyInfo(str(query))
+            elif data_lenght < 450:
+                try:
+                    #print("inside < 450")
+                    #query = "type:user " + emailAddress + " organization:" + companyName
+                    query = "type:user " + str(emailAddress)
+                except:
+                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                    query = "type:user " + str(firstName) + " " + str(lastName)
+                botlog.LogSymphonyInfo(str(query))
+            else:
+                return messageDetail.ReplyToChat("No user information available")
+
+                botlog.LogSymphonyInfo(query)
+            results = zendesk.search(query=query)
+            #print(results)
+
+            if str(results).startswith(
+                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+            elif str(results).startswith(
+                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+            else:
+
+                data = json.dumps(results, indent=2)
+                d = json.loads(data)
+
+                for index in range(len(d["results"])):
+                    # name = d["results"][index]["name"]
+                    # email = str(d["results"][index]["email"])
+                    role = str(d["results"][index]["role"])
+                    #print(role)
+                    botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+
+                    if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+                        isAllowed = True
+                        #print(role)
+                        botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+
+            ###########################
+
+            botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for userAccess Check")
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = str(d_org["users"][index_org]["firstName"])
+                lastName = str(d_org["users"][index_org]["lastName"])
+                displayName = str(d_org["users"][index_org]["displayName"])
+                companyName = str(d_org["users"][index_org]["company"])
+                userID = str(d_org["users"][index_org]["id"])
+
+                ###########################
+
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+                    emailZendesk = str(emailAddress)
+                    connectionRequired = False
+                except:
+                    connectionRequired = True
+
+                # if connectionRequired:
+
+                data_lenght = len(dataComp)
+
+                if data_lenght > 450:
+                    try:
+                        #print("inside > 450")
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo(str(query))
+                elif data_lenght < 450:
+                    try:
+                        #print("inside < 450")
+                        #query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo(str(query))
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                    botlog.LogSymphonyInfo(query)
+                results = zendesk.search(query=query)
+                #print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        # name = d["results"][index]["name"]
+                        # email = str(d["results"][index]["email"])
+                        role = str(d["results"][index]["role"])
+                        #print(role)
+                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+
+                        if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+                            isAllowed = True
+                            #print(role)
+                            botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+
+                ###########################
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            botlog.LogSymphonyInfo("I was not able to validate the user access, please try again")
+
+    # try:
+    # if callerCheck in AccessFile and isAllowed:
+    if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
+
+        callername = messageDetail.Sender.Name
+        # status = ""
+        # indexB= ""
+        # organization = ""
+        # query = ""
+        # isIMRequired = False
+        query = ""
+        message = (messageDetail.Command.MessageText)
+        message_split = message.split()
+        #print(str(message_split))
+        status_message = ""
+
+        statusCheck = str(len(message_split))
+        # print("Status Check: " + statusCheck)
+
+        streamType = (messageDetail.ChatRoom.Type)
+        #print(streamType)
+
+        streamId = (messageDetail.StreamId)
+        #print(streamId)
+
+        if streamId in _configDef['searchorgticket_streamid']:
+            showSearchOrgTicket = True
+            #print("inside allowed room")
+        else:
+            showSearchOrgTicket = False
+            #print("inside not allowed room")
+        #print(showComment)
+
+        # Parse the messages received
+        for index in range(len(message_split)):
+            # print("index: "+ str(index))
+
+            if str(message_split[index][:4]) == "Open" or str(message_split[index][:6]) == "Opened" or str(message_split[index][:4]) == "open" or str(message_split[index][:6]) == "opened":
+                status = "status:open "
+                status_message = "open"
+                isIMRequired = False
+            elif str(message_split[index][:3]) == "New" or str(message_split[index][:3]) == "new":
+                status = "status:new "
+                status_message = "new"
+                isIMRequired = False
+            elif str(message_split[index][:6]) == "Solved" or str(message_split[index][:6]) == "solved":
+                status = "status:solved "
+                status_message = "solved"
+                isIMRequired = False
+            elif str(message_split[index][:6]) == "Closed" or str(message_split[index][:6]) == "closed" or str(message_split[index][:5]) == "Close" or str(message_split[index][:5]) == "close":
+                status = "status:closed "
+                status_message = "closed"
+                isIMRequired = True
+            elif str(message_split[index][:7]) == "Pending" or str(message_split[index][:7]) == "pending":
+                status = "status:pending "
+                status_message = "pending"
+                isIMRequired = False
+            elif str(message_split[index][:10]) == "Unresolved" or str(message_split[index][:10]) == "unresolved":
+                status = "status<solved "
+                status_message = "unresolved"
+                isIMRequired = False
+            elif str(message_split[index][:3]) == "All" or str(message_split[index][:3]) == "all" and index == 0:
+                status = ""
+                status_message = "all"
+                isIMRequired = True
+            else:
+                organization += message_split[index] + " "
+                # print(organization)
+                org_length = len(str(organization))-1
+                # print("Org Lenght: " + str(org_length))
+                filter = True
+
+                if status == "" or status == None:
+                    status = "status<solved "
+                    status_message = "unresolved"
+                # isIMRequired = False
+
+
+            # ## Filtering by Product Category
+            #
+            if str(message_split[index][:2]) == "UI" or str(message_split[index][:2]) == "ui":
+                spec = "Product category <b>UI</b>"
+                catTag = "tags:ui"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:5]) == "Admin" or str(message_split[index][:6]) == "Portal" or str(message_split[index][:5]) == "admin" or str(message_split[index][:6]) == "portal" or str(message_split[index][:12]) == "Admin Portal" or str(message_split[index][:12]) == "admin portal":
+                spec = "Product category <b>Admin Portal</b>"
+                catTag = "tags:admin_portal"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "Access" or str(message_split[index][:6]) == "access" or str(message_split[index][:13]) == "direct portal" or str(message_split[index][:13]) == "Direct Portal" or str(message_split[index][:38]) == "Access to Development or Direct Portal" or str(message_split[index][:38]) == "access to development or Direct Portal":
+                spec = "Product category <b>Access to Development or Direct Portal</b>"
+                catTag = "tags:access_to_development_or_direct_portal"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:5]) == "Alerts" or str(message_split[index][:5]) == "Alert" or str(message_split[index][:6]) == "alerts" or str(message_split[index][:6]) == "alerts":
+                spec = "Product category <b>Alerts</b>"
+                catTag = "tags:alert"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "API" or str(message_split[index][:3]) == "Api" or str(message_split[index][:3]) == "api":
+                spec = "Product category <b>API</b>"
+                catTag = "tags:api"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:12]) == "Applications" or str(message_split[index][:11]) == "Application" or str(message_split[index][:12]) == "applications" or str(message_split[index][:11]) == "application":
+                spec = "Product category <b>Applications</b>"
+                catTag = "tags:applications"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "Browser" or str(message_split[index][:12]) == "Browser issue" or str(message_split[index][:12]) == "browser issue" or str(message_split[index][:6]) == "browser":
+                spec = "Product category <b>Browser Issue</b>"
+                catTag = "tags:browser_issue"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "CEB" or str(message_split[index][:3]) == "ceb":
+                spec = "Product category <b>CEB</b>"
+                catTag = "tags:ceb"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "CEP" or str(message_split[index][:3]) == "cep":
+                spec = "Product category <b>CEP</b>"
+                catTag = "tags:cep"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:7]) == "Desktop" or str(message_split[index][:7]) == "Wrapper" or str(message_split[index][:7]) == "desktop" or str(message_split[index][:7]) == "wrapper" or str(message_split[index][:15]) == "Desktop Wrapper" or str(message_split[index][:15]) == "desktop wrapper":
+                spec = "Product category <b>Desktop Wrapper</b>"
+                catTag = "tags:desktop_wrapper"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:9]) == "Directory" or str(message_split[index][:6]) == "Bridge" or str(message_split[index][:9]) == "directory" or str(message_split[index][:6]) == "bridge" or str(message_split[index][:16]) == "Directory Bridge" or str(message_split[index][:16]) == "directory bridge":
+                spec = "Product category <b>Directory Bridge</b>"
+                catTag = "tags:directory_bridge"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "DLP" or str(message_split[index][:3]) == "dlp":
+                spec = "Product category <b>DLP</b>"
+                catTag = "tags:dlp"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:13]) == "Documentation" or str(message_split[index][:13]) == "Release notes" or str(message_split[index][:13]) == "documentation" or str(message_split[index][:13]) == "release notes" or str(message_split[index][:27]) == "Documentation/Release notes" or str(message_split[index][:37]) == "documentation/release notes":
+                spec = "Product category <b>Documentation/Release notes</b>"
+                catTag = "tags:documentation_release_notes"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:8]) == "Electron" or str(message_split[index][:8]) == "electron":
+                spec = "Product category <b>Electron</b>"
+                catTag = "tags:Electron"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:11]) == "Enhancement" or str(message_split[index][:7]) == "Request" or str(message_split[index][:11]) == "enhancement" or str(message_split[index][:7]) == "request" or str(message_split[index][:19]) == "Enhancement Request" or str(message_split[index][:19]) == "enhancement request":
+                spec = "Product category <b>Enhancement Request</b>"
+                catTag = "tags:enhancement_request"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "HSM" or str(message_split[index][:3]) == "hsm":
+                spec = "Product category <b>HSM</b>"
+                catTag = "tags:hsm"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:14]) == "Infrastructure" or str(message_split[index][:14]) == "infrastructure" or str(message_split[index][:5]) == "Infra" or str(message_split[index][:5]) == "infra":
+                spec = "Product category <b>Infrastructure</b>"
+                catTag = "tags:infrastructure"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:2]) == "KM" or str(message_split[index][:2]) == "km":
+                spec = "Product category <b>KM</b>"
+                catTag = "tags:km"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:11]) == "Maintenance" or str(message_split[index][:11]) == "maintenance":
+                spec = "Product category <b>Maintenance</b>"
+                catTag = "tags:maintenance"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "Mobile" or str(message_split[index][:6]) == "mobile":
+                spec = "Product category <b>Mobile</b>"
+                catTag = "tags:mobile"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:7]) == "Network" or str(message_split[index][:7]) == "network":
+                spec = "Product category <b>Network</b>"
+                catTag = "tags:network"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:5]) == "Not a support issue" or str(message_split[index][:6]) == "not a support issue":
+                spec = "Product category <b>Not a support issue</b>"
+                catTag = "tags:not_a_support_issue"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "Outage" or str(message_split[index][:6]) == "outage":
+                spec = "Product category <b>Outage</b>"
+                catTag = "tags:outage"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:7]) == "Partner" or str(message_split[index][:7]) == "partner":
+                spec = "Product category <b>Partner</b>"
+                catTag = "tags:partner"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:11]) == "Performance" or str(message_split[index][:11]) == "performance":
+                spec = "Product category <b>Performance</b>"
+                catTag = "tags:performance"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:10]) == "Public Pod" or str(message_split[index][:10]) == "Public pod" or str(message_split[index][:10]) == "public pod":
+                spec = "Product category <b>Public Pod</b>"
+                catTag = "tags:public_pod"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "Search" or str(message_split[index][:6]) == "search":
+                spec = "Product category <b>Search</b>"
+                catTag = "tags:search"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:3]) == "SSO" or str(message_split[index][:3]) == "sso":
+                spec = "Product category <b>SSO</b>"
+                catTag = "tags:sso"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:8]) == "Symphony" or str(message_split[index][:6]) == "Market" or str(message_split[index][:8]) == "symphony" or str(message_split[index][:6]) == "market" or str(message_split[index][:15]) == "Symphony Market" or str(message_split[index][:15]) == "symphony market":
+                spec = "Product category <b>Symphony Market</b>"
+                catTag = "tags:symphony_market"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:2]) == "UI" or str(message_split[index][:5]) == "Issue" or str(message_split[index][:2]) == "ui" or str(message_split[index][:5]) == "issue" or str(message_split[index][:8]) == "UI Issue" or str(message_split[index][:8]) == "UI issue" or str(message_split[index][:8]) == "ui issue":
+                spec = "Product category <b>UI Issue</b>"
+                catTag = "tags:ui_issue"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:4]) == "User" or str(message_split[index][:4]) == "user" or str(message_split[index][:9]) == "Knowledge" or str(message_split[index][:9]) == "knowledge" or str(message_split[index][:10]) == "User error" or str(message_split[index][:10]) == "user error" or str(message_split[index][:10]) == "User_error" or str(message_split[index][:10]) == "user_error" or str(message_split[index][:20]) == "User_error/Knowledge" or str(message_split[index][:20]) == "user_error/knowledge":
+                spec = "Product category <b>User error/Knowledge</b>"
+                catTag = "tags:user_error_knowledge"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:6]) == "WebRTC" or str(message_split[index][:6]) == "Webrtc" or str(message_split[index][:6]) == "webRTC" or str(message_split[index][:6]) == "webrtc" or str(message_split[index][:3]) == "RTC" or str(message_split[index][:3]) == "rtc":
+                spec = "Product category <b>WebRTC</b>"
+                catTag = "tags:webrtc"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:4]) == "Xpod" or str(message_split[index][:4]) == "xpod" or str(message_split[index][:4]) == "xPod" or str(message_split[index][:4]) == "XPOD":
+                spec = "Product category <b>Xpod</b>"
+                catTag = "tags:Xpod"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:7]) == "Zendesk" or str(message_split[index][:7]) == "Account" or str(message_split[index][:10]) == "Management" or str(message_split[index][:26]) == "Zendesk Account Management" or str(message_split[index][:26]) == "zendesk account management":
+                spec = "Product category <b>Zendesk Account Management</b>"
+                catTag = "tags:zendesk_account_management"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+
+
+            # ## Filtering by Severity
+            #
+            if str(message_split[index][:4]) == "Sev1" or str(message_split[index][:4]) == "sev1" or str(message_split[index][:5]) == "Sev 1" or str(message_split[index][:5]) == "sev 1":
+                spec = "<b>Severity 1</b>"
+                catTag = "tags:severity_1"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:4]) == "Sev2" or str(message_split[index][:4]) == "sev2" or str(message_split[index][:5]) == "Sev 2" or str(message_split[index][:5]) == "sev 2":
+                spec = "<b>Severity 2</b>"
+                catTag = "tags:severity_2"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:4]) == "Sev3" or str(message_split[index][:4]) == "sev3" or str(message_split[index][:5]) == "Sev 3" or str(message_split[index][:5]) == "sev 3":
+                spec = "<b>Severity 3</b>"
+                catTag = "tags:severity_3"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+            elif str(message_split[index][:4]) == "Sev4" or str(message_split[index][:4]) == "sev4" or str(message_split[index][:5]) == "Sev 4" or str(message_split[index][:5]) == "sev 4":
+                spec = "<b>Severity 4</b>"
+                catTag = "tags:severity_4"
+                rem = int(len(str(message_split[index]))) + 1
+                filter = True
+
+            # print("Rem: " + str(rem))
+
+            orgCatFilter_raw = str(organization).replace(" ", "_")
+            orgCatFilter = orgCatFilter_raw[:-1]
+            orgCatFilter_lenght = len(orgCatFilter)
+            # print("OrgCatFilter: " + str(orgCatFilter))
+            # print("OrgCatFilter lenght: " + str(orgCatFilter_lenght))
+
+            try:
+                if filter and index == int(statusCheck) - 1:
+                    # print("inside Filter")
+
+                    try:
+                        orgCat = "organization:" + (str(orgCatFilter[:-int(rem)]))
+                        # print(len(orgCat))
+                        # print("1")
+                        if len(orgCat) < 14:
+                            # print("1.1")
+                            noComp = True
+                            #orgCat = str(catTag)
+                        else:
+                            noComp = False
+                        # print(str(orgCat))
+                    except:
+                        orgCat = (str(orgCat))
+                        # print("2")
+                        # print(str(orgCat))
+
+
+                if noComp:
+                    # print("3")
+                    query = str(status) + "type:ticket sort:desc " + str(catTag)
+                else:
+                    # print("4")
+                    query = str(status) + "type:ticket sort:desc " + str(orgCat) + " " + str(catTag)
+
+                botlog.LogSystemInfo(str(query))
+            except:
+                # print("except")
+                query = (str(status) + "type:ticket sort:desc " + str(catTag))
+                botlog.LogSystemInfo(str(query))
+
+            rem += rem
+            # print("Rem: " + str(rem))
+
+            try:
+                if isIMRequired and index == int(statusCheck) - 1:
+
+                    sendUser = True
+                    notNeeded = True
+
+                    if showSearchOrgTicket:
+                        # print("A")
+                        messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", rendering the result now, please wait.")
+                        botlog.LogSystemInfo("Allowed room via streamid in Config")
+                        sendUser = False
+
+                    elif streamType == "IM" and noComp:
+                        # print("B 1")
+                        messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk filtered by " + str(spec) + ", rendering the result now, please wait.")
+                    elif streamType == "IM":
+                        # print("B 2")
+                        messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", rendering the result now, please wait.")
+                    else:
+                        # print("C")
+                        messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", I will message you 1:1 with the result")
+                        messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", rendering the result now, please wait.")
+                else:
+                    if index == int(statusCheck) - 1 and noComp:
+                        # print("D")
+                        messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk filtered by " + str(spec) + ", rendering the result now, please wait.")
+                    elif index == int(statusCheck) - 1:
+                        # print("E")
+                        messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", rendering the result now, please wait.")
+            except:
+                return messageDetail.ReplyToChatV2_noBotLog("Please use a valid filtered by Produc category or a Severity such as: ...")
+
+
+            org_length = len(str(organization))-1
+            #print(str(org_length))
+
+            if index == 1:
+                # print("Z")
+                botlog.LogSymphonyInfo("Search query: " + str(query))
+                if org_length < 2:
+                    # print("Y")
+                    return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
+
+################################
+            try:
+                headers = {
+                    'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                    'password': _configDef['zdesk_config']['zdesk_password'],
+                    'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                    'cache-control': "no-cache",
+                    'Content-Type': 'application/json',
+                }
+
+                url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+                #querystring = {"query": "status:open type:ticket organization:hsbc", "sort_by": "status", "sort_order": "desc"}
+                #querystring = {"query": "status:" + str(status_message) + " type:ticket organization:" + str(organization) + "", "sort_by": "status","sort_order": "desc"}
+                # querystring = {"query": ""+ query + "", "sort_by": "status", "sort_order": "desc"}
+                querystring = {"query": ""+ str(query)}
+                #print(querystring)
+
+                if querystring == "{'query': ''}":
+                    botlog.LogSystemInfo("index has no query, please wait next one")
+
+                response = requests.request("GET", str(url), headers=headers, params=querystring)
+                data = response.json()
+
+                if data == "{'error': 'invalid', 'description': 'Invalid search: Please provide a valid search query'}":
+                    botlog.LogSystemInfo("index has no query, please wait next one")
+                #print(str(data))
+            except:
+                return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+#################################
+
+        for result in data['results']:
+            #print(result["priority"])
+
+            try:
+                assignee_flag = False
+                # strip out conflicting HTML tags in descriptions
+                description_temp = str(result["description"])
+                description = str(description_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                ticketid = str(result["id"])
+
+                # Getting IDs of requesters to be processed
+                requesterid = str(result["requester_id"])
+            except:
+                botlog.LogSymphonyInfo("Cannot get ticket info")
+
+            try:
+                # To get the name of the requester given the requesterID
+                conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+                res = conn.getresponse()
+                userRequesterId = res.read()
+                tempUserRequester = str(userRequesterId.decode('utf-8'))
+                data = json.dumps(tempUserRequester, indent=2)
+                data_dict = ast.literal_eval(data)
+                d_req = json.loads(data_dict)
+                req_name = str(d_req["user"]["name"])
+                requesterName = req_name
+            except:
+                requesterName = "N/A"
+                botlog.LogSymphonyInfo("Cannot get requester info")
+
+            # Getting IDs of assignee to be processed
+            try:
+                assigneeid = str(result["assignee_id"])
+
+                # To get the name of the assignee given the assigneeID
+                conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+                res = conn.getresponse()
+                userAssigneeId = res.read()
+                tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+                data = json.dumps(tempUserAssignee, indent=2)
+                data_dict = ast.literal_eval(data)
+                d_assign = json.loads(data_dict)
+                assign_name = str(d_assign["user"]["name"])
+                assigneeName = str(assign_name)
+
+            except:
+                assigneeName = "N/A"
+                assignee_flag = True
+
+            requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+            assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+
+            ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+            if (len(result["tags"])) == 0:
+                noTag = True
+            else:
+                noTag = False
+
+            notSet = True
+            if noTag:
+                notSet = False
+
+            sev = "Not Set"
+            for index_tags in range(len(result["tags"])):
+                tags = str((result["tags"][index_tags]))
+
+                if tags.startswith("severity_1"):
+                    sev = "Severity 1"
+                    sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
+                    notSet = False
+                elif tags.startswith("severity_2"):
+                    sev = "Severity 2"
+                    sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
+                    notSet = False
+                elif tags.startswith("severity_3"):
+                    sev = "Severity 3"
+                    sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
+                    notSet = False
+                elif tags.startswith("severity_4"):
+                    sev = "Severity 4"
+                    sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
+                    notSet = False
+
+            if notSet:
+                sev = "Not set"
+                sevv = "Not set"
+                notSet = False
+
+            requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
+            if assignee_flag:
+
+                assignee = str(assigneeName)
+                table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:2%;text-align:center'>ID</td>" \
+                                "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:10.5%;text-align:center'>REQUESTER</td>" \
+                                "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>REQUESTED</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>ASSIGNEE</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>UPDATED</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
+
+            else:
+
+                assignee = "<a href=\"" + str(assigneeTicket) + "\">" + str(assigneeName) + "</a>"
+                table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:15%;text-align:center'>SUBJECT</td>" \
+                                "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td></tr><tr>" \
+                                "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(description) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:2%;text-align:center'>ID</td>" \
+                                "<td style='border:1px solid black;text-align:center'><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:10.5%;text-align:center'>REQUESTER</td>" \
+                                "<td style='border:1px solid black;text-align:center'><a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a></td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>REQUESTED</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["created_at"]).replace("T", " ").replace("Z", "") + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>ASSIGNEE</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:7.5%;text-align:center'>UPDATED</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>STATUS</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>PRIORITY</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(result["priority"]) + "</td></tr><tr>" \
+                                "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
+                                "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
+
+
+            #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
+            allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+
+
+            # Checking for unique words (Tokens)
+            UniqueToken = len(set(table_header.split()))
+            #print(str(UniqueToken))
+
+            myTicketLenght = len(str(table_header))
+            #print(str(myTicketLenght))
+
+            if sendUser:
+                limitReached = False
+                if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                    limitReached = True
+                    if counter:
+                        messageDetail.ReplyToSenderv2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
+            else:
+                limitReached = False
+                if myTicketLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                    limitReached = True
+                    if counter:
+                        messageDetail.ReplyToChatV2_noBotLog("This search query exceed the character limit and therefore will show into separate message")
+
+            if sendUser:
+                if limitReached:
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                    myTicketLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    allTicket = ""
+                    counter = False
+            else:
+                if limitReached:
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                    myTicketLenght = ""
+                    table_header = ""
+                    UniqueToken = ""
+                    table_bodyFull = ""
+                    allTicket = ""
+                    counter = False
+
+        if sendUser and limitReached == False:
+            if table_header == "":
+                return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
+            else:
+                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+        else:
+            if table_header == "":
+                return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
+            else:
+                #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                reply = str(table_bodyFull)
+                #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+
+    else:
+        # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        botlog.LogSymphonyInfo("You aren't authorised to use this command.")
+    # except:
+    #     return messageDetail.ReplyToChat("ZDCatTicket did not work")
+
+    # except:
+    #     return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
+
+
+
+################
 
 ############################
 
@@ -1326,6 +2197,7 @@ def searchCompanyTicketsTask(organization, stream_id):
 
         if notSet:
             sev = "Not set"
+            sevv = "Not set"
             notSet = False
 
 
@@ -1515,7 +2387,7 @@ def searchUserTickets(messageDetail):
             if companyName in _configDef['AuthCompany']['PodList']:
 
                 streamType = (messageDetail.ChatRoom.Type)
-                print(streamType)
+                #print(streamType)
 
                 callername = messageDetail.Sender.Name
                 table_body = ""
@@ -1549,7 +2421,7 @@ def searchUserTickets(messageDetail):
                         flat = messageDetail.Command.MessageFlattened.split("_u_")
                         #print(flat)
 
-                        UID = flat[1][:int(_configDef['UID'])]
+                        UID = flat[1]#[:int(_configDef['UID'])]
                         #print(str(UID))
                         botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -1811,27 +2683,36 @@ def searchUserTickets(messageDetail):
                         notSet = False
 
                     #sev = ""
+                    sevv = ""
                     for index_tags in range(len(result["tags"])):
                         tags = str((result["tags"][index_tags]))
 
                         if tags.startswith("severity_1"):
                             sev = "Severity 1"
+                            sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                             notSet = False
                         elif tags.startswith("severity_2"):
                             sev = "Severity 2"
+                            sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                             notSet = False
                         elif tags.startswith("severity_3"):
                             sev = "Severity 3"
+                            sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                             notSet = False
                         elif tags.startswith("severity_4"):
                             sev = "Severity 4"
+                            sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                             notSet = False
 
                     if notSet:
                         sev = "Not Set"
+                        sevv = ""
                         notSet = False
 
                     updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+                    requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                     if assignee_flag:
                         assignee = (str(assigneeName))
                         table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -1898,7 +2779,8 @@ def searchUserTickets(messageDetail):
                                           "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
                                           "</tr></thead><tbody></tbody></table>"
 
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
                     # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
 
@@ -2013,7 +2895,7 @@ def searchUserTickets(messageDetail):
                             flat = messageDetail.Command.MessageFlattened.split("_u_")
                             #print(flat)
 
-                            UID = flat[1][:int(_configDef['UID'])]
+                            UID = flat[1]#[:int(_configDef['UID'])]
                             #print(str(UID))
                             botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -2276,27 +3158,36 @@ def searchUserTickets(messageDetail):
                             notSet = False
 
                         #sev = ""
+                        sevv = ""
                         for index_tags in range(len(result["tags"])):
                             tags = str((result["tags"][index_tags]))
 
                             if tags.startswith("severity_1"):
                                 sev = "Severity 1"
+                                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                                 notSet = False
                             elif tags.startswith("severity_2"):
                                 sev = "Severity 2"
+                                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                                 notSet = False
                             elif tags.startswith("severity_3"):
                                 sev = "Severity 3"
+                                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                                 notSet = False
                             elif tags.startswith("severity_4"):
                                 sev = "Severity 4"
+                                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                                 notSet = False
 
                         if notSet:
                             sev = "Not Set"
+                            sevv = ""
                             notSet = False
 
                         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+                        requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                         if assignee_flag:
                             assignee = (str(assigneeName))
                             table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -2363,7 +3254,8 @@ def searchUserTickets(messageDetail):
                                               "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
                                               "</tr></thead><tbody></tbody></table>"
 
-                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                        #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
                         # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
 
@@ -2570,7 +3462,7 @@ def searchAssigneeTickets(messageDetail):
                         flat = messageDetail.Command.MessageFlattened.split("_u_")
                         #print(flat)
 
-                        UID = flat[1][:int(_configDef['UID'])]
+                        UID = flat[1]#[:int(_configDef['UID'])]
                         #print(str(UID))
                         botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -2832,27 +3724,36 @@ def searchAssigneeTickets(messageDetail):
                         notSet = False
 
                     #sev = ""
+                    sevv = ""
                     for index_tags in range(len(result["tags"])):
                         tags = str((result["tags"][index_tags]))
 
                         if tags.startswith("severity_1"):
                             sev = "Severity 1"
+                            sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                             notSet = False
                         elif tags.startswith("severity_2"):
                             sev = "Severity 2"
+                            sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                             notSet = False
                         elif tags.startswith("severity_3"):
                             sev = "Severity 3"
+                            sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                             notSet = False
                         elif tags.startswith("severity_4"):
                             sev = "Severity 4"
+                            sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                             notSet = False
 
                     if notSet:
                         sev = "Not Set"
+                        sevv = ""
                         notSet = False
 
                     updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+                    requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                     if assignee_flag:
                         assignee = (str(assigneeName))
                         table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -2920,7 +3821,8 @@ def searchAssigneeTickets(messageDetail):
                                           "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
                                           "</tr></thead><tbody></tbody></table>"
 
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
                     # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
 
@@ -3035,7 +3937,7 @@ def searchAssigneeTickets(messageDetail):
                             flat = messageDetail.Command.MessageFlattened.split("_u_")
                             #print(flat)
 
-                            UID = flat[1][:int(_configDef['UID'])]
+                            UID = flat[1]#[:int(_configDef['UID'])]
                             #print(str(UID))
                             botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -3298,27 +4200,36 @@ def searchAssigneeTickets(messageDetail):
                             notSet = False
 
                         #sev = ""
+                        sevv = ""
                         for index_tags in range(len(result["tags"])):
                             tags = str((result["tags"][index_tags]))
 
                             if tags.startswith("severity_1"):
                                 sev = "Severity 1"
+                                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                                 notSet = False
                             elif tags.startswith("severity_2"):
                                 sev = "Severity 2"
+                                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                                 notSet = False
                             elif tags.startswith("severity_3"):
                                 sev = "Severity 3"
+                                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                                 notSet = False
                             elif tags.startswith("severity_4"):
                                 sev = "Severity 4"
+                                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                                 notSet = False
 
                         if notSet:
                             sev = "Not Set"
+                            sevv = ""
                             notSet = False
 
                         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+                        requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                         if assignee_flag:
                             assignee = (str(assigneeName))
                             table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -3596,7 +4507,7 @@ def searchCCTickets(messageDetail):
                         flat = messageDetail.Command.MessageFlattened.split("_u_")
                         #print(flat)
 
-                        UID = flat[1][:int(_configDef['UID'])]
+                        UID = flat[1]#[:int(_configDef['UID'])]
                         #print(str(UID))
                         botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -3858,27 +4769,36 @@ def searchCCTickets(messageDetail):
                         notSet = False
 
                     #sev = ""
+                    sevv = ""
                     for index_tags in range(len(result["tags"])):
                         tags = str((result["tags"][index_tags]))
 
                         if tags.startswith("severity_1"):
                             sev = "Severity 1"
+                            sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                             notSet = False
                         elif tags.startswith("severity_2"):
                             sev = "Severity 2"
+                            sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                             notSet = False
                         elif tags.startswith("severity_3"):
                             sev = "Severity 3"
+                            sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                             notSet = False
                         elif tags.startswith("severity_4"):
                             sev = "Severity 4"
+                            sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                             notSet = False
 
                     if notSet:
                         sev = "Not Set"
+                        sevv = ""
                         notSet = False
 
                     updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+                    requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                     if assignee_flag:
                         assignee = (str(assigneeName))
                         table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -3946,7 +4866,8 @@ def searchCCTickets(messageDetail):
                                           "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
                                           "</tr></thead><tbody></tbody></table>"
 
-                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                    allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
                     # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
 
@@ -4061,7 +4982,7 @@ def searchCCTickets(messageDetail):
                             flat = messageDetail.Command.MessageFlattened.split("_u_")
                             #print(flat)
 
-                            UID = flat[1][:int(_configDef['UID'])]
+                            UID = flat[1]#[:int(_configDef['UID'])]
                             #print(str(UID))
                             botlog.LogSymphonyInfo("User UI: " + str(UID))
 
@@ -4324,27 +5245,35 @@ def searchCCTickets(messageDetail):
                             notSet = False
 
                         #sev = ""
+                        sevv = ""
                         for index_tags in range(len(result["tags"])):
                             tags = str((result["tags"][index_tags]))
 
                             if tags.startswith("severity_1"):
                                 sev = "Severity 1"
+                                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
                                 notSet = False
                             elif tags.startswith("severity_2"):
                                 sev = "Severity 2"
+                                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
                                 notSet = False
                             elif tags.startswith("severity_3"):
                                 sev = "Severity 3"
+                                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
                                 notSet = False
                             elif tags.startswith("severity_4"):
                                 sev = "Severity 4"
+                                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
                                 notSet = False
 
                         if notSet:
                             sev = "Not Set"
+                            sevv = ""
                             notSet = False
 
                         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+                        requester =  "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
                         if assignee_flag:
                             assignee = (str(assigneeName))
                             table_body += "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
@@ -4412,7 +5341,9 @@ def searchCCTickets(messageDetail):
                                               "<td style='border:1px solid black;text-align:center'>" + str(sev) + "</td></tr><tr>" \
                                               "</tr></thead><tbody></tbody></table>"
 
-                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                        #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (requester: " + str(requester) + " updated: " + str(updated) + " Status: <b>" + str(result["status"]) + "</b>) <br/>"
+                        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+
 
                         # From agent: private static final String REGEX = "[[\\p{Punct} || [’] || [^\\p{L}^\\d] ]&&[^@_]]";
 
@@ -8595,7 +9526,7 @@ def RequestCreate(messageDetail):
             # removing excess characters to just get the UID
             ############################################################
             try:
-                UID = flat[1][:int(_configDef['UID'])]
+                UID = flat[1]#[:int(_configDef['UID'])]
                 botlog.LogSymphonyInfo("User UI: " + UID)
             except:
                 return messageDetail.ReplyToChat("You are part of the Zendesk Agent list, please use the following format for your call: <b>/createRequest @mention| subject| description</b>")
@@ -12003,7 +12934,7 @@ def addAccess(messageDetail):
                     # removing excess characters to just get the UID
                     ############################################################
                 try:
-                    UID = flat[1][:int(_configDef['UID'])]
+                    UID = flat[1]#[:int(_configDef['UID'])]
                     #print("UID: " + str(UID))
 
                     #Calling the API endpoint to get display name
@@ -12080,7 +13011,7 @@ def addAccess(messageDetail):
                     try:
 
                         #UID = flat[index][:15]
-                        UID = flat[1][:int(_configDef['UID'])]
+                        UID = flat[1]#[:int(_configDef['UID'])]
                         #print("UID: " + UID)
 
                         # Calling the API endpoint to get display name
@@ -12231,7 +13162,7 @@ def removeAccess(messageDetail):
                     # removing excess characters to just get the UID
                     ############################################################
                 try:
-                    UID = flat[1][:int(_configDef['UID'])]
+                    UID = flat[1]#[:int(_configDef['UID'])]
 
                     # Calling the API endpoint to get display name
                     connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
@@ -12304,7 +13235,7 @@ def removeAccess(messageDetail):
                         ############################################################
                     try:
 
-                        UID = flat[1][:int(_configDef['UID'])]
+                        UID = flat[1]#[:int(_configDef['UID'])]
 
                         # Calling the API endpoint to get display name
                         connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
@@ -12503,7 +13434,7 @@ def createZendeskUser(messageDetail):
 
             try:
                 flat = messageDetail.Command.MessageFlattened.split("_u_")
-                UID = flat[1][:int(_configDef['UID'])]
+                UID = flat[1]#[:int(_configDef['UID'])]
             except:
                 return messageDetail.ReplyToChat("Please use @mention")
 

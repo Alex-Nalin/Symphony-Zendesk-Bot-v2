@@ -18,17 +18,17 @@
       "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk",
       "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
       "category": "Info lookup",
-      "permission": "Zendesk Agent"
+      "permission": "All"
     },
     {
       "triggers": ["searchCategoryTickets", "ZDCatTicket", "ZDcatTicket", "ZDcatticket", "zdcatticket"],
       "function": "searchCompanyTicketsCategory",
-      "description": "Search Zendesk tickets by specific category. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",
-      "helptext": "<b>/ZDCatTicket</b> STATUS ORG | CAT",
-      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. CAT is the Product Category and ORG is the company name as it appears on Zendesk",
-      "example":"/ZDCatTicket open symphony | WebRTC<br></br>/ZDCatTicket symphony |WebRTC",
+      "description": "Search Zendesk tickets by specific category such as Product or Severity. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDCatTicket</b> STATUS ORG CAT",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name and CAT is the Product Category or Severity (as it appears on Zendesk)",
+      "example":"/ZDCatTicket open symphony WebRTC<br></br>/ZDCatTicket symphony WebRTC<br></br>/ZDCatTicket open symphony sev3<br></br>/ZDCatTicket unresolved zev1",
       "category": "Info lookup",
-      "permission": "Zendesk Agent"
+      "permission": "All"
     },
     {
       "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuserTicket", "ZDuserticket", "zduserticket"],

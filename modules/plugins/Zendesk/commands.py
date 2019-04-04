@@ -1768,8 +1768,47 @@ def searchCompanyTicketsCategory(messageDetail):
                         # print("E")
                         messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + (str(orgCat)) + "</b> filtered by " + str(spec) + ", rendering the result now, please wait.")
             except:
-                return messageDetail.ReplyToChatV2_noBotLog("Please use a valid filtered by Produc category or a Severity such as: ...")
 
+                return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please use a valid filtered by Product category or a Severity such as below:</header><body>"\
+                                                            "ui<br></br>" \
+                                                            "admin_portal<br></br>" \
+                                                            "access_to_development_or_direct_portal<br></br>" \
+                                                            "alert<br></br>" \
+                                                            "api<br></br>" \
+                                                            "applications<br></br>" \
+                                                            "browser_issue<br></br>" \
+                                                            "ceb<br></br>" \
+                                                            "cep<br></br>" \
+                                                            "desktop_wrapper<br></br>" \
+                                                            "directory_bridge<br></br>" \
+                                                            "dlp<br></br>" \
+                                                            "documentation_release_notes<br></br>" \
+                                                            "Electron<br></br>" \
+                                                            "enhancement_request<br></br>" \
+                                                            "hsm<br></br>" \
+                                                            "infrastructure<br></br>" \
+                                                            "km<br></br>" \
+                                                            "maintenance<br></br>" \
+                                                            "mobile<br></br>" \
+                                                            "network<br></br>" \
+                                                            "not_a_support_issue<br></br>" \
+                                                            "outage<br></br>" \
+                                                            "partner<br></br>" \
+                                                            "performance<br></br>" \
+                                                            "public_pod<br></br>" \
+                                                            "search<br></br>" \
+                                                            "sso<br></br>" \
+                                                            "symphony_market<br></br>" \
+                                                            "ui_issue<br></br>" \
+                                                            "user_error_knowledge<br></br>" \
+                                                            "webrtc<br></br>" \
+                                                            "Xpod<br></br>" \
+                                                            "zendesk_account_management<br></br>" \
+                                                            "sev1<br></br>" \
+                                                            "sev2<br></br>" \
+                                                            "sev3<br></br>" \
+                                                            "sev4<br></br>"\
+                                                            "</body></card>")
 
             org_length = len(str(organization))-1
             #print(str(org_length))

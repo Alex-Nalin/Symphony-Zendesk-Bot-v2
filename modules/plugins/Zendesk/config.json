@@ -5,7 +5,7 @@
       "function": "querySFDC",
       "description": "Search SFDC via SDFC Bot integration",
       "helptext": "<b>/SFDC</b> TYPE ORG",
-      "param":"TYPE = roles | team",
+      "param":"TYPE = roles | team | summary",
       "example":"/SFDC teams symphony",
       "category": "Info lookup",
       "permission": "All"

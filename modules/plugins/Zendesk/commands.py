@@ -320,6 +320,7 @@ def searchCompanyTickets(messageDetail):
         isIMRequired = False
         limitReached = False
         showSearchOrgTicket = False
+        sevv = ""
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -591,7 +592,7 @@ def searchCompanyTickets(messageDetail):
                             #print("E")
                             messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
-                    org_render_raw = str(organization).replace(" ", "_")
+                    org_render_raw = str(organization)#.replace(" ", "_")
                     org_render = org_render_raw[:-1]
                     #print(str(org_render))
 
@@ -850,7 +851,7 @@ def searchCompanyTickets(messageDetail):
                 botlog.LogSymphonyInfo("You aren't authorised to use this command.")
         except:
             try:
-                botlog.LogSymphonyInfo("Inside seccond try for searchCompanytickets.")
+                botlog.LogSymphonyInfo("Inside seccond try for ZDOrgTicket.")
 
                  # if callerCheck in AccessFile and isAllowed:
                 if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
@@ -949,7 +950,7 @@ def searchCompanyTickets(messageDetail):
                                 #print("E")
                                 messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
-                        org_render_raw = str(organization).replace(" ", "_")
+                        org_render_raw = str(organization)#.replace(" ", "_")
                         org_render = org_render_raw[:-1]
                         #print(str(org_render))
 
@@ -1695,7 +1696,7 @@ def searchCompanyTicketsCategory(messageDetail):
 
             # print("Rem: " + str(rem))
 
-            orgCatFilter_raw = str(organization).replace(" ", "_")
+            orgCatFilter_raw = str(organization)#.replace(" ", "_")
             orgCatFilter = orgCatFilter_raw[:-1]
             orgCatFilter_lenght = len(orgCatFilter)
             # print("OrgCatFilter: " + str(orgCatFilter))

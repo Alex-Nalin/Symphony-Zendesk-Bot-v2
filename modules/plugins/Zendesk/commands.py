@@ -321,6 +321,7 @@ def searchCompanyTickets(messageDetail):
         limitReached = False
         showSearchOrgTicket = False
         sevv = ""
+        totTickets = 0
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -635,6 +636,8 @@ def searchCompanyTickets(messageDetail):
         #################################
 
                 for result in data['results']:
+                    totTickets += 1
+
                     #print(result["priority"])
 
                     try:
@@ -834,7 +837,7 @@ def searchCompanyTickets(messageDetail):
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                        return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                        return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                 else:
                     if table_header == "":
                         return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
@@ -844,7 +847,7 @@ def searchCompanyTickets(messageDetail):
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                        return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                        return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
             else:
                 # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -991,6 +994,7 @@ def searchCompanyTickets(messageDetail):
             #################################
 
                     for result in data['results']:
+                        totTickets += 1
                         #print(result["priority"])
 
                         try:
@@ -1189,7 +1193,7 @@ def searchCompanyTickets(messageDetail):
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                     else:
                         if table_header == "":
                             return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
@@ -1199,7 +1203,7 @@ def searchCompanyTickets(messageDetail):
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
                 else:
                     # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -1241,6 +1245,7 @@ def searchCompanyTicketsCategory(messageDetail):
     rem = ""
     orgCat = ""
     noComp = False
+    totTickets = 0
 
     try:
         commandCallerUID = messageDetail.FromUserId
@@ -1853,6 +1858,7 @@ def searchCompanyTicketsCategory(messageDetail):
 #################################
 
         for result in data['results']:
+            totTickets += 1
             #print(result["priority"])
 
             try:
@@ -2052,7 +2058,7 @@ def searchCompanyTicketsCategory(messageDetail):
                 reply = str(table_bodyFull)
                 #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
         else:
             if table_header == "":
                 return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
@@ -2062,7 +2068,7 @@ def searchCompanyTicketsCategory(messageDetail):
                 reply = str(table_bodyFull)
                 #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
     else:
         # return messageDetail.ReplyToChat("You aren't authorised to use this command.")
@@ -2092,6 +2098,7 @@ def searchCompanyTicketsTask(organization, stream_id):
     indexB= ""
     query = ""
     limitReached = False
+    totTickets = 0
 
     # messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "Pulling <b>unresolved tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
     messaging.SendSymphonyMessageV2(str(stream_id), "<b>Report for " + str(organization).upper() + " unresolved Support Tickets</b>. Rendering the result now, please wait.")
@@ -2148,6 +2155,7 @@ def searchCompanyTicketsTask(organization, stream_id):
 
 
     for result in data['results']:
+        totTickets += 1
 
         try:
             assignee_flag = False
@@ -2334,7 +2342,7 @@ def searchCompanyTicketsTask(organization, stream_id):
         #messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], str(reply))
         messaging.SendSymphonyMessageV2(str(stream_id), str(reply))
         #return messaging.SendSymphonyMessageV2(_configDef['searchOrgTicket']['stream'], "End of Result")
-        return messaging.SendSymphonyMessageV2(str(stream_id), "End of Result")
+        return messaging.SendSymphonyMessageV2(str(stream_id), "There is " + str(totTickets) + " results for this search.")
 
 
 def searchUserTickets(messageDetail):
@@ -2443,6 +2451,7 @@ def searchUserTickets(messageDetail):
                 counter = True
                 limitReached = False
                 imRequired = False
+                totTickets = 0
 
                 message = (messageDetail.Command.MessageText)
                 message_split = message.split()
@@ -2508,6 +2517,7 @@ def searchUserTickets(messageDetail):
 
                 # Parse the messages received
                 for index in range(len(message_split)):
+
 
                     if str(message_split[index][:4]).strip() == "Open" or str(message_split[index][:6]).strip() == "Opened" or str(message_split[index][:4]).strip() == "open" or str(message_split[index][:6]).strip() == "opened":
                         status = "status:open "
@@ -2589,6 +2599,7 @@ def searchUserTickets(messageDetail):
             #################################
 
                 for result in data['results']:
+                    totTickets += 1
 
                     try:
                         assignee_flag = False
@@ -2884,16 +2895,16 @@ def searchUserTickets(messageDetail):
 
                     if table_body == "":
                         if imRequired:
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                     else:
                         if imRequired:
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
         except:
             try:
@@ -2918,6 +2929,8 @@ def searchUserTickets(messageDetail):
                     counter = True
                     limitReached = False
                     imRequired = False
+                    totTickets = 0
+
                     message = (messageDetail.Command.MessageText)
                     message_split = message.split()
 
@@ -3063,6 +3076,7 @@ def searchUserTickets(messageDetail):
                 #################################
 
                     for result in data['results']:
+                        totTickets += 1
 
                         try:
                             assignee_flag = False
@@ -3359,16 +3373,16 @@ def searchUserTickets(messageDetail):
 
                         if table_body == "":
                             if imRequired:
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             if imRequired:
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
                                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
             except:
                 botlog.LogSymphonyInfo("searchUserTickets did no work")
@@ -3485,6 +3499,9 @@ def searchAssigneeTickets(messageDetail):
                 counter = True
                 limitReached = False
                 imRequired = False
+                totTickets = 0
+
+
                 message = (messageDetail.Command.MessageText)
                 message_split = message.split()
 
@@ -3630,6 +3647,7 @@ def searchAssigneeTickets(messageDetail):
             #################################
 
                 for result in data['results']:
+                    totTickets += 1
 
                     try:
                         assignee_flag = False
@@ -3926,16 +3944,16 @@ def searchAssigneeTickets(messageDetail):
 
                     if table_body == "":
                         if imRequired:
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                     else:
                         if imRequired:
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
         except:
             try:
@@ -3960,6 +3978,9 @@ def searchAssigneeTickets(messageDetail):
                     counter = True
                     limitReached = False
                     imRequired = False
+                    totTickets = 0
+
+
                     message = (messageDetail.Command.MessageText)
                     message_split = message.split()
 
@@ -4105,6 +4126,7 @@ def searchAssigneeTickets(messageDetail):
                 #################################
 
                     for result in data['results']:
+                        totTickets += 1
 
                         try:
                             assignee_flag = False
@@ -4401,16 +4423,16 @@ def searchAssigneeTickets(messageDetail):
 
                         if table_body == "":
                             if imRequired:
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             if imRequired:
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
                                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
             except:
                 botlog.LogSymphonyInfo("SearchAssigneeTickets did no work")
@@ -4530,6 +4552,8 @@ def searchCCTickets(messageDetail):
                 counter = True
                 limitReached = False
                 imRequired = False
+                totTickets = 0
+
                 message = (messageDetail.Command.MessageText)
                 message_split = message.split()
 
@@ -4675,6 +4699,7 @@ def searchCCTickets(messageDetail):
             #################################
 
                 for result in data['results']:
+                    totTickets += 1
 
                     try:
                         assignee_flag = False
@@ -4971,16 +4996,16 @@ def searchCCTickets(messageDetail):
 
                     if table_body == "":
                         if imRequired:
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                     else:
                         if imRequired:
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                            return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                            return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                            return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
         except:
             try:
@@ -5005,6 +5030,8 @@ def searchCCTickets(messageDetail):
                     counter = True
                     limitReached = False
                     imRequired = False
+                    totTickets = 0
+
                     message = (messageDetail.Command.MessageText)
                     message_split = message.split()
 
@@ -5150,6 +5177,7 @@ def searchCCTickets(messageDetail):
                 #################################
 
                     for result in data['results']:
+                        totTickets += 1
 
                         try:
                             assignee_flag = False
@@ -5447,16 +5475,16 @@ def searchCCTickets(messageDetail):
 
                         if table_body == "":
                             if imRequired:
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
                         else:
                             if imRequired:
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
-                                return messageDetail.ReplyToSenderv2_noBotLog("End of Result")
+                                return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                             else:
                                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
-                                return messageDetail.ReplyToChatV2_noBotLog("End of Result")
+                                return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
             except:
                 botlog.LogSymphonyInfo("searchCCTickets did no work")
@@ -10355,97 +10383,193 @@ def newTicketToday(messageDetail):
     todayMinusDays = 0
     commandCallerUID = messageDetail.FromUserId
 
-    connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-    resComp = connComp.getresponse()
-    dataComp = resComp.read()
-    data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
+    try:
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-    dataRender = json.dumps(data_dict, indent=2)
-    d_org = json.loads(dataRender)
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
 
-    for index_org in range(len(d_org["users"])):
-        firstName = d_org["users"][index_org]["firstName"]
-        lastName = d_org["users"][index_org]["lastName"]
-        displayName = d_org["users"][index_org]["displayName"]
-        #companyName = d_org["users"][index_org]["company"]
-        companyNameTemp = d_org["users"][index_org]["company"]
-        companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-        companyName = str(companyTemp)
-        userID = str(d_org["users"][index_org]["id"])
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
 
-        ##############################
+        for index_org in range(len(d_org["users"])):
+            firstName = d_org["users"][index_org]["firstName"]
+            lastName = d_org["users"][index_org]["lastName"]
+            displayName = d_org["users"][index_org]["displayName"]
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+
+            ##############################
+            try:
+                emailAddress = d_org["users"][index_org]["emailAddress"]
+                #print("User is connected: " + emailAddress)
+                emailZendesk = emailAddress
+                #print(emailZendesk)
+                connectionRequired = False
+                # isAllowed = True
+            except:
+                connectionRequired = True
+
+            # if connectionRequired:
+
+            data_lenght = len(dataComp)
+
+            if data_lenght > 450:
+                try:
+                    #print("inside > 450")
+                    query = "type:user " + emailAddress
+                except:
+                    query = "type:user " + firstName + " " + lastName
+                #print(query)
+            elif data_lenght < 450:
+                try:
+                    #print("inside < 450")
+                    #query = "type:user " + emailAddress + " organization:" + companyName
+                    query = "type:user " + emailAddress
+                except:
+                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                    query = "type:user " + firstName + " " + lastName
+                #print(query)
+            else:
+                return messageDetail.ReplyToChat("No user information available")
+
+            #print(query)
+            results = zendesk.search(query=query)
+            #print(results)
+
+            if str(results).startswith(
+                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
+            elif str(results).startswith(
+                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+            else:
+
+                data = json.dumps(results, indent=2)
+                d = json.loads(data)
+
+                for index in range(len(d["results"])):
+                    name = d["results"][index]["name"]
+                    email = str(d["results"][index]["email"])
+                    #print("EmailAddress from Zendesk: " + email)
+
+                    role = str(d["results"][index]["role"])
+                    botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                    #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                    if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                        isAllowed = True
+                        botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
+                    else:
+                        isAllowed = False
+
+                emailZendesk = email
+
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+    except:
         try:
-            emailAddress = d_org["users"][index_org]["emailAddress"]
-            #print("User is connected: " + emailAddress)
-            emailZendesk = emailAddress
-            #print(emailZendesk)
-            connectionRequired = False
-            # isAllowed = True
-        except:
-            connectionRequired = True
+            botlog.LogSystemInfo("Inside second try for user check")
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-        # if connectionRequired:
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
 
-        data_lenght = len(dataComp)
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-        if data_lenght > 450:
-            try:
-                #print("inside > 450")
-                query = "type:user " + emailAddress
-            except:
-                query = "type:user " + firstName + " " + lastName
-            #print(query)
-        elif data_lenght < 450:
-            try:
-                #print("inside < 450")
-                #query = "type:user " + emailAddress + " organization:" + companyName
-                query = "type:user " + emailAddress
-            except:
-                #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                query = "type:user " + firstName + " " + lastName
-            #print(query)
-        else:
-            return messageDetail.ReplyToChat("No user information available")
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-        #print(query)
-        results = zendesk.search(query=query)
-        #print(results)
+                ##############################
+                try:
+                    emailAddress = d_org["users"][index_org]["emailAddress"]
+                    #print("User is connected: " + emailAddress)
+                    emailZendesk = emailAddress
+                    #print(emailZendesk)
+                    connectionRequired = False
+                    # isAllowed = True
+                except:
+                    connectionRequired = True
 
-        if str(results).startswith(
-                "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-            return messageDetail.ReplyToChat(
-                "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
-        elif str(results).startswith(
-                "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-            return messageDetail.ReplyToChat(
-                "This organisation/company does not exist in Zendesk or name is misspelled.")
-        else:
+                # if connectionRequired:
 
-            data = json.dumps(results, indent=2)
-            d = json.loads(data)
+                data_lenght = len(dataComp)
 
-            for index in range(len(d["results"])):
-                name = d["results"][index]["name"]
-                email = str(d["results"][index]["email"])
-                #print("EmailAddress from Zendesk: " + email)
-
-                role = str(d["results"][index]["role"])
-                botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
-
-                #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                    isAllowed = True
-                    botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
+                if data_lenght > 450:
+                    try:
+                        #print("inside > 450")
+                        query = "type:user " + emailAddress
+                    except:
+                        query = "type:user " + firstName + " " + lastName
+                    #print(query)
+                elif data_lenght < 450:
+                    try:
+                        #print("inside < 450")
+                        #query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + emailAddress
+                    except:
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + firstName + " " + lastName
+                    #print(query)
                 else:
-                    isAllowed = False
+                    return messageDetail.ReplyToChat("No user information available")
 
-            emailZendesk = email
+                #print(query)
+                results = zendesk.search(query=query)
+                #print(results)
 
-        botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-        callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
 
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        name = d["results"][index]["name"]
+                        email = str(d["results"][index]["email"])
+                        #print("EmailAddress from Zendesk: " + email)
+
+                        role = str(d["results"][index]["role"])
+                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+
+                        #if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                            isAllowed = True
+                            botlog.LogSymphonyInfo("User is an " + role + " on Zendesk")
+                        else:
+                            isAllowed = False
+
+                    emailZendesk = email
+
+                botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+        except:
+            return messageDetail.ReplyToChat("User check did not work, please try again")
 
     if callerCheck in AccessFile and isAllowed:
         botlog.LogSymphonyInfo("User is an " + role + " on Zendesk and an Agent or Admin with the bot")
@@ -10502,7 +10626,7 @@ def newTicketToday(messageDetail):
         data = remove_emoji(data_raw)
         reply = str(data)
 
-        messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + " Please wait.")
+        messageDetail.ReplyToChatV2("Loading Tickets created from " + ticketdate + ". Please wait.")
 
         if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
             return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
@@ -10737,7 +10861,7 @@ def newTicketToday(messageDetail):
                 counter = False
 
         if table_header == "":
-            return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search.")
+            return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
         else:
             # table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")

@@ -1,5 +1,6 @@
 import traceback
 import sys
+import time
 
 import modules.botconfig as config
 import modules.botlog as botlog
@@ -29,6 +30,12 @@ def CreateDataFeed():
     #time.sleep(5)
     return callout.SymphonyPOST(datafeedEP, None).ResponseData.id
 
+## Implementation of V4
+# def CreateDataFeed():
+#     datafeedEP = config.SymphonyBaseURL + '/agent/v4/datafeed/create'
+#     #time.sleep(5)
+#     response = callout.SymphonyPOST(datafeedEP, None).ResponseData.id
+#     return response
 
 def PollDataFeed(datafeedId):
     datafeedEP = config.SymphonyBaseURL + '/agent/v2/datafeed/' + datafeedId + '/read'
@@ -45,6 +52,8 @@ def PollDataFeed(datafeedId):
             #Hopefully this will
 
             try:
+##########
+# V 1/2
                 if respItem.v2messageType and respItem.v2messageType == 'V2Message':
                     detail = msg.MessageDetail(respItem)
                     detail.Sender = user.GetSymphonyUserDetail(detail.FromUserId)
@@ -53,6 +62,21 @@ def PollDataFeed(datafeedId):
 
                     if detail.Sender and detail.Sender.IsValidSender:
                         detail.InitiateCommandParsing()
+
+##########
+# V4
+#                 if respItem.type and respItem.type == 'MESSAGESENT':
+#                     detail = msg.MessageDetail(respItem)
+#                     # if detail.externalRecipients: return
+#                     if detail.externalRecipients == "true": return []
+#                     detail.Sender = user.GetSymphonyUserDetail(detail.FromUserId)
+#                     detail.ChatRoom = stream.GetStreamInfo(respItem.payload.messageSent.message.stream.streamId)
+#                     botlog.LogSymphonyInfo(detail.GetConsoleLogLine())
+#
+#                     if detail.Sender and detail.Sender.IsValidSender:
+#                         detail.InitiateCommandParsing()
+
+##########
 
                     messageItems.append(detail)
                 elif respItem.v2messageType != 'V2Message':

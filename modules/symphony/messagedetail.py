@@ -1,4 +1,6 @@
 from typing import List
+import re
+from bs4 import BeautifulSoup
 
 import modules.symphony.messaging as msg
 import modules.symphony.tokenizer as tokenizer
@@ -13,18 +15,33 @@ class ResponseType:
 class MessageDetail:
     def __init__(self, respItem):
         self.MessageId = msg.FormatSymphonyId(respItem.id) if hasattr(respItem, 'id') else '-1'
+        #self.MessageId = msg.FormatSymphonyId(respItem.messageId) if hasattr(respItem, 'messageId') else '-1'
         # I REALLY don't like the idea of EAFP. Sometimes it's just better to check things first
         # instead of just throwing an exception like a big 'ol tantrum.
         self.FromUserId = str(respItem.fromUserId) if hasattr(respItem, 'fromUserId') else '-1'
+        #self.FromUserId = str(respItem.initiator.user.userId) if hasattr(respItem, 'initiator') else '-1'
         self.StreamId = msg.FormatSymphonyId(respItem.streamId) if hasattr(respItem, 'streamId') else '-1'
+        #self.StreamId = msg.FormatSymphonyId(respItem.payload.messageSent.message.stream.streamId) if hasattr(respItem, 'payload') else '-1'
+        #self.externalRecipients = str(respItem.payload.messageSent.message.externalRecipients) if hasattr(respItem, 'payload') else '-1'
         # Some of the message types (like room additions) have no message
         self.MessageRaw = respItem.message if hasattr(respItem, 'message') else None
+        # if hasattr(respItem, 'payload'):
+        #     test = str(respItem.payload.messageSent.message.message)
+        #     soup = BeautifulSoup(test, "lxml")
+        #     for hit in soup.findAll('div'):
+        #         hit = hit.text.strip()
+        #         hit = hit.replace('<', '&lt;')
+        #     # test = re.search("(?<=<p>)(.*?)(?=</p>)", test, flags=re.IGNORECASE).group(0)
+        #     hit = "<messageML>" + hit + "</messageML>"
+        #     self.MessageRaw = hit
+        # else: None
         self.Type = respItem.v2messageType if hasattr(respItem, 'v2messageType') else ''
 
         self.Attachments = self.ParseAttachments(respItem)
         # respItem.attachments if hasattr(respItem, 'attachments') else []
 
         self.IsValid = self.Type == 'V2Message'
+        #self.IsValid = self.Type == 'MESSAGESENT'
         self.Sender = None
         self.ChatRoom = None
         self.Command = None
@@ -65,6 +82,8 @@ class MessageDetail:
     def ReplyToChat(self, message: str):
         msg.SendSymphonyMessage(self.StreamId, message)
 
+    def ReplyToChatAttachment(self, message: str, attach_data: str):
+        msg.SendSymphonyMessageAttachment(self.StreamId, message, attach_data)
 
     def ReplyToChatV2(self, message: str, data=None):
         msg.SendSymphonyMessageV2(self.StreamId, message, data)

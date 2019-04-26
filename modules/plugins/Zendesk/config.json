@@ -26,7 +26,7 @@
       "description": "Search Zendesk tickets by specific category such as Product or Severity. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",
       "helptext": "<b>/ZDCatTicket</b> STATUS ORG CAT",
       "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name and CAT is the Product Category or Severity (as it appears on Zendesk)",
-      "example":"/ZDCatTicket open symphony WebRTC<br></br>/ZDCatTicket symphony WebRTC<br></br>/ZDCatTicket open symphony sev3<br></br>/ZDCatTicket unresolved zev1",
+      "example":"/ZDCatTicket open symphony WebRTC<br></br>/ZDCatTicket symphony WebRTC<br></br>/ZDCatTicket open symphony sev3<br></br>/ZDCatTicket unresolved sev1",
       "category": "Info lookup",
       "permission": "All"
     },
@@ -36,7 +36,7 @@
       "description": "Search Zendesk tickets by specific user as requester, assignee or CC/collaborator/follower. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
       "helptext": "<b>/ZDUserTicket</b> [STATUS] [TYPE] [@USER]",
       "param":"STATUS = open | new | pending | solved | closed | unresolved | all <br></br> TYPE = req | assignee | cc <br></br> @USER is an @mention (optional)",
-      "example":"/ZDUserTicket open req<br></br>/ZDUserTicket closed cc @Joe Smith",
+      "example":"/ZDUserTicket open req<br></br>/ZDUserTicket closed cc @Joe Smith<br></br>/ZDUserTicket",
       "category": "Info lookup",
       "permission": "All"
     },

@@ -72,6 +72,10 @@ def SymphonyPOSTV2(endpoint, body):
 def SymphonyPOSTV2_1(endpoint, body):
     return SymphonyREST('POSTV2_1', endpoint, body)
 
+def SymphonyPOSTv4(endpoint, body, *attach_data):
+    return SymphonyRESTv4('POST', endpoint, body, *attach_data)
+
+
 def SymphonyREST(method, endpoint, body):
     retVal = SymphonyAgentResponse()
 
@@ -132,6 +136,25 @@ def SymphonyREST(method, endpoint, body):
 
     finally:
         return retVal
+
+def SymphonyRESTv4(method, endpoint, body, *attach_data):
+    # Clean up the body to ensure no funky values
+    body = body.replace("&", "&amp;")
+
+    data_unparsed = {"field1": "blah blah"}
+    data = json.dumps(data_unparsed)
+
+    if attach_data:
+        dataObj = {"message": body, "attachment": attach_data[0]}
+    else:
+        dataObj = {"message": body}
+    # dataObj = [('message', body), ('attachment', ('test_full.jpg', attachment_file, 'image/jpeg'))]
+    encoder = MultipartEncoder(fields=dataObj)
+    RESTHeaders = {"Content-Type": encoder.content_type}
+    # RESTHeaders = {"Content-Type": "multipart/form-data"}
+    agentSession.headers.update(RESTHeaders)
+    return agentSession.post(endpoint, data=encoder)
+    #return agentSession.post(endpoint, body)
 
 
 def PostV2(endpoint, body):

@@ -4,6 +4,7 @@ import traceback
 import modules.symphony.callout as callout
 import modules.botconfig as config
 import modules.botlog as botlog
+from modules.symphony.stream import GetStreamInfo
 
 
 def SendUserIM(userIds, message, endpointVersion='v1', data=None):
@@ -11,11 +12,8 @@ def SendUserIM(userIds, message, endpointVersion='v1', data=None):
     # createEP = endpointIM.substitute(host=config.SymphonyBaseURL, imVersion=endpointVersion)
 
     createEP = config.CreateIMEndpoint
-
     body = [int(uid) for uid in userIds]
-
     response = callout.SymphonyPOST(createEP, json.dumps(body))
-
     streamId = response.ResponseData.id
 
     if endpointVersion == 'v1':
@@ -58,6 +56,24 @@ def SendSymphonyMessage(streamId, message: str):
 
     botlog.LogSymphonyInfo('Sending Symphony Message | StreamId: ' + streamId + ' | Message: ' + message)
     return callout.SymphonyPOST(messageEP, json.dumps(bodyJSON))
+
+# def SendSymphonyMessage(streamId, message: str):
+#     chat = GetStreamInfo(streamId)
+#     if chat.CrossPod == True:
+#         return
+#
+#     if not message.startswith('<messageML>'):
+#         message = FormatSymphonyMessage(message)
+#
+#     #messageEP = config.SymphonyBaseURL + '/agent/v2/stream/' + streamId + '/message/create'
+#     messageEP = config.SymphonyBaseURL + '/agent/v4/stream/' + streamId + '/message/create'
+#
+#     #bodyJSON = {"message": message, "format": "MESSAGEML"}
+#
+#     botlog.LogSymphonyInfo('Sending Symphony Message | StreamId: ' + streamId + ' | Message: ' + message)
+#     #return callout.SymphonyPOST(messageEP, json.dumps(bodyJSON))
+#     return callout.SymphonyPOSTv4(messageEP, message)
+
 
 def SendSymphonyMessage_noBotLog(streamId, message: str):
     if not message.startswith('<messageML>'):
@@ -155,6 +171,22 @@ def SendSymphonyMessageV2_data(streamId: str, message: str, data=None, attachmen
     response = callout.SymphonyPOSTV2(messageEP, body_list)
     return response
 
+def SendSymphonyMessageAttachment(streamId, message: str, attach_data: str):
+    chat = GetStreamInfo(streamId)
+    if chat.CrossPod == True:
+        return
+
+    if not message.startswith('<messageML>'):
+        message = FormatSymphonyMessage(message)
+
+    #messageEP = config.SymphonyBaseURL + '/agent/v2/stream/' + streamId + '/message/create'
+    messageEP = config.SymphonyBaseURL + '/agent/v4/stream/' + streamId + '/message/create'
+
+    #bodyJSON = {"message": message, "format": "MESSAGEML"}
+
+    botlog.LogSymphonyInfo('Sending Symphony Message | StreamId: ' + streamId + ' | Message: ' + message)
+    #return callout.SymphonyPOST(messageEP, json.dumps(bodyJSON))
+    return callout.SymphonyPOSTv4(messageEP, message, attach_data)
 
 
 def SendSymphonyMessageV2_noBotLog(streamId, message: str, data=None):
@@ -196,10 +228,8 @@ def SendSymphonyMessageV2_1(streamId, message: str, data=None):
 def FormatSymphonyMessage(message: str):
     return "<messageML>" + message + "</messageML>"
 
-
 def FormatSymphonyLink(url: str):
     return '<a href="' + url + '"/>'
-
 
 def FormatSymphonyId(streamId: str):
     return re.sub("==$", "", streamId.replace("/", "_"))

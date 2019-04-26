@@ -2463,15 +2463,17 @@ def searchUserTickets(messageDetail):
 
                 message = (messageDetail.Command.MessageText)
                 message_split = message.split()
+                #print(message_split)
 
                 statusCheck = str(len(message_split))
+                #print(statusCheck)
 
                 if statusCheck == "0":
                     message_split = "unresolved"
                     status = "status<solved "
                     status_message = "unresolved"
 
-                elif statusCheck == "1":
+                elif statusCheck == "1" or statusCheck == "2":
                     try:
                         detail = messageDetail.Command.MessageFlattened.split(" ")
                         #print(detail)
@@ -2513,6 +2515,7 @@ def searchUserTickets(messageDetail):
                             # print(company)
                             #try:
                             emailZendesk = d_org["users"][index_org]["emailAddress"]
+                            #print(emailZendesk)
                             #print("User is connected: " + emailAddress)
                             #email_address = emailAddress
                             connectionRequired = False
@@ -2970,7 +2973,7 @@ def searchUserTickets(messageDetail):
                         status = "status<solved "
                         status_message = "unresolved"
 
-                    elif statusCheck == "1":
+                    elif statusCheck == "1" or statusCheck == "2":
                         try:
                             detail = messageDetail.Command.MessageFlattened.split(" ")
                             #print(detail)

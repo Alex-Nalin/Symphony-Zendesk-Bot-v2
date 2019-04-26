@@ -15,6 +15,7 @@ def GetSymphonyMessagesSinceDateTime(streamId, startDateTime):
     dtmilli = dtutil.ConvertDateTimeToMilliseconds(startDateTime)
     dtStr = str(dtmilli)
     messageEP = config.SymphonyBaseURL + '/agent/v2/stream/' + streamId + '/message?since=' + dtStr
+    #messageEP = config.SymphonyBaseURL + '/agent/v4/stream/' + streamId + '/message?since=' + dtStr
 
     return GetSymphonyMessages(messageEP)
 

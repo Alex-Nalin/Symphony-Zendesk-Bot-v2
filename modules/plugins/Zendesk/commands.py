@@ -2508,21 +2508,124 @@ def searchUserTickets(messageDetail):
 
                         connectionRequired = ""
                         connectionRequired = True
+                        # for index_org in range(len(d_org["users"])):
+                        #     firstName = d_org["users"][index_org]["firstName"]
+                        #     lastName = d_org["users"][index_org]["lastName"]
+                        #     #company = d_org["users"][index_org]["company"]
+                        #     # print(company)
+                        #     #try:
+                        #     emailZendesk = d_org["users"][index_org]["emailAddress"]
+                        #     #print(emailZendesk)
+                        #     #print("User is connected: " + emailAddress)
+                        #     #email_address = emailAddress
+                        #     connectionRequired = False
+                        #     #except:
+                        #     connectionRequired = True
+                        #     # messageDetail.ReplyToChat("User is not connected with me")
+                        #     #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+
+                        #################
+
                         for index_org in range(len(d_org["users"])):
                             firstName = d_org["users"][index_org]["firstName"]
                             lastName = d_org["users"][index_org]["lastName"]
-                            #company = d_org["users"][index_org]["company"]
-                            # print(company)
-                            #try:
-                            emailZendesk = d_org["users"][index_org]["emailAddress"]
-                            #print(emailZendesk)
-                            #print("User is connected: " + emailAddress)
-                            #email_address = emailAddress
-                            connectionRequired = False
-                            #except:
-                            connectionRequired = True
-                            # messageDetail.ReplyToChat("User is not connected with me")
-                            #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                            company = d_org["users"][index_org]["company"]
+                            #print(company)
+                            try:
+                                emailAddress = d_org["users"][index_org]["emailAddress"]
+                                #print("User is connected: " + emailAddress)
+                                emailZendesk = emailAddress
+                                connectionRequired = False
+                            except:
+                                connectionRequired = True
+
+                        #if connectionRequired:
+
+                            data_lenght = len(dataComp)
+
+                            # Zendesk API call config/header
+                            conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
+                            headers = {
+                                'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                                'password': _configDef['zdesk_config']['zdesk_password'],
+                                'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                                'cache-control': "no-cache",
+                                'Content-Type': 'application/json',
+                                'zdesk_token': True
+                            }
+
+                            if data_lenght > 450:
+                                try:
+                                    #print("inside > 450")
+                                    # query = "type:user " + firstName + " " + lastName + "email:" + emailAddress
+                                    query = "type:user " + emailAddress
+                                except:
+                                    query = "type:user " + firstName + " " + lastName
+                                #print(query)
+                            elif data_lenght < 450:
+                                try:
+                                    #print("inside < 450")
+                                    # query = "type:user " + firstName + " " + lastName + "email:" + emailAddress + "organization:" + company
+                                    #query = "type:user " + emailAddress + " organization:" + company
+                                    query = "type:user " + emailAddress
+                                except:
+                                    #query = "type:user " + firstName + " " + lastName + " organization:" + company
+                                    query = "type:user " + firstName + " " + lastName
+                                #print(query)
+                            else:
+                                return messageDetail.ReplyToChat("No user information available")
+
+                            botlog.LogSymphonyInfo(query)
+                            results = zendesk.search(query=query)
+                            #print(results)
+
+                            if str(results).startswith("{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                                return messageDetail.ReplyToChat("This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation. Please use this format: /createRequest @mention| subject| description")
+                            elif str(results).startswith("{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                                return messageDetail.ReplyToChat("This organisation/company does not exist in Zendesk or name is misspelled. Please use this format: /createRequest @mention| subject| description")
+                            else:
+
+                                data = json.dumps(results, indent=2)
+                                d = json.loads(data)
+                                #print(str(d))
+
+                                for index in range(len(d["results"])):
+                                    name = d["results"][index]["name"]
+                                    email = str(d["results"][index]["email"])
+                                    #print("EmailAddress from Zendesk: " + email)
+
+                                    #############################
+                                    organization_id = str(d["results"][index]["organization_id"])
+                                    zendeskUser_id = str(d["results"][index]["id"])
+                                    #print(str(zendeskUser_id))
+                                    try:
+                                        # Convert the Zendesk ID to company name
+                                        conn.request("GET", "/api/v2/users/" + str(zendeskUser_id) + "/organizations.json", headers=headers)
+                                        res = conn.getresponse()
+                                        companyID = res.read()
+                                        compNameRaw = str(companyID.decode("utf-8"))
+
+                                        data = json.dumps(compNameRaw, indent=2)
+                                        data_dict = ast.literal_eval(data)
+                                        d_org = json.loads(data_dict)
+                                        try:
+                                            org_Name = str(d_org["organizations"][0]["name"])
+                                            org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
+                                            organization = str(org_name_temp)
+                                            #print(str(organization))
+                                        except:
+                                            organization = "Company not yet created"
+                                    except:
+                                        organization = company
+                                    #############################
+
+                                emailZendesk = email
+                        else:
+                            botlog.LogSymphonyInfo("Email Address: " + emailZendesk)
+
+                        #################
+
                     except:
                         botlog.LogSymphonyInfo("No user was @mentioned for the SearchUserTicket function")
 
@@ -3008,20 +3111,123 @@ def searchUserTickets(messageDetail):
 
                             connectionRequired = ""
                             connectionRequired = True
+                            # for index_org in range(len(d_org["users"])):
+                            #     firstName = d_org["users"][index_org]["firstName"]
+                            #     lastName = d_org["users"][index_org]["lastName"]
+                            #     #company = d_org["users"][index_org]["company"]
+                            #     # print(company)
+                            #     #try:
+                            #     emailZendesk = d_org["users"][index_org]["emailAddress"]
+                            #     #print("User is connected: " + emailAddress)
+                            #     #email_address = emailAddress
+                            #     connectionRequired = False
+                            #     #except:
+                            #     connectionRequired = True
+                            #     # messageDetail.ReplyToChat("User is not connected with me")
+                            #     #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+
+                            #################
+
                             for index_org in range(len(d_org["users"])):
                                 firstName = d_org["users"][index_org]["firstName"]
                                 lastName = d_org["users"][index_org]["lastName"]
-                                #company = d_org["users"][index_org]["company"]
-                                # print(company)
-                                #try:
-                                emailZendesk = d_org["users"][index_org]["emailAddress"]
-                                #print("User is connected: " + emailAddress)
-                                #email_address = emailAddress
-                                connectionRequired = False
-                                #except:
-                                connectionRequired = True
-                                # messageDetail.ReplyToChat("User is not connected with me")
-                                #messageDetail.ReplyToChatV2("Rendering Zendesk Ticket raised by <b>" + firstName + " " + lastName + "</b>, please wait")
+                                company = d_org["users"][index_org]["company"]
+                                #print(company)
+                                try:
+                                    emailAddress = d_org["users"][index_org]["emailAddress"]
+                                    #print("User is connected: " + emailAddress)
+                                    emailZendesk = emailAddress
+                                    connectionRequired = False
+                                except:
+                                    connectionRequired = True
+
+                            #if connectionRequired:
+
+                                data_lenght = len(dataComp)
+
+                                # Zendesk API call config/header
+                                conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
+                                headers = {
+                                    'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                                    'password': _configDef['zdesk_config']['zdesk_password'],
+                                    'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                                    'cache-control': "no-cache",
+                                    'Content-Type': 'application/json',
+                                    'zdesk_token': True
+                                }
+
+                                if data_lenght > 450:
+                                    try:
+                                        #print("inside > 450")
+                                        # query = "type:user " + firstName + " " + lastName + "email:" + emailAddress
+                                        query = "type:user " + emailAddress
+                                    except:
+                                        query = "type:user " + firstName + " " + lastName
+                                    #print(query)
+                                elif data_lenght < 450:
+                                    try:
+                                        #print("inside < 450")
+                                        # query = "type:user " + firstName + " " + lastName + "email:" + emailAddress + "organization:" + company
+                                        #query = "type:user " + emailAddress + " organization:" + company
+                                        query = "type:user " + emailAddress
+                                    except:
+                                        #query = "type:user " + firstName + " " + lastName + " organization:" + company
+                                        query = "type:user " + firstName + " " + lastName
+                                    #print(query)
+                                else:
+                                    return messageDetail.ReplyToChat("No user information available")
+
+                                botlog.LogSymphonyInfo(query)
+                                results = zendesk.search(query=query)
+                                #print(results)
+
+                                if str(results).startswith("{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                                    return messageDetail.ReplyToChat("This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation. Please use this format: /createRequest @mention| subject| description")
+                                elif str(results).startswith("{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                                    return messageDetail.ReplyToChat("This organisation/company does not exist in Zendesk or name is misspelled. Please use this format: /createRequest @mention| subject| description")
+                                else:
+
+                                    data = json.dumps(results, indent=2)
+                                    d = json.loads(data)
+                                    #print(str(d))
+
+                                    for index in range(len(d["results"])):
+                                        name = d["results"][index]["name"]
+                                        email = str(d["results"][index]["email"])
+                                        #print("EmailAddress from Zendesk: " + email)
+
+                                        #############################
+                                        organization_id = str(d["results"][index]["organization_id"])
+                                        zendeskUser_id = str(d["results"][index]["id"])
+                                        #print(str(zendeskUser_id))
+                                        try:
+                                            # Convert the Zendesk ID to company name
+                                            conn.request("GET", "/api/v2/users/" + str(zendeskUser_id) + "/organizations.json", headers=headers)
+                                            res = conn.getresponse()
+                                            companyID = res.read()
+                                            compNameRaw = str(companyID.decode("utf-8"))
+
+                                            data = json.dumps(compNameRaw, indent=2)
+                                            data_dict = ast.literal_eval(data)
+                                            d_org = json.loads(data_dict)
+                                            try:
+                                                org_Name = str(d_org["organizations"][0]["name"])
+                                                org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
+                                                organization = str(org_name_temp)
+                                                #print(str(organization))
+                                            except:
+                                                organization = "Company not yet created"
+                                        except:
+                                            organization = company
+                                        #############################
+
+                                    emailZendesk = email
+                            else:
+                                botlog.LogSymphonyInfo("Email Address: " + emailZendesk)
+
+                            #################
+
                         except:
                             botlog.LogSymphonyInfo("No user was @mentioned for the SearchUserTicket function")
 

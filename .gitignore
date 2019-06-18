@@ -18,7 +18,7 @@ Data/*.png
 Data/*.tif
 
 # Temp
-Temp/*.*
+Temp/*.png
 
 # Application config files
 modules/plugins/wordcloud/config.json

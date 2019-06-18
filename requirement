@@ -9,3 +9,8 @@ python-dateutil
 pandas
 zdesk
 hurry.filesize
+pdfkit
+wkhtmltopdf
+mimetypes
+python-magic
+python-magic-bin

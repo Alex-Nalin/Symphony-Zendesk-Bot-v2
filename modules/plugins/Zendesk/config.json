@@ -1,12 +1,12 @@
 {
   "commands": [
     {
-      "triggers": ["querySFDC", "querysfdc", "SFDC", "sfdc", "SFDCBOT", "sfdcbot"],
+      "triggers": ["SFDCBOT", "sfdcbot"],
       "function": "querySFDC",
-      "description": "Search SFDC via SDFC Bot integration",
-      "helptext": "<b>/SFDC</b> TYPE ORG",
+      "description": "Search SFDC via SDFCBOT integration",
+      "helptext": "<b>/SFDCBOT</b> TYPE ORG",
       "param":"TYPE = roles | team | summary",
-      "example":"/SFDC teams symphony",
+      "example":"/SFDCBOT teams symphony",
       "category": "Info lookup",
       "permission": "All"
     },

@@ -46,17 +46,6 @@
       "permission": "All"
     },
     {
-      "name": "helpcheat",
-      "triggers": ["helpCheat", "helpcheat", "cheat"],
-      "function": "SymphonyZendeskBotHelpCheat",
-      "helptext": "<b>/helpCheat</b>",
-      "description": "Cheat help",
-      "param":"none",
-      "example":"/helpCheat",
-      "category": "Miscellaneous",
-      "permission": "Authorised List"
-    },
-    {
       "name": "addAcronym",
       "triggers": ["addAcronym", "addacronym"],
       "function": "addAcronym",

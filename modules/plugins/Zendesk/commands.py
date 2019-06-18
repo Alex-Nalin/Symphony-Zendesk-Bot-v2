@@ -11788,12 +11788,16 @@ def ticketUpdate(messageDetail):
 
         ticketDoesNotExist = "{\"error\":\"RecordNotFound", "description\":\"Not found\"}"
 
+        tempLink = _configDef['zdesk_config']['zdesk_link'] + str(idt)
+        result = tempLink
+        linkCreated = "<a href =\"" + _configDef['zdesk_config']['zdesk_link'] + str(idt) + "\">" + str(idt) +"</a>"
+
         if data.startswith(ticketDoesNotExist):
-            return messageDetail.ReplyToChatV2("<b>There is no such Zendesk ticket number: " + idt + "</b>")
+            return messageDetail.ReplyToChatV2("<b>There is no such Zendesk ticket number: " + str(idt) + "</b>")
         if data.startswith("{\"error\": {\""):
             return messageDetail.ReplyToChatV2("Please enter all the required fields: <b>Ticket ID</b>| <b>comment</b>| <b>status (open/pending/hold/solved) </b>| <b>true (public)/false (private)</b>")
         else:
-            messageDetail.ReplyToChatV2(comment_status +" comment added to ticket <b>" + idt + "</b>")
+            messageDetail.ReplyToChatV2(comment_status +" comment added to ticket <b>" + linkCreated + "</b>")
 
             # att_list = []
             # if messageDetail.Attachments:
@@ -11811,60 +11815,61 @@ def ticketUpdate(messageDetail):
                     # att = (att_name, fdata, ctype)
                     # att_list = [att]
 
-            message = "file found in Symphony chat"
-            botlog.LogSymphonyInfo(messageDetail.MessageRaw)
-            messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+        # NEED TP WORK ON THIS
+            # message = "file found in Symphony chat"
+            # botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+            # messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
 
         ###########################
 
 
-        ## Ticket comments and uploads / attachments
-        commentbody = "Attaching example Python file"
-
-        # must be in the examples directory when executing so this file can be found
-        # fname = 'example.py'
-        fname = 'Temp/Help.pdf'
-
-        with open(fname, 'rb') as fp:
-            fdata = fp.read()
-
-        # MIME types can be detected with the magic module:
-        import magic
-        mime_type = magic.from_file(fname, mime=True)
-        if type(mime_type) is bytes:
-           mime_type = mime_type.decode()
-
-        # But this file is known
-        # mime_type = 'text/plain'
-        # mime_type = 'application/pdf'
-
-        upload_result = zendesk.upload_create(
-            fdata, filename=fname, mime_type=mime_type, complete_response=True)
-
-        # for making additional uploads
-        upload_token = upload_result['content']['upload']['token']
-
-        data = {
-            "ticket": {
-                # "id": ticket_id,
-                "id": idt,
-                "comment": {
-                    "public": False,
-                    "body": commentbody
-                }
-            }
-        }
-
-        # I like to add this separately, because it's not an uncommon use case
-        # to have an automated ticket update that may or may not have uploads.
-        if upload_token != "":
-            data['ticket']['comment']['uploads'] = [upload_token]
-
-        # Post the comment to the ticket, which should reference the upload
-        # response = zendesk.ticket_update(ticket_id, data)
-        response = zendesk.ticket_update(idt, data)
-
-        ###########################
+        # ## Ticket comments and uploads / attachments
+        # commentbody = "Attaching example Python file"
+        #
+        # # must be in the examples directory when executing so this file can be found
+        # # fname = 'example.py'
+        # fname = 'Temp/Help.pdf'
+        #
+        # with open(fname, 'rb') as fp:
+        #     fdata = fp.read()
+        #
+        # # MIME types can be detected with the magic module:
+        # import magic
+        # mime_type = magic.from_file(fname, mime=True)
+        # if type(mime_type) is bytes:
+        #    mime_type = mime_type.decode()
+        #
+        # # But this file is known
+        # # mime_type = 'text/plain'
+        # # mime_type = 'application/pdf'
+        #
+        # upload_result = zendesk.upload_create(
+        #     fdata, filename=fname, mime_type=mime_type, complete_response=True)
+        #
+        # # for making additional uploads
+        # upload_token = upload_result['content']['upload']['token']
+        #
+        # data = {
+        #     "ticket": {
+        #         # "id": ticket_id,
+        #         "id": idt,
+        #         "comment": {
+        #             "public": False,
+        #             "body": commentbody
+        #         }
+        #     }
+        # }
+        #
+        # # I like to add this separately, because it's not an uncommon use case
+        # # to have an automated ticket update that may or may not have uploads.
+        # if upload_token != "":
+        #     data['ticket']['comment']['uploads'] = [upload_token]
+        #
+        # # Post the comment to the ticket, which should reference the upload
+        # # response = zendesk.ticket_update(ticket_id, data)
+        # response = zendesk.ticket_update(idt, data)
+        #
+        # ###########################
 
 
 

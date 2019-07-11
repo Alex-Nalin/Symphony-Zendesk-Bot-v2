@@ -21,6 +21,16 @@
       "permission": "All"
     },
     {
+      "triggers": ["Zeus", "zeus"],
+      "function": "Zeus",
+      "description": "Search unresolved Zendesk tickets by specific organization",
+      "helptext": "<b>/Zeus</b> ORG",
+      "param":"ORG is the company name as it appears on Zendesk",
+      "example":"/Zeus symphony",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
       "triggers": ["searchCategoryTickets", "ZDCatTicket", "ZDcatTicket", "ZDcatticket", "zdcatticket"],
       "function": "searchCompanyTicketsCategory",
       "description": "Search Zendesk tickets by specific category such as Product or Severity. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",

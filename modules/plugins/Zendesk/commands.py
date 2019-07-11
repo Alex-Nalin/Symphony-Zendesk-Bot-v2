@@ -11713,13 +11713,13 @@ def ticketUpdate(messageDetail):
         ### /update idt, comment, status, private/false or public/true
         try:
             idt = str(message_split[0]).strip()
-            print(str(idt))
+            #print(str(idt))
             #print(str(messageLenght))
             # comment = str(message_split[1][1:]).replace("&quot;", "\"").replace("&amp;", "&").replace("&lt;", "<").replace("&apos;", "'").replace("&gt;", ">")
             # comment = str(message_split[1]).replace("\u200b", "").replace("\n  \n  \n","\\n\\n\\n").replace("\n  \n", "\\n\\n").replace("\n", "\\n")
             # comment = str(message_split[1]).replace("\u200b", "").replace("\n", "\\n").replace("<b>","**").replace("</b>","**").replace("<i>","_").replace("</i>","_")
             comment = str(message_split[1]).replace("\u200b", "").replace("\n", "\\n")
-            print(str(comment).strip())
+            #print(str(comment).strip())
             #print(str(comment))
             status = str(message_split[2]).strip()
             #print(str(status))
@@ -11815,7 +11815,7 @@ def ticketUpdate(messageDetail):
                     # att = (att_name, fdata, ctype)
                     # att_list = [att]
 
-        # NEED TP WORK ON THIS
+        # NEED TO WORK ON THIS
             # message = "file found in Symphony chat"
             # botlog.LogSymphonyInfo(messageDetail.MessageRaw)
             # messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
@@ -14595,3 +14595,147 @@ def querySFDC(messageDetail):
     # except:
     #     return messageDetail.ReplyToChat("I am sorry, I was working on a different task, can you please retry")
 
+
+
+def Zeus(messageDetail):
+
+    allTicket = ""
+    sevv = ""
+    totTickets = 0
+    assignee = ""
+
+    message = (messageDetail.Command.MessageText)
+    message_split = message.split("'")
+    status_message = ""
+    #organization = message_split
+    organization = message
+
+    org_render_raw = str(organization)
+    #org_render = org_render_raw[:-1]
+    org_render = org_render_raw
+
+    query = ("status<solved type:ticket sort:desc organization:" + str(org_render)[1:])
+    #botlog.LogSystemInfo(query)
+
+    org_length = len(str(organization))-1
+
+    if org_length < 2:
+        return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
+
+    ################################
+    try:
+        headers = {
+            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+            'password': _configDef['zdesk_config']['zdesk_password'],
+            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+            'cache-control': "no-cache",
+            'Content-Type': 'application/json',
+        }
+
+        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+        querystring = {"query": ""+ str(query)}
+        botlog.LogSystemInfo(str(querystring))
+        #print(querystring)
+
+        response = requests.request("GET", str(url), headers=headers, params=querystring)
+        data = response.json()
+        #print(str(data))
+    except:
+        return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+
+    for result in data['results']:
+        totTickets += 1
+
+        try:
+            # strip out conflicting HTML tags in descriptions
+            description_temp = str(result["description"])
+            ticketid = str(result["id"])
+
+            # Getting IDs of requesters to be processed
+            requesterid = str(result["requester_id"])
+        except:
+            botlog.LogSymphonyInfo("Cannot get ticket info")
+
+        try:
+            # To get the name of the requester given the requesterID
+            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+            res = conn.getresponse()
+            userRequesterId = res.read()
+            tempUserRequester = str(userRequesterId.decode('utf-8'))
+            data = json.dumps(tempUserRequester, indent=2)
+            data_dict = ast.literal_eval(data)
+            d_req = json.loads(data_dict)
+            req_name = str(d_req["user"]["name"])
+            requesterName = req_name
+        except:
+            requesterName = "N/A"
+            botlog.LogSymphonyInfo("Cannot get requester info")
+
+        # Getting IDs of assignee to be processed
+        try:
+            assigneeid = str(result["assignee_id"])
+
+            # To get the name of the assignee given the assigneeID
+            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+            res = conn.getresponse()
+            userAssigneeId = res.read()
+            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+
+            data = json.dumps(tempUserAssignee, indent=2)
+            data_dict = ast.literal_eval(data)
+            d_assign = json.loads(data_dict)
+            assign_name = str(d_assign["user"]["name"])
+            assigneeName = str(assign_name)
+
+        except:
+            assigneeName = "N/A"
+            assignee_flag = True
+
+        requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+        assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+
+        ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+        updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+
+
+        if (len(result["tags"])) == 0:
+            noTag = True
+        else:
+            noTag = False
+
+        notSet = True
+        if noTag:
+            notSet = False
+
+        sev = "Not Set"
+        for index_tags in range(len(result["tags"])):
+            tags = str((result["tags"][index_tags]))
+
+            if tags.startswith("severity_1"):
+                sev = "Severity 1"
+                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
+                notSet = False
+            elif tags.startswith("severity_2"):
+                sev = "Severity 2"
+                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
+                notSet = False
+            elif tags.startswith("severity_3"):
+                sev = "Severity 3"
+                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
+                notSet = False
+            elif tags.startswith("severity_4"):
+                sev = "Severity 4"
+                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
+                notSet = False
+
+        if notSet:
+            sev = "Not set"
+            sevv = ""
+            notSet = False
+
+        requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+
+        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+
+    return messageDetail.ReplyToChatV2_noBotLog("Total tickets: " + str(totTickets) + "<br></br>" + str(allTicket))

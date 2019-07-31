@@ -2091,6 +2091,247 @@ def searchCompanyTicketsCategory(messageDetail):
 
 ################
 
+def escalatedaccounts(messageDetail):
+
+    table_body = ""
+    table_header = ""
+    totOrg = ""
+    results = ""
+
+    try:
+        commandCallerUID = messageDetail.FromUserId
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = str(d_org["users"][index_org]["firstName"])
+            lastName = str(d_org["users"][index_org]["lastName"])
+            displayName = str(d_org["users"][index_org]["displayName"])
+            companyName = str(d_org["users"][index_org]["company"])
+            userID = str(d_org["users"][index_org]["id"])
+
+            ###########################
+
+            try:
+                emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+                emailZendesk = str(emailAddress)
+                connectionRequired = False
+            except:
+                connectionRequired = True
+
+            # if connectionRequired:
+
+            data_lenght = len(dataComp)
+
+            if data_lenght > 450:
+                try:
+                    #print("inside > 450")
+                    query = "type:user " + str(emailAddress)
+                except:
+                    query = "type:user " + str(firstName) + " " + str(lastName)
+                botlog.LogSymphonyInfo(str(query))
+            elif data_lenght < 450:
+                try:
+                    #print("inside < 450")
+                    #query = "type:user " + emailAddress + " organization:" + companyName
+                    query = "type:user " + str(emailAddress)
+                except:
+                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                    query = "type:user " + str(firstName) + " " + str(lastName)
+                botlog.LogSymphonyInfo(str(query))
+            else:
+                return messageDetail.ReplyToChat("No user information available")
+
+                botlog.LogSymphonyInfo(query)
+            results = zendesk.search(query=query)
+            #print(results)
+
+            if str(results).startswith(
+                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+            elif str(results).startswith(
+                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                return messageDetail.ReplyToChat(
+                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+            else:
+
+                data = json.dumps(results, indent=2)
+                d = json.loads(data)
+
+                for index in range(len(d["results"])):
+                    # name = d["results"][index]["name"]
+                    # email = str(d["results"][index]["email"])
+                    role = str(d["results"][index]["role"])
+                    #print(role)
+                    botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+
+                    if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+                        isAllowed = True
+                        #print(role)
+                        botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+
+            ###########################
+
+            botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+    except:
+        try:
+            botlog.LogSymphonyInfo("Inside second try for userAccess Check")
+            commandCallerUID = messageDetail.FromUserId
+
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            data_dict = ast.literal_eval(data_raw)
+
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
+
+            for index_org in range(len(d_org["users"])):
+                firstName = str(d_org["users"][index_org]["firstName"])
+                lastName = str(d_org["users"][index_org]["lastName"])
+                displayName = str(d_org["users"][index_org]["displayName"])
+                companyName = str(d_org["users"][index_org]["company"])
+                userID = str(d_org["users"][index_org]["id"])
+
+                ###########################
+
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    botlog.LogSymphonyInfo("User is connected: " + str(emailAddress))
+                    emailZendesk = str(emailAddress)
+                    connectionRequired = False
+                except:
+                    connectionRequired = True
+
+                # if connectionRequired:
+
+                data_lenght = len(dataComp)
+
+                if data_lenght > 450:
+                    try:
+                        #print("inside > 450")
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo(str(query))
+                elif data_lenght < 450:
+                    try:
+                        #print("inside < 450")
+                        #query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo(str(query))
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                    botlog.LogSymphonyInfo(query)
+                results = zendesk.search(query=query)
+                #print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        # name = d["results"][index]["name"]
+                        # email = str(d["results"][index]["email"])
+                        role = str(d["results"][index]["role"])
+                        #print(role)
+                        botlog.LogSymphonyInfo("The calling user is a Zendesk " + str(role))
+
+                        if str(role) == "Administrator" or str(role) == "admin" or str(role) == "Agent" or str(role) == "agent":
+                            isAllowed = True
+                            #print(role)
+                            botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+
+                ###########################
+
+                botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+                callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+        except:
+            botlog.LogSymphonyInfo("I was not able to validate the user access, please try again")
+
+    # try:
+    # if callerCheck in AccessFile and isAllowed:
+    if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
+
+        totOrg = 0
+
+        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+
+        querystring = {"query":"type:organization tags:escalated_account"}
+
+        headers = {
+            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+            'password': _configDef['zdesk_config']['zdesk_password'],
+            'authorization': _configDef['zdesk_config']['zdesk_auth'],
+            'cache-control': "no-cache",
+            'Content-Type': 'application/json',
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+
+        data = response.json()
+        #print(str(data))
+
+        table_body = ""
+        table_header = "<table style='max-width:75%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                       "<td style='max-width:10%'>Escalated Accounts</td>" \
+                       "</tr></thead><tbody>"
+        index_list = 0
+        for result in data['results']:
+            totOrg += 1
+            index_list += 1
+
+            try:
+                orgname = str(result["name"])
+
+                #print(str(orgname))
+                context_of_escalation_temp = str(result["organization_fields"]["context_of_escalation"])
+                context_of_escalation = str(context_of_escalation_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                #print(str(context_of_escalation))
+
+                table_body += "<tr>" \
+                              "<td>" + str(index_list) + ") " + str(orgname) + " - " + str(context_of_escalation) + "</td>" \
+                              "</tr>"
+
+            except:
+                pass
+
+        table_body += "</tbody></table>"
+
+        reply = table_header + table_body
+        #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
+        return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Escalated Account List</header><body>" + reply + "</body></card>")
+
+    else:
+        print("not authorised")
+        pass
+
 ############################
 
 def searchCompanyTicketsTask(organization, stream_id):
@@ -14597,145 +14838,145 @@ def querySFDC(messageDetail):
 
 
 
-def Zeus(messageDetail):
-
-    allTicket = ""
-    sevv = ""
-    totTickets = 0
-    assignee = ""
-
-    message = (messageDetail.Command.MessageText)
-    message_split = message.split("'")
-    status_message = ""
-    #organization = message_split
-    organization = message
-
-    org_render_raw = str(organization)
-    #org_render = org_render_raw[:-1]
-    org_render = org_render_raw
-
-    query = ("status<solved type:ticket sort:desc organization:" + str(org_render)[1:])
-    #botlog.LogSystemInfo(query)
-
-    org_length = len(str(organization))-1
-
-    if org_length < 2:
-        return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
-
-    ################################
-    try:
-        headers = {
-            'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
-            'password': _configDef['zdesk_config']['zdesk_password'],
-            'authorization': _configDef['zdesk_config']['zdesk_auth'],
-            'cache-control': "no-cache",
-            'Content-Type': 'application/json',
-        }
-
-        url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
-
-        querystring = {"query": ""+ str(query)}
-        botlog.LogSystemInfo(str(querystring))
-        #print(querystring)
-
-        response = requests.request("GET", str(url), headers=headers, params=querystring)
-        data = response.json()
-        #print(str(data))
-    except:
-        return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
-
-    for result in data['results']:
-        totTickets += 1
-
-        try:
-            # strip out conflicting HTML tags in descriptions
-            description_temp = str(result["description"])
-            ticketid = str(result["id"])
-
-            # Getting IDs of requesters to be processed
-            requesterid = str(result["requester_id"])
-        except:
-            botlog.LogSymphonyInfo("Cannot get ticket info")
-
-        try:
-            # To get the name of the requester given the requesterID
-            conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
-            res = conn.getresponse()
-            userRequesterId = res.read()
-            tempUserRequester = str(userRequesterId.decode('utf-8'))
-            data = json.dumps(tempUserRequester, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_req = json.loads(data_dict)
-            req_name = str(d_req["user"]["name"])
-            requesterName = req_name
-        except:
-            requesterName = "N/A"
-            botlog.LogSymphonyInfo("Cannot get requester info")
-
-        # Getting IDs of assignee to be processed
-        try:
-            assigneeid = str(result["assignee_id"])
-
-            # To get the name of the assignee given the assigneeID
-            conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
-            res = conn.getresponse()
-            userAssigneeId = res.read()
-            tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-            data = json.dumps(tempUserAssignee, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_assign = json.loads(data_dict)
-            assign_name = str(d_assign["user"]["name"])
-            assigneeName = str(assign_name)
-
-        except:
-            assigneeName = "N/A"
-            assignee_flag = True
-
-        requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
-        assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
-
-        ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-        updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
-
-
-        if (len(result["tags"])) == 0:
-            noTag = True
-        else:
-            noTag = False
-
-        notSet = True
-        if noTag:
-            notSet = False
-
-        sev = "Not Set"
-        for index_tags in range(len(result["tags"])):
-            tags = str((result["tags"][index_tags]))
-
-            if tags.startswith("severity_1"):
-                sev = "Severity 1"
-                sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
-                notSet = False
-            elif tags.startswith("severity_2"):
-                sev = "Severity 2"
-                sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
-                notSet = False
-            elif tags.startswith("severity_3"):
-                sev = "Severity 3"
-                sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
-                notSet = False
-            elif tags.startswith("severity_4"):
-                sev = "Severity 4"
-                sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
-                notSet = False
-
-        if notSet:
-            sev = "Not set"
-            sevv = ""
-            notSet = False
-
-        requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
-
-        allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
-
-    return messageDetail.ReplyToChatV2_noBotLog("Total tickets: " + str(totTickets) + "<br></br>" + str(allTicket))
+# def Zeus(messageDetail):
+#
+#     allTicket = ""
+#     sevv = ""
+#     totTickets = 0
+#     assignee = ""
+#
+#     message = (messageDetail.Command.MessageText)
+#     message_split = message.split("'")
+#     status_message = ""
+#     #organization = message_split
+#     organization = message
+#
+#     org_render_raw = str(organization)
+#     #org_render = org_render_raw[:-1]
+#     org_render = org_render_raw
+#
+#     query = ("status<solved type:ticket sort:desc organization:" + str(org_render)[1:])
+#     #botlog.LogSystemInfo(query)
+#
+#     org_length = len(str(organization))-1
+#
+#     if org_length < 2:
+#         return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
+#
+#     ################################
+#     try:
+#         headers = {
+#             'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+#             'password': _configDef['zdesk_config']['zdesk_password'],
+#             'authorization': _configDef['zdesk_config']['zdesk_auth'],
+#             'cache-control': "no-cache",
+#             'Content-Type': 'application/json',
+#         }
+#
+#         url = _configDef['zdesk_config']['zdesk_url']+"/api/v2/search"
+#
+#         querystring = {"query": ""+ str(query)}
+#         botlog.LogSystemInfo(str(querystring))
+#         #print(querystring)
+#
+#         response = requests.request("GET", str(url), headers=headers, params=querystring)
+#         data = response.json()
+#         #print(str(data))
+#     except:
+#         return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
+#
+#     for result in data['results']:
+#         totTickets += 1
+#
+#         try:
+#             # strip out conflicting HTML tags in descriptions
+#             description_temp = str(result["description"])
+#             ticketid = str(result["id"])
+#
+#             # Getting IDs of requesters to be processed
+#             requesterid = str(result["requester_id"])
+#         except:
+#             botlog.LogSymphonyInfo("Cannot get ticket info")
+#
+#         try:
+#             # To get the name of the requester given the requesterID
+#             conn.request("GET", "/api/v2/users/" + str(requesterid), headers=headers)
+#             res = conn.getresponse()
+#             userRequesterId = res.read()
+#             tempUserRequester = str(userRequesterId.decode('utf-8'))
+#             data = json.dumps(tempUserRequester, indent=2)
+#             data_dict = ast.literal_eval(data)
+#             d_req = json.loads(data_dict)
+#             req_name = str(d_req["user"]["name"])
+#             requesterName = req_name
+#         except:
+#             requesterName = "N/A"
+#             botlog.LogSymphonyInfo("Cannot get requester info")
+#
+#         # Getting IDs of assignee to be processed
+#         try:
+#             assigneeid = str(result["assignee_id"])
+#
+#             # To get the name of the assignee given the assigneeID
+#             conn.request("GET", "/api/v2/users/" + str(assigneeid), headers=headers)
+#             res = conn.getresponse()
+#             userAssigneeId = res.read()
+#             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+#
+#             data = json.dumps(tempUserAssignee, indent=2)
+#             data_dict = ast.literal_eval(data)
+#             d_assign = json.loads(data_dict)
+#             assign_name = str(d_assign["user"]["name"])
+#             assigneeName = str(assign_name)
+#
+#         except:
+#             assigneeName = "N/A"
+#             assignee_flag = True
+#
+#         requesterTicket = (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "/requester/requested_tickets"
+#         assigneeTicket = (_configDef['zdesk_config']['zdesk_url']) + "/agent/users/" + str(assigneeid) + "/assigned_tickets"
+#
+#         ticketSubject = str(result["subject"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+#         updated = str(result["updated_at"]).replace("T", " ").replace("Z", "")
+#
+#
+#         if (len(result["tags"])) == 0:
+#             noTag = True
+#         else:
+#             noTag = False
+#
+#         notSet = True
+#         if noTag:
+#             notSet = False
+#
+#         sev = "Not Set"
+#         for index_tags in range(len(result["tags"])):
+#             tags = str((result["tags"][index_tags]))
+#
+#             if tags.startswith("severity_1"):
+#                 sev = "Severity 1"
+#                 sevv = "<b class=\"tempo-text-color--red\">SEV 1</b>"
+#                 notSet = False
+#             elif tags.startswith("severity_2"):
+#                 sev = "Severity 2"
+#                 sevv = "<b class=\"tempo-text-color--yellow\">SEV 2</b>"
+#                 notSet = False
+#             elif tags.startswith("severity_3"):
+#                 sev = "Severity 3"
+#                 sevv = "<b class=\"tempo-text-color--purple\">SEV 3</b>"
+#                 notSet = False
+#             elif tags.startswith("severity_4"):
+#                 sev = "Severity 4"
+#                 sevv = "<b class=\"tempo-text-color--cyan\">SEV 4</b>"
+#                 notSet = False
+#
+#         if notSet:
+#             sev = "Not set"
+#             sevv = ""
+#             notSet = False
+#
+#         requester = "<a href=\"" + str(requesterTicket) + "\">" + str(requesterName) + "</a>"
+#
+#         allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
+#
+#     return messageDetail.ReplyToChatV2_noBotLog("Total tickets: " + str(totTickets) + "<br></br>" + str(allTicket))

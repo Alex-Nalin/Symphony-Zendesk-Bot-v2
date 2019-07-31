@@ -21,12 +21,12 @@
       "permission": "All"
     },
     {
-      "triggers": ["Zeus", "zeus"],
-      "function": "Zeus",
-      "description": "Search unresolved Zendesk tickets by specific organization",
-      "helptext": "<b>/Zeus</b> ORG",
-      "param":"ORG is the company name as it appears on Zendesk",
-      "example":"/Zeus symphony",
+      "triggers": ["escalatedaccounts"],
+      "function": "escalatedaccounts",
+      "description": "Search Zendesk Organization which are been escalated on the Support front and give the escalation reason(s)",
+      "helptext": "<b>/escalatedaccounts</b>",
+      "param":"None",
+      "example":"/escalatedaccounts",
       "category": "Info lookup",
       "permission": "All"
     },

@@ -2300,9 +2300,15 @@ def escalatedaccounts(messageDetail):
         #print(str(data))
 
         table_body = ""
-        table_header = "<table style='max-width:75%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                       "<td style='max-width:10%'>Escalated Accounts</td>" \
-                       "</tr></thead><tbody>"
+        # table_header = "<table style='max-width:75%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+        #                "<td style='max-width:10%'>Escalated Accounts</td>" \
+        #                "</tr></thead><tbody>"
+
+        table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                     "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>ESCALATED ACCOUNTS</td>" \
+                     "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>CONTEXT OF ESCALATION</td>" \
+                     "</tr></thead><tbody>"
+
         index_list = 0
         for result in data['results']:
             totOrg += 1
@@ -2316,8 +2322,13 @@ def escalatedaccounts(messageDetail):
                 context_of_escalation = str(context_of_escalation_temp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
                 #print(str(context_of_escalation))
 
+                # table_body += "<tr>" \
+                #               "<td>" + str(index_list) + ") " + str(orgname) + " - " + str(context_of_escalation) + "</td>" \
+                #               "</tr>"
+
                 table_body += "<tr>" \
-                              "<td>" + str(index_list) + ") " + str(orgname) + " - " + str(context_of_escalation) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(index_list) + ") " + str(orgname) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(context_of_escalation) + "</td>" \
                               "</tr>"
 
             except:
@@ -14717,10 +14728,11 @@ def querySFDC(messageDetail):
         callername = messageDetail.Sender.Name
 
         message = (messageDetail.Command.MessageText)
-        message_split = message.split()
-
-        statusCheck = str(len(message_split))
-        #print(statusCheck)
+        #print(str(message))
+        # message_split = message.split()
+        #
+        # statusCheck = str(len(message_split))
+        # #print(statusCheck)
 
         streamType = (messageDetail.ChatRoom.Type)
         #print(streamType)
@@ -14728,28 +14740,33 @@ def querySFDC(messageDetail):
         streamId = (messageDetail.StreamId)
         #print(streamId)
 
-        if streamId in _configDef['searchorgticket_streamid']:
-            showSearchOrgTicket = True
-            #print("inside allowed room")
-        else:
-            showSearchOrgTicket = False
-            #print("inside not allowed room")
-        #print(showComment)
+        # if streamId in _configDef['searchorgticket_streamid']:
+        #     showSearchOrgTicket = True
+        #     #print("inside allowed room")
+        # else:
+        #     showSearchOrgTicket = False
+        #     #print("inside not allowed room")
+        # #print(showComment)
 
-        # Parse the messages received
-        for index in range(len(message_split)):
-            #print("index: "+ str(index))
+## Allow all SFDC bot commands
 
-            if str(message_split[index][:4]) == "Role" or str(message_split[index][:6]) == "role" or str(message_split[index][:5]) == "Roles" or str(message_split[index][:5]) == "roles":
-                status = "/roles "
-            elif str(message_split[index][:4]) == "Team" or str(message_split[index][:4]) == "team":
-                status = "/team "
-            elif str(message_split[index][:7]) == "Summary" or str(message_split[index][:7]) == "summary":
-                status = "/summary "
-            else:
-                organization += message_split[index]+ " "
-
-        reply = (str(status) + str(organization))
+        # # Parse the messages received
+        # for index in range(len(message_split)):
+        #     #print("index: "+ str(index))
+        #
+        #     if str(message_split[index][:4]) == "Role" or str(message_split[index][:6]) == "role" or str(message_split[index][:5]) == "Roles" or str(message_split[index][:5]) == "roles":
+        #         status = "/roles "
+        #     elif str(message_split[index][:4]) == "Team" or str(message_split[index][:4]) == "team":
+        #         status = "/team "
+        #     elif str(message_split[index][:7]) == "Summary" or str(message_split[index][:7]) == "summary":
+        #         status = "/summary "
+        #     elif str(message_split[index][:8]) == "Accounts" or str(message_split[index][:7]) == "accounts":
+        #         status = "/accounts "
+        #     else:
+        #         organization += message_split[index]+ " "
+        #
+        # reply = (str(status) + str(organization))
+        # print(reply)
 
 ################################
 
@@ -14759,6 +14776,7 @@ def querySFDC(messageDetail):
 
         url_createIM = _configDef['symphonyinfo']['apiHost'] + "/pod/v1/im/create"
 
+        #payload_createIM = "[" + _configDef['sfdcBotUID'] + ", 70368744177929]"
         payload_createIM = "[" + _configDef['sfdcBotUID'] + "]"
         headers_createIM = {
             'sessiontoken': sessionTok,
@@ -14769,16 +14787,20 @@ def querySFDC(messageDetail):
         response = requests.request("POST", url_createIM, data=payload_createIM, headers=headers_createIM)
 
         getBot2BotStream = response.json()
+        #print(str(getBot2BotStream))
         bot2BotStream = str(getBot2BotStream).split(":")
         bot2BotStreamID = bot2BotStream[1].replace("'","").replace("}","").replace(" ", "")
         #print(str(bot2BotStreamID))
 
         #######
 
+        messageToBot = ("/" + str(message)[1:])
+
         # Send message to SFDC Bot
-        messaging.SendSymphonyMessageV2(str(bot2BotStreamID), str(reply))
+        #messaging.SendSymphonyMessageV2(str(bot2BotStreamID), str(reply))
+        messaging.SendSymphonyMessageV2(str(bot2BotStreamID), str(messageToBot))
         now = datetime.now()
-        # print(now)
+        #print(now)
 
         timeStamp = util.ConvertDateTimeToMilliseconds(now)
         #print(str(timeStamp))
@@ -14804,19 +14826,20 @@ def querySFDC(messageDetail):
         response = requests.request("GET", url, headers=headers, params=querystring)
 
         data = response.json()
-        #print(data)
+        #print("Message search: " + str(data))
 
         for result in data:
             try:
                 messageFromBot = str(result["message"])
+                #print("messageFromBot:" + str(messageFromBot))
             except:
-                messageFromBot = "No response from the SFDC bot, please try again again"
+                messageFromBot = "No response from the SFDC bot, please try again"
 
         repLenght = len(messageFromBot)
         #print(int(repLenght))
 
         if repLenght == 0 or repLenght == None:
-            messageFromBot = "No response from the SFDC bot, please try again again"
+            messageFromBot = "No response from the SFDC bot, please try again"
 
         # Removing the non messageML formating for posting
         msgFromBot = str(messageFromBot[:-6]).replace("<div data-format=\"PresentationML\" data-version=\"2.0\" class=\"wysiwyg\">", "").replace("<div data-format=\"PresentationML\" data-version=\"2.0\">","")

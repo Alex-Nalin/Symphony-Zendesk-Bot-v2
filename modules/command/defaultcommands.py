@@ -1855,8 +1855,9 @@ def QoDTask ():
             qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
 
             msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
-        messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
-        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
+        #messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
+        # return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
+        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
 
     except:
         conn = http.client.HTTPConnection("quotes.rest")

@@ -11,6 +11,16 @@
       "permission": "Zendesk Agent/Zendesk End-user"
     },
     {
+      "triggers": ["ticketUpdate", "ticketupdate", "ZDUpdate", "ZDupdate", "zdupdate"],
+      "function": "ticketUpdate",
+      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment & update ticket status <br></br>End user: Add a public comment",
+      "helptext": "<b>/ZDUpdate</b> TICKET_ID | TXT [| STATUS| MODE]",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS & MODE are only for Agent",
+      "example":"/ZDUpdate 222 | txt <br></br>/ZDUpdate 222 | txt | open | private <br></br>/ZDUpdate 222 | txt | closed | public",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
       "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdcomments", "zdcomment"],
       "function": "showTicketComments",
       "description": "Shows Zendesk Ticket comments for Zendesk ticket ID",

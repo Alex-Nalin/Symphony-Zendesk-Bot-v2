@@ -11,6 +11,16 @@
       "permission": "Zendesk Agent/Zendesk End-user"
     },
     {
+      "triggers": ["ticketUpdate", "ticketupdate", "ZDUpdate", "ZDupdate", "zdupdate"],
+      "function": "ticketUpdate",
+      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment & update ticket status <br></br>End user: Add a public comment",
+      "helptext": "<b>/ZDUpdate</b> TICKET_ID | TXT [| STATUS| MODE]",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS & MODE are only for Agent",
+      "example":"/ZDUpdate 222 | txt <br></br>/ZDUpdate 222 | txt | open | private <br></br>/ZDUpdate 222 | txt | closed | public",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
       "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdcomments", "zdcomment"],
       "function": "showTicketComments",
       "description": "Shows Zendesk Ticket comments for Zendesk ticket ID",
@@ -27,16 +37,6 @@
       "helptext": "<b>/ZDOrgTicket</b> STATUS ORG",
       "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk",
       "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
-      "category": "Info lookup",
-      "permission": "All"
-    },
-    {
-      "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuserTicket", "ZDuserticket", "zduserticket"],
-      "function": "searchUserTickets",
-      "description": "Search Zendesk tickets by specific user as requester, assignee or CC/collaborator/follower. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
-      "helptext": "<b>/ZDUserTicket</b> [STATUS] [TYPE] [@USER]",
-      "param":"STATUS = open | new | pending | solved | closed | unresolved | all <br></br> TYPE = req | assignee | cc <br></br> @USER is an @mention (optional)",
-      "example":"/ZDUserTicket open req<br></br>/ZDUserTicket closed cc @Joe Smith<br></br>/ZDUserTicket",
       "category": "Info lookup",
       "permission": "All"
     },

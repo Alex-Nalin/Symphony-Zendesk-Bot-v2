@@ -1,0 +1,54 @@
+{
+  "commands": [
+    {
+      "name": "status",
+      "triggers": ["status", "ping"],
+      "function": "SendStatusCheck",
+      "helptext": "<b>/status</b>",
+      "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
+      "param":"None",
+      "example":"/ping",
+      "category": "Miscellaneous",
+      "permission": "All",
+      "immediate": true
+    },
+    {
+      "name": "help",
+      "triggers": ["help", "Help", "HELP"],
+      "function": "SymphonyZendeskBotHelp",
+      "helptext": "<b>/help</b>",
+      "description": "Tells you what the bot can do.",
+      "param":"none",
+      "example":"/help",
+      "category": "Miscellaneous",
+      "permission": "All",
+      "immediate": true
+    }
+  ],
+  "hashcommands": [
+    {
+      "name": "help",
+      "triggers": ["help", "Help", "HELP"],
+      "function": "SymphonyZendeskBotHelp",
+      "helptext": "<b>/help</b>",
+      "description": "Tells you what the bot can do.",
+      "param":"more (optional)",
+      "example":"/help or /help more",
+      "category": "General Bot command",
+      "permission": "All",
+      "immediate": true
+    },
+    {
+      "name": "status",
+      "triggers": ["status", "poke", "check", "test", "ping"],
+      "function": "SendStatusCheck",
+      "helptext": "<b>/status</b>",
+      "description": "Returns the status of SymphonyZendeskBot. This command bypasses the Command Queue.",
+      "param":"None",
+      "example":"/ping",
+      "category": "General Bot command",
+      "permission": "All",
+      "immediate": true
+    }
+  ]
+}

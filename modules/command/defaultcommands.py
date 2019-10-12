@@ -54,6 +54,24 @@ _configPathZendesk = os.path.abspath('modules/plugins/Zendesk/config.json')
 with codecs.open(_configPathZendesk, 'r', 'utf-8-sig') as json_file:
     _configZen = json.load(json_file)
 
+### FOR USER LEVEL HELP CUSTOMI ###
+
+_configPathZendeskAdmin = os.path.abspath('modules/plugins/Zendesk/configAdmin.json')
+with codecs.open(_configPathZendeskAdmin, 'r', 'utf-8-sig') as json_file:
+    _configZenAdmin = json.load(json_file)
+
+_configPathZendeskAccess = os.path.abspath('modules/plugins/Zendesk/configAccess.json')
+with codecs.open(_configPathZendeskAccess, 'r', 'utf-8-sig') as json_file:
+    _configZenAccess = json.load(json_file)
+
+_configPathZendeskINT = os.path.abspath('modules/plugins/Zendesk/configINT.json')
+with codecs.open(_configPathZendeskINT, 'r', 'utf-8-sig') as json_file:
+    _configZenINT = json.load(json_file)
+
+_configPathZendeskEXT = os.path.abspath('modules/plugins/Zendesk/configEXT.json')
+with codecs.open(_configPathZendeskEXT, 'r', 'utf-8-sig') as json_file:
+    _configZenEXT = json.load(json_file)
+
 #Symphony API call Config/header
 connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
 sessionTok = callout.GetSessionToken()
@@ -150,22 +168,25 @@ def SymphonyZendeskBotHelp(messageDetail):
     botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
     callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
-    if callerCheck in AccessFile:
-        # if companyName in _configDef['AuthCompany']['PodList']:
+
+    ########### FOR ADMIN OF THE BOT - HELP FILE - SHOWS ALL COMMANDS:
+
+    if callerCheck in _configDef['AuthUser']['AdminList']:
+    # if callerCheck in AccessFile:
+    # if companyName in _configDef['AuthCompany']['PodList']:
 
         streamType = ""
         streamType = (messageDetail.ChatRoom.Type)
 
         if streamType == "IM":
-
             #try:
 
-            _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForBotAdminHelp.json')
 
             with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
                 _moreconfig = json.load(json_file)
 
-            header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b> (You are part of the Authorised users) <br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
+            header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b> (You are a Bot Admin) <br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
             # ---------
 
             table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
@@ -179,9 +200,9 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             # Seems we need to set this to a colour the first time to work
             perm_bg_color = "green"
-            for index in range(len(_configZen["commands"])):
+            for index in range(len(_configZenAdmin["commands"])):
 
-                caterory = _configZen["commands"][index]["category"]
+                caterory = _configZenAdmin["commands"][index]["category"]
 
                 if caterory == "Info lookup":
                     caterory_bg_color = "cyan"
@@ -194,7 +215,7 @@ def SymphonyZendeskBotHelp(messageDetail):
                 if caterory == "Create/update":
                     caterory_bg_color = "yellow"
 
-                permission = _configZen["commands"][index]["permission"]
+                permission = _configZenAdmin["commands"][index]["permission"]
 
                 if permission == "Bot Admin":
                     perm_bg_color = "red"
@@ -207,12 +228,12 @@ def SymphonyZendeskBotHelp(messageDetail):
                 if permission == "Authorised List":
                     perm_bg_color = "orange"
 
-                helptext_a = str(_configZen["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
-                param_a = str(_configZen["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
-                example_a = str(_configZen["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
-                desc_a = str(_configZen["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
-                cat_a = str(_configZen["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
-                perm_a = str(_configZen["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+                helptext_a = str(_configZenAdmin["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_a = str(_configZenAdmin["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_a = str(_configZenAdmin["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_a = str(_configZenAdmin["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_a = str(_configZenAdmin["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_a = str(_configZenAdmin["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
                 table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
@@ -223,7 +244,7 @@ def SymphonyZendeskBotHelp(messageDetail):
                               "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
                               "</tr>"
 
-            _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForBotAdminHelp.json')
             with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
                 _moreconfig = json.load(json_file)
 
@@ -354,7 +375,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             #table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
             table_body = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
-
+            #print(str(table_body))
 
             messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
             f.close()
@@ -363,221 +384,658 @@ def SymphonyZendeskBotHelp(messageDetail):
             #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")
         else:
             return messageDetail.ReplyToChat("For SupportBot /help, please IM me directly")
-    else:
-
-        if companyName in _configDef['AuthCompany']['PodList']:
-
-            streamType = ""
-            streamType = (messageDetail.ChatRoom.Type)
-
-            if streamType == "IM":
-
-                #try:
-
-                # _moreconfigPath = os.path.abspath('modules/command/default.json')
-                _moreconfigPath = os.path.abspath('modules/command/defaultForHelp.json')
-
-                with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
-                    _moreconfig = json.load(json_file)
-
-                header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b><br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
-                # ---------
-
-                table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>COMMAND</td>" \
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>PARAMETER</td>" \
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:20%'>SAMPLE</td>" \
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:25%'>DESCRIPTION</td>" \
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>CATEGORY</td>"\
-                             "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>PERMISSION</td>" \
-                             "</tr></thead><tbody>"
-
-                # Seems we need to set this to a colour the first time to work
-                perm_bg_color = "green"
-                for index in range(len(_configZen["commands"])):
-
-                    caterory = _configZen["commands"][index]["category"]
-
-                    if caterory == "Info lookup":
-                        caterory_bg_color = "cyan"
-                    if caterory == "Zendesk":
-                        caterory_bg_color = "cyan"
-                    if caterory == "Admin":
-                        caterory_bg_color = "purple"
-                    if caterory == "Miscellaneous":
-                        caterory_bg_color = "blue"
-                    if caterory == "Create/update":
-                        caterory_bg_color = "yellow"
-
-                    permission = _configZen["commands"][index]["permission"]
-
-                    if permission == "Bot Admin":
-                        perm_bg_color = "red"
-                    if permission == "Zendesk Agent":
-                        perm_bg_color = "orange"
-                    if permission == "All":
-                        perm_bg_color = "green"
-                    if permission == "Zendesk Agent/Zendesk End-user":
-                        perm_bg_color = "orange"
-
-                    helptext_a = str(_configZen["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
-                    param_a = str(_configZen["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
-                    example_a = str(_configZen["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
-                    desc_a = str(_configZen["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
-                    cat_a = str(_configZen["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
-                    perm_a = str(_configZen["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
-
-                    table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
-                                  "</tr>"
-
-                # _moreconfigPath = os.path.abspath('modules/command/default.json')
-                _moreconfigPath = os.path.abspath('modules/command/defaultForHelp.json')
-                with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
-                    _moreconfig = json.load(json_file)
-
-                for index in range(len(_moreconfig["commands"])):
-
-                    caterory = _moreconfig["commands"][index]["category"]
-
-                    if caterory == "Info lookup":
-                        caterory_bg_color = "cyan"
-                    if caterory == "Zendesk":
-                        caterory_bg_color = "cyan"
-                    if caterory == "Admin":
-                        caterory_bg_color = "purple"
-                    if caterory == "Miscellaneous":
-                        caterory_bg_color = "blue"
-                    if caterory == "Create/update":
-                        caterory_bg_color = "yellow"
-
-                    permission = str(_moreconfig["commands"][index]["permission"])
-
-                    if permission == "Bot Admin":
-                        perm_bg_color = "red"
-                    if permission == "Zendesk Agent":
-                        perm_bg_color = "orange"
-                    if permission == "All":
-                        perm_bg_color = "green"
-                    if permission == "Zendesk Agent/Zendesk End-user":
-                        perm_bg_color = "orange"
-
-                    helptext_b = str(_moreconfig["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
-                    param_b = str(_moreconfig["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
-                    example_b = str(_moreconfig["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
-                    desc_b = str(_moreconfig["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
-                    cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
-                    perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
-
-                    table_body += "<tr>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
-                                  "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
-                                  "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
-                                  "</tr>"
-                else:
-                    pass
-
-                table_body += "</tbody></table>"
 
 
-                # Some Pod do not allow HTML file type
-                AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
-                #print(str(AdminHelp))
+    ########### FOR AUTHORISED ACCESS USERS OF THE BOT - HELP FILE - SHOWS MOST COMMANDS EXCEPT ADMIN ONES:
 
-                f = open('Temp/help.html', 'w')
-                f.write(str(AdminHelp))
-                #f.write("Test")
-                f.close()
-                upload_raw = os.path.abspath("Temp/help.html")
-                f = open(upload_raw, 'rb')
-                fdata = f.read()
-                #print(fdata.title())
+    if callerCheck in AccessFile:
+        # if companyName in _configDef['AuthCompany']['PodList']:
 
-                # ctype, encoding = mimetypes.guess_type(upload_raw)
-                # att = ("SupportBot help.html", fdata, ctype)
-                # att_list = [att]
+        streamType = ""
+        streamType = (messageDetail.ChatRoom.Type)
 
-                ## Convert html to PDF:
-                ## https://www.geeksforgeeks.org/python-convert-html-pdf/
+        if streamType == "IM":
 
-                ## Already Saved HTML page
-                import pdfkit
-                pdfkit.from_file('Temp/help.html', 'Temp/Help.pdf')
+            #try:
 
-                f.close()
+            _moreconfigPath = os.path.abspath('modules/command/defaultforAccessUserHelp.json')
 
-                upload_raw1 = os.path.abspath("Temp/Help.pdf")
-                f1 = open(upload_raw1, 'rb')
-                fdata1 = f1.read()
-                #print(fdata1.title())
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
 
-                ctype, encoding = mimetypes.guess_type(upload_raw1)
-                att1 = ("SupportBot help.pdf", fdata1, ctype)
+            header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b> (You are part of the Authorised users) <br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
+            # ---------
 
-                ## To upload both html and pdf file, of the pod allows it and not block these extensions
-                # att_list = [att, att1]
-                att_list = [att1]
+            table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>COMMAND</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>PARAMETER</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:20%'>SAMPLE</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:25%'>DESCRIPTION</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>CATEGORY</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>PERMISSION</td>" \
+                         "</tr></thead><tbody>"
 
-                ## Convert by website URL
-                #import pdfkit
-                #pdfkit.from_url('https://www.google.co.in/','shaurya.pdf')
+            # Seems we need to set this to a colour the first time to work
+            perm_bg_color = "green"
+            for index in range(len(_configZenAccess["commands"])):
 
-                ## Store text in PDF
-                #import pdfkit
-                #pdfkit.from_string('Shaurya GFG','GfG.pdf')
+                caterory = _configZenAccess["commands"][index]["category"]
 
-                ## You can pass a list with multiple URLs or files:
-                #pdfkit.from_url(['google.com', 'geeksforgeeks.org', 'facebook.com'], 'shaurya.pdf')
-                #pdfkit.from_file(['file1.html', 'file2.html'], 'out.pdf')
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
 
-                ## Save content in a variable
-                # Use False instead of output path to save pdf to a variable
-                #pdf = pdfkit.from_url('http://google.com', False)
+                permission = _configZenAccess["commands"][index]["permission"]
 
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+                if permission == "Authorised List":
+                    perm_bg_color = "orange"
 
-                message = "Bot Help file"
-                #
-                # ##########################
-                #
-                botlog.LogSymphonyInfo(messageDetail.MessageRaw)
-                messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
-                #
-                # ##########################
+                helptext_a = str(_configZenAccess["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_a = str(_configZenAccess["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_a = str(_configZenAccess["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_a = str(_configZenAccess["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_a = str(_configZenAccess["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_a = str(_configZenAccess["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                ###################
-                #
-                # att_list = []
-                # if messageDetail.Attachments:
-                #     for att in messageDetail.Attachments:
-                #         att_name = att.name
-                #         att_id = att.id
-                #         att_size = att.size
-                #         att_response = messaging.getAttchment(messageDetail.StreamId, messageDetail.MessageId, att_id)
-                #         att_item = (att_name, att_response)
-                #         att_list.append(att_item)
-                #         print("Att: " + att_list)
-                #
-                ###################
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
 
-                #table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
-                table_body = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+            _moreconfigPath = os.path.abspath('modules/command/defaultforAccessUserHelp.json')
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
 
+            for index in range(len(_moreconfig["commands"])):
 
-                messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
-                f1.close()
+                caterory = _moreconfig["commands"][index]["category"]
 
-                # except:
-                #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
+
+                permission = str(_moreconfig["commands"][index]["permission"])
+
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+                if permission == "Authorised List":
+                    perm_bg_color = "orange"
+
+                helptext_b = str(_moreconfig["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_b = str(_moreconfig["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_b = str(_moreconfig["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_b = str(_moreconfig["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
             else:
-                return messageDetail.ReplyToChat("For SupportBot /help, please IM me directly")
+                pass
+
+            table_body += "</tbody></table>"
+
+            # Some Pod do not allow HTML file type
+            AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
+            #print(str(AdminHelp))
+
+            f = open('Temp/help.html', 'w')
+            f.write(str(AdminHelp))
+            #f.write("Test")
+            f.close()
+            upload_raw = os.path.abspath("Temp/help.html")
+            f = open(upload_raw, 'rb')
+            fdata = f.read()
+            #print(fdata.title())
+
+            # ctype, encoding = mimetypes.guess_type(upload_raw)
+            # att = ("SupportBot help.html", fdata, ctype)
+            # att_list = [att]
+
+            ## Convert html to PDF:
+            ## https://www.geeksforgeeks.org/python-convert-html-pdf/
+
+            ## Already Saved HTML page
+            import pdfkit
+            pdfkit.from_file('Temp/help.html', 'Temp/Help.pdf')
+
+            f.close()
+
+            upload_raw1 = os.path.abspath("Temp/Help.pdf")
+            f1 = open(upload_raw1, 'rb')
+            fdata1 = f1.read()
+            #print(fdata1.title())
+
+            ctype, encoding = mimetypes.guess_type(upload_raw1)
+            att1 = ("SupportBot help.pdf", fdata1, ctype)
+
+            ## To upload both html and pdf file, of the pod allows it and not block these extensions
+            # att_list = [att, att1]
+            att_list = [att1]
+
+            ## Convert by website URL
+            #import pdfkit
+            #pdfkit.from_url('https://www.google.co.in/','shaurya.pdf')
+
+            ## Store text in PDF
+            #import pdfkit
+            #pdfkit.from_string('Shaurya GFG','GfG.pdf')
+
+            ## You can pass a list with multiple URLs or files:
+            #pdfkit.from_url(['google.com', 'geeksforgeeks.org', 'facebook.com'], 'shaurya.pdf')
+            #pdfkit.from_file(['file1.html', 'file2.html'], 'out.pdf')
+
+            ## Save content in a variable
+            # Use False instead of output path to save pdf to a variable
+            #pdf = pdfkit.from_url('http://google.com', False)
+
+
+            message = "Bot Help file"
+            #
+            # ##########################
+            #
+            botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+            messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+
+            ###################
+            #
+            # att_list = []
+            # if messageDetail.Attachments:
+            #     for att in messageDetail.Attachments:
+            #         att_name = att.name
+            #         att_id = att.id
+            #         att_size = att.size
+            #         att_response = messaging.getAttchment(messageDetail.StreamId, messageDetail.MessageId, att_id)
+            #         att_item = (att_name, att_response)
+            #         att_list.append(att_item)
+            #         print("Att: " + att_list)
+            #
+            ###################
+
+            #table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+            table_body = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+            #print(str(table_body))
+
+            messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
+            f.close()
+
+            # except:
+            #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")
+        else:
+            return messageDetail.ReplyToChat("For SupportBot /help, please IM me directly")
+
+    ########### FOR INTERNAL SYMPHONY POD USERS - HELP FILE - SHOWS LIMITED COMMANDS:
+
+    if companyName in _configDef['AuthCompany']['PodList']:
+
+        streamType = ""
+        streamType = (messageDetail.ChatRoom.Type)
+
+        if streamType == "IM":
+
+            #try:
+
+            # _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForInternalHelp.json')
+
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
+
+            header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b><br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
+            # ---------
+
+            table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>COMMAND</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>PARAMETER</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:20%'>SAMPLE</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:25%'>DESCRIPTION</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>CATEGORY</td>"\
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>PERMISSION</td>" \
+                         "</tr></thead><tbody>"
+
+            # Seems we need to set this to a colour the first time to work
+            perm_bg_color = "green"
+            for index in range(len(_configZenINT["commands"])):
+
+                caterory = _configZenINT["commands"][index]["category"]
+
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
+
+                permission = _configZenINT["commands"][index]["permission"]
+
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+
+                helptext_a = str(_configZenINT["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_a = str(_configZenINT["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_a = str(_configZenINT["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_a = str(_configZenINT["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_a = str(_configZenINT["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_a = str(_configZenINT["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+
+            # _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForInternalHelp.json')
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
+
+            for index in range(len(_moreconfig["commands"])):
+
+                caterory = _moreconfig["commands"][index]["category"]
+
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
+
+                permission = str(_moreconfig["commands"][index]["permission"])
+
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+
+                helptext_b = str(_moreconfig["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_b = str(_moreconfig["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_b = str(_moreconfig["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_b = str(_moreconfig["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+            else:
+                pass
+
+            table_body += "</tbody></table>"
+
+
+            # Some Pod do not allow HTML file type
+            AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
+            #print(str(AdminHelp))
+
+            f = open('Temp/help.html', 'w')
+            f.write(str(AdminHelp))
+            #f.write("Test")
+            f.close()
+            upload_raw = os.path.abspath("Temp/help.html")
+            f = open(upload_raw, 'rb')
+            fdata = f.read()
+            #print(fdata.title())
+
+            # ctype, encoding = mimetypes.guess_type(upload_raw)
+            # att = ("SupportBot help.html", fdata, ctype)
+            # att_list = [att]
+
+            ## Convert html to PDF:
+            ## https://www.geeksforgeeks.org/python-convert-html-pdf/
+
+            ## Already Saved HTML page
+            import pdfkit
+            pdfkit.from_file('Temp/help.html', 'Temp/Help.pdf')
+
+            f.close()
+
+            upload_raw1 = os.path.abspath("Temp/Help.pdf")
+            f1 = open(upload_raw1, 'rb')
+            fdata1 = f1.read()
+            #print(fdata1.title())
+
+            ctype, encoding = mimetypes.guess_type(upload_raw1)
+            att1 = ("SupportBot help.pdf", fdata1, ctype)
+
+            ## To upload both html and pdf file, of the pod allows it and not block these extensions
+            # att_list = [att, att1]
+            att_list = [att1]
+
+            ## Convert by website URL
+            #import pdfkit
+            #pdfkit.from_url('https://www.google.co.in/','shaurya.pdf')
+
+            ## Store text in PDF
+            #import pdfkit
+            #pdfkit.from_string('Shaurya GFG','GfG.pdf')
+
+            ## You can pass a list with multiple URLs or files:
+            #pdfkit.from_url(['google.com', 'geeksforgeeks.org', 'facebook.com'], 'shaurya.pdf')
+            #pdfkit.from_file(['file1.html', 'file2.html'], 'out.pdf')
+
+            ## Save content in a variable
+            # Use False instead of output path to save pdf to a variable
+            #pdf = pdfkit.from_url('http://google.com', False)
+
+
+            message = "Bot Help file"
+            #
+            # ##########################
+            #
+            botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+            messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+            #
+            # ##########################
+
+            ###################
+            #
+            # att_list = []
+            # if messageDetail.Attachments:
+            #     for att in messageDetail.Attachments:
+            #         att_name = att.name
+            #         att_id = att.id
+            #         att_size = att.size
+            #         att_response = messaging.getAttchment(messageDetail.StreamId, messageDetail.MessageId, att_id)
+            #         att_item = (att_name, att_response)
+            #         att_list.append(att_item)
+            #         print("Att: " + att_list)
+            #
+            ###################
+
+            #table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+            table_body = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+
+
+            messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
+            f1.close()
+
+            # except:
+            #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")
+        else:
+            return messageDetail.ReplyToChat("For SupportBot /help, please IM me directly")
+
+    ########### FOR EXTERNAL SYMPHONY AUTHORISED POD USERS - HELP FILE - SHOWS RESTRICTED COMMANDS:
+
+    if companyName in _configDef['AuthExtCompany']['PodList']:
+
+        streamType = ""
+        streamType = (messageDetail.ChatRoom.Type)
+
+        if streamType == "IM":
+
+            #try:
+
+            # _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForExternalHelp.json')
+
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
+
+            header = "<b class =\"tempo-text-color--blue\">Symphony Zendesk Bot Help</b> For more information, please consult <b>Symphony Team</b><br/>- For Feedback use <b><hash tag=\"SupportBotFeedback\"/></b><br/> - For Bug use <b><hash tag=\"SupportBotBug\"/></b><br/>"
+            # ---------
+
+            table_body = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>COMMAND</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:15%'>PARAMETER</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:20%'>SAMPLE</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:25%'>DESCRIPTION</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>CATEGORY</td>"\
+                         "<td style='border:1px solid blue;border-bottom: double blue;text-align:center;max-width:12.5%'>PERMISSION</td>" \
+                         "</tr></thead><tbody>"
+
+            # Seems we need to set this to a colour the first time to work
+            perm_bg_color = "green"
+            for index in range(len(_configZenEXT["commands"])):
+
+                caterory = _configZenEXT["commands"][index]["category"]
+
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
+
+                permission = _configZenEXT["commands"][index]["permission"]
+
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+
+                helptext_a = str(_configZenEXT["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_a = str(_configZenEXT["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_a = str(_configZenEXT["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_a = str(_configZenEXT["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_a = str(_configZenEXT["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_a = str(_configZenEXT["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+
+            # _moreconfigPath = os.path.abspath('modules/command/default.json')
+            _moreconfigPath = os.path.abspath('modules/command/defaultForExternalHelp.json')
+            with codecs.open(_moreconfigPath, 'r', 'utf-8-sig') as json_file:
+                _moreconfig = json.load(json_file)
+
+            for index in range(len(_moreconfig["commands"])):
+
+                caterory = _moreconfig["commands"][index]["category"]
+
+                if caterory == "Info lookup":
+                    caterory_bg_color = "cyan"
+                if caterory == "Zendesk":
+                    caterory_bg_color = "cyan"
+                if caterory == "Admin":
+                    caterory_bg_color = "purple"
+                if caterory == "Miscellaneous":
+                    caterory_bg_color = "blue"
+                if caterory == "Create/update":
+                    caterory_bg_color = "yellow"
+
+                permission = str(_moreconfig["commands"][index]["permission"])
+
+                if permission == "Bot Admin":
+                    perm_bg_color = "red"
+                if permission == "Zendesk Agent":
+                    perm_bg_color = "orange"
+                if permission == "All":
+                    perm_bg_color = "green"
+                if permission == "Zendesk Agent/Zendesk End-user":
+                    perm_bg_color = "orange"
+
+                helptext_b = str(_moreconfig["commands"][index]["helptext"]).replace("&", "&amp;").replace('"', "&quot;")
+                param_b = str(_moreconfig["commands"][index]["param"]).replace("&", "&amp;").replace('"', "&quot;")
+                example_b = str(_moreconfig["commands"][index]["example"]).replace("&", "&amp;").replace('"', "&quot;")
+                desc_b = str(_moreconfig["commands"][index]["description"]).replace("&", "&amp;").replace('"', "&quot;")
+                cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
+                perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
+
+                table_body += "<tr>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+            else:
+                pass
+
+            table_body += "</tbody></table>"
+
+
+            # Some Pod do not allow HTML file type
+            AdminHelp = "<html><head><title>SupportBot Help documentation</title></head><body>" + str(table_body) + "</body></html>"
+            #print(str(AdminHelp))
+
+            f = open('Temp/help.html', 'w')
+            f.write(str(AdminHelp))
+            #f.write("Test")
+            f.close()
+            upload_raw = os.path.abspath("Temp/help.html")
+            f = open(upload_raw, 'rb')
+            fdata = f.read()
+            #print(fdata.title())
+
+            # ctype, encoding = mimetypes.guess_type(upload_raw)
+            # att = ("SupportBot help.html", fdata, ctype)
+            # att_list = [att]
+
+            ## Convert html to PDF:
+            ## https://www.geeksforgeeks.org/python-convert-html-pdf/
+
+            ## Already Saved HTML page
+            import pdfkit
+            pdfkit.from_file('Temp/help.html', 'Temp/Help.pdf')
+
+            f.close()
+
+            upload_raw1 = os.path.abspath("Temp/Help.pdf")
+            f1 = open(upload_raw1, 'rb')
+            fdata1 = f1.read()
+            #print(fdata1.title())
+
+            ctype, encoding = mimetypes.guess_type(upload_raw1)
+            att1 = ("SupportBot help.pdf", fdata1, ctype)
+
+            ## To upload both html and pdf file, of the pod allows it and not block these extensions
+            # att_list = [att, att1]
+            att_list = [att1]
+
+            ## Convert by website URL
+            #import pdfkit
+            #pdfkit.from_url('https://www.google.co.in/','shaurya.pdf')
+
+            ## Store text in PDF
+            #import pdfkit
+            #pdfkit.from_string('Shaurya GFG','GfG.pdf')
+
+            ## You can pass a list with multiple URLs or files:
+            #pdfkit.from_url(['google.com', 'geeksforgeeks.org', 'facebook.com'], 'shaurya.pdf')
+            #pdfkit.from_file(['file1.html', 'file2.html'], 'out.pdf')
+
+            ## Save content in a variable
+            # Use False instead of output path to save pdf to a variable
+            #pdf = pdfkit.from_url('http://google.com', False)
+
+
+            message = "Bot Help file"
+            #
+            # ##########################
+            #
+            botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+            messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+            #
+            # ##########################
+
+            ###################
+            #
+            # att_list = []
+            # if messageDetail.Attachments:
+            #     for att in messageDetail.Attachments:
+            #         att_name = att.name
+            #         att_id = att.id
+            #         att_size = att.size
+            #         att_response = messaging.getAttchment(messageDetail.StreamId, messageDetail.MessageId, att_id)
+            #         att_item = (att_name, att_response)
+            #         att_list.append(att_item)
+            #         print("Att: " + att_list)
+            #
+            ###################
+
+            #table_body = "<card iconSrc=\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+            table_body = "<card iconSrc=\"\" accent=\"tempo-bg-color--blue\"><header>" + header + "</header><body>" + table_body + "</body></card>"
+
+
+            messaging.SendSymphonyMessageV2_noBotLog(messageDetail.StreamId, table_body)
+            f1.close()
+
+            # except:
+            #     return messageDetail.ReplyToChat("Please check that all the config files are in the right place. I am sorry, I was working on a different task, can you please retry")
+        else:
+            return messageDetail.ReplyToChat("For SupportBot /help, please IM me directly")
+
+    else:
+        botlog.LogSymphonyInfo("This pod is not authorised to access the bot")
 
 
 # def SymphonyZendeskBotHelpCheat(messageDetail):
@@ -1453,27 +1911,30 @@ def GetGoogleTranslation(messageDetail):
             except:
                 botlog.LogSymphonyInfo("Translate did not work")
     except:
-        try:
-            botlog.LogSymphonyInfo("Inside second Translate")
-            transText = messageDetail.Command.MessageText
+        botlog.LogSymphonyInfo("Translate did not work")
 
-            if transText:
-
-                botlog.LogSymphonyInfo('Attempting to translate: ' + transText)
-
-                payload = {"client": "gtx", "sl": "auto", "tl": "en", "dt": "t", "q": transText}
-                transEP = "https://translate.googleapis.com/translate_a/single"
-
-                response = requests.get(transEP, params=payload).json()
-                translation = response[0][0][0]
-                lang = response[2]
-                msg = 'I think you said: ' + translation + ' (' + lang + ')'
-            else:
-                msg = 'Please include a word or sentence to be translated.'
-
-            messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
-        except:
-            botlog.LogSymphonyInfo("Google Translate did not work entirely")
+    # except:
+    #     try:
+    #         botlog.LogSymphonyInfo("Inside second Translate")
+    #         transText = messageDetail.Command.MessageText
+    #
+    #         if transText:
+    #
+    #             botlog.LogSymphonyInfo('Attempting to translate: ' + transText)
+    #
+    #             payload = {"client": "gtx", "sl": "auto", "tl": "en", "dt": "t", "q": transText}
+    #             transEP = "https://translate.googleapis.com/translate_a/single"
+    #
+    #             response = requests.get(transEP, params=payload).json()
+    #             translation = response[0][0][0]
+    #             lang = response[2]
+    #             msg = 'I think you said: ' + translation + ' (' + lang + ')'
+    #         else:
+    #             msg = 'Please include a word or sentence to be translated.'
+    #
+    #         messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
+    #     except:
+    #         botlog.LogSymphonyInfo("Google Translate did not work entirely")
 
 
 # https://www.alphavantage.co/documentation/
@@ -1539,40 +2000,7 @@ def GetAlphaVantageStockQuote(messageDetail):
     except:
         botlog.LogSymphonyInfo("AlphaQupte did not work entirely")
 
-#Original
-# def GetGiphyImageOld(messageDetail):
-#     try:
-#         giphyAPIKey = botconfig.GetCommandSetting('giphy')['apikey']
-#
-#         giphyText = messageDetail.Command.MessageText
-#
-#         paramList = giphyText.split()
-#
-#         isRandom = len(paramList) == 0 or paramList[0] == 'random'
-#
-#         if isRandom:
-#             ep = "http://api.giphy.com/v1/gifs/random"
-#             payload = {"apikey": giphyAPIKey}
-#         else:
-#             ep = "http://api.giphy.com/v1/gifs/translate"
-#             payload = {"apikey": giphyAPIKey, "s": giphyText}
-#
-#         response = requests.get(ep, params=payload).json()
-#
-#         if isRandom:
-#             msg = "<a href='" + response['data']['image_original_url'] + "'/>"
-#         else:
-#             msg = "<a href='" + response['data']['images']['original']['url'] + "'/>"
-#
-#         messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
-#
-#     except Exception as ex:
-#         errorStr = "Symphony REST Exception (system): {}".format(ex)
-#         botlog.LogSystemError(errorStr)
-#         msg = "Sorry, I could not return a GIF right now."
-#         messaging.SendSymphonyMessage(messageDetail.StreamId, msg)
 
-#Fixed with Card
 def GetGiphyImage(messageDetail):
 
     try:
@@ -4818,3 +5246,99 @@ def UIDCheck(messageDetail):
 #     file = open("Data/tasker.py","w+")
 #     file.write(updatedTask)
 #     file.close()
+
+
+def atMentionRoom(messageDetail):
+    botlog.LogSymphonyInfo("##############################")
+    botlog.LogSymphonyInfo("##############################")
+    botlog.LogSymphonyInfo("Bot Call - @mention room Check")
+    botlog.LogSymphonyInfo("##############################")
+
+    try:
+        commandCallerUID = messageDetail.FromUserId
+        roomStreamID = messageDetail.StreamId
+        print(str(roomStreamID))
+
+        connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+        sessionTok = callout.GetSessionToken()
+
+        headersCompany = {
+            'sessiontoken': sessionTok,
+            'cache-control': "no-cache"
+        }
+
+        connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = ast.literal_eval(data_raw)
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            firstName = str(d_org["users"][index_org]["firstName"])
+            lastName = str(d_org["users"][index_org]["lastName"])
+            displayName = str(d_org["users"][index_org]["displayName"])
+            #companyName = d_org["users"][index_org]["company"]
+            companyNameTemp = d_org["users"][index_org]["company"]
+            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            companyName = str(companyTemp)
+            userID = str(d_org["users"][index_org]["id"])
+
+            botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+
+    except:
+        #return messageDetail.ReplyToChat("Cannot validate user access")
+        return botlog.LogSymphonyInfo("Cannot validate user access")
+
+    if callerCheck in (_configDef['AuthUser']['AdminList']):
+
+        message = (messageDetail.Command.MessageText)
+
+        conn = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
+
+        headers = {
+            #'sessiontoken': callout.GetSessionToken(),
+            'sessiontoken':sessionTok,
+            'cache-control': "no-cache"
+        }
+
+        conn.request("GET", "/pod/v1/admin/stream/" + str(roomStreamID) + "/membership/list", headers=headers)
+
+        res = conn.getresponse()
+        data_raw = res.read().decode("utf-8")
+
+        data = json.dumps(data_raw, indent=2)
+        data_dict = ast.literal_eval(data)
+        userAccess = json.loads(data_dict)
+        #print(str(userAccess))
+
+        table_body = ""
+        table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:25%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                       "<td style='border:1px solid blue;border-bottom: double blue;width:60%;text-align:center'>DISPLAY NAME</td>" \
+                       "<td style='border:1px solid blue;border-bottom: double blue;width:40%;text-align:center'>USER ID?</td>" \
+                       "</tr></thead><tbody>"
+
+        for index in range(len(userAccess["members"])):
+
+            displayName = str(userAccess["members"][index]["user"]["displayName"])
+            userId = str(userAccess["members"][index]["user"]["userId"])
+
+            table_body += "<tr>" \
+                          "<td style='border:1px solid black;text-align:center'>" + str(displayName) + "</td>" \
+                          "<td style='border:1px solid black;text-align:center'>" + str(userId) + "</td>" \
+                          "</tr>"
+
+        table_body += "</tbody></table>"
+        render = table_header + table_body
+
+        return messageDetail.ReplyToChatV2_noBotLog(
+            "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + render + "</body></card>")
+
+
+    else:
+        #return messageDetail.ReplyToChat("You aren't authorised to use this command.")
+        return botlog.LogSymphonyInfo("You aren't authorised to use this command.")

@@ -97,8 +97,8 @@
       "helptext": "<b>/ZDComments</b> TICKET_ID",
       "param":"TICKET_ID is Zendesk ticket ID",
       "example":"/ZDComments 222",
-      "category": "Info lookup",
-      "permission": "All"
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
     },
     {
       "triggers": ["ZDUser", "ZDuser", "zduser"],

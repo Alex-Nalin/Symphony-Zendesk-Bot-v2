@@ -1,0 +1,164 @@
+{
+  "commands": [
+    {
+      "triggers": ["ZDCreateUser", "ZDcreateUser","ZDcreateuser", "zdcreateuser"],
+      "function": "createZendeskUser",
+      "description": "Create a new Zendesk end-user base on Symphony @USER <br></br>Use POD name to look up the Zendesk organization name",
+      "helptext": "<b>/ZDCreateUser</b> @USER",
+      "param":"@USER is an @mention user name",
+      "example":"/ZDCreateUser @Joe Smith",
+      "category": "Create/update",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["ticketCreate", "ticketcreate", "ZDTicket", "ZDticket", "zdticket"],
+      "function": "TicketCreate",
+      "description": "Create a new Zendesk ticket with subject & description. Ticket created as a Zendesk agent)",
+      "helptext": "<b>/ZDTicket</b> SUBJECT | DESCR",
+      "param":"SUBJECT & DESCRIPTION are texts. They are separated by a | character",
+      "example":"/ZDTicket ticket-subject | ticket_description",
+      "category": "Create/update",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["assignTicket", "assignticket", "Assign", "assign", "ZDAssign", "ZDAassign", "zdassign"],
+      "function": "assignTicket",
+      "description": "Assign the @USER (who is also an Agent) as ticket assignee. <br></br>This will leave an internal comment about the assignment",
+      "helptext": "<b>/ZDAssign</b> TICKET_ID @USER",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>@USER is an @mention user name",
+      "example":"/ZDAssign 400 @Joe Smith",
+      "category": "Create/update",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["ZDUser", "ZDuser", "zduser"],
+      "function": "userZD",
+      "description": "Search Zendesk users. Filter results base on first/last/full name of user. <br></br>Filter results based on company name. <br></br>Display users with their email address, organisation and role",
+      "helptext": "<b>/ZDUser</b> NAME [| COMPANY]",
+      "param":"NAME can be first name, last name or full name <br></br>COMPANY is company name (optional)",
+      "example":"/ZDUser alex <br></br>/ZDUser | symphony <br></br>/ZDUser alex | symphony",
+      "category": "Info lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["recentZD", "ZDRecent", "ZDrecent", "zdrecent"],
+      "function": "recentZD",
+      "description": "List recent Zendesk tickets viewed by the calling Zendesk agent",
+      "helptext": "<b>/ZDRecent</b>",
+      "param":"None",
+      "example":"/ZDRecent",
+      "category": "Info lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["today", "ZDToday", "ZDtoday", "zdtoday"],
+      "function": "newTicketToday",
+      "description": "Shows all tickets raised today (1) or from any other given day up to 5 days ago",
+      "helptext": "<b>/ZDToday</b> 1-5",
+      "param":"DAYS_AGO is a number betwteen 1 and 5",
+      "example":"/ZDToday 1 <br></br>/ZDtoday 2",
+      "category": "Info lookup",
+      "permission": "Zendesk Agent"
+    },
+    {
+      "triggers": ["requestCreate", "requestcreate", "ZDRequest", "ZDrequest", "zdrequest"],
+      "function": "RequestCreate",
+      "description": "Create a new Zendesk request with subject & description. Caller is the requester. If @User is included, @User is the requester",
+      "helptext": "<b>/ZDRequest</b> [@USER] | SUBJECT | DESCR",
+      "param":" SUBJECT & DESCRIPTION are texts and are separated by a | character. @USER is an @mention (optional)",
+      "example":"/ZDRequest request_subject | request_description <br></br>/ZDRequest @Joe Smith | request_subject | request_description",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
+      "triggers": ["ticketUpdate", "ticketupdate", "ZDUpdate", "ZDupdate", "zdupdate"],
+      "function": "ticketUpdate",
+      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment & update ticket status <br></br>End user: Add a public comment",
+      "helptext": "<b>/ZDUpdate</b> TICKET_ID | TXT [| STATUS| MODE]",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS & MODE are only for Agent",
+      "example":"/ZDUpdate 222 | txt <br></br>/ZDUpdate 222 | txt | open | private <br></br>/ZDUpdate 222 | txt | closed | public",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
+      "triggers": ["comments", "comment", "ZDComments", "ZDcomments", "ZDComment", "ZDcomment", "zdcomments", "zdcomment"],
+      "function": "showTicketComments",
+      "description": "Shows Zendesk Ticket comments for Zendesk ticket ID",
+      "helptext": "<b>/ZDComments</b> TICKET_ID",
+      "param":"TICKET_ID is Zendesk ticket ID",
+      "example":"/ZDComments 222",
+      "category": "Create/update",
+      "permission": "Zendesk Agent/Zendesk End-user"
+    },
+    {
+      "triggers": ["searchCompanyTickets", "ZDOrgTicket", "ZDorgTicket", "ZDorgticket", "zdorgticket"],
+      "function": "searchCompanyTickets",
+      "description": "Search Zendesk tickets by specific organization. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDOrgTicket</b> STATUS ORG",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name as it appears on Zendesk",
+      "example":"/ZDOrgTicket solved symphony <br></br>/ZDOrgTicket symphony",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["searchCategoryTickets", "ZDCatTicket", "ZDcatTicket", "ZDcatticket", "zdcatticket"],
+      "function": "searchCompanyTicketsCategory",
+      "description": "Search Zendesk tickets by specific category such as Product or Severity. Filter results to specific organisation as well as ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDCatTicket</b> STATUS ORG CAT",
+      "param":"STATUS = open | new | pending | solved |closed | unresolved | all. ORG is the company name and CAT is the Product Category or Severity (as it appears on Zendesk)",
+      "example":"/ZDCatTicket open symphony WebRTC<br></br>/ZDCatTicket symphony WebRTC<br></br>/ZDCatTicket open symphony sev3<br></br>/ZDCatTicket unresolved sev1",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["searchUserTickets", "ZDUserTicket", "ZDuserTicket", "ZDuserticket", "zduserticket"],
+      "function": "searchUserTickets",
+      "description": "Search Zendesk tickets by specific user as requester, assignee or CC/collaborator/follower. If no @mentioned user, the calling user will be used. Filter results to specific ticket status (e.g. open, unresolved)",
+      "helptext": "<b>/ZDUserTicket</b> [STATUS] [TYPE] [@USER]",
+      "param":"STATUS = open | new | pending | solved | closed | unresolved | all <br></br> TYPE = req | assignee | cc <br></br> @USER is an @mention (optional)",
+      "example":"/ZDUserTicket open req<br></br>/ZDUserTicket closed cc @Joe Smith<br></br>/ZDUserTicket",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["showZD","ZDShow", "ZDshow", "zdshow", "ZD", "zd" ],
+      "function": "showZD",
+      "description": "Shows Zendesk ticket(s) matching the Zendesk ticket ID(s)",
+      "helptext": "<b>/ZDShow</b> TICKET_ID ...)",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>Can be multiple IDs separated with spaces",
+      "example":"/ZDShow 222 <br></br>/ZSShow 222 425 342",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["KeyWord", "keyWord", "keyword", "ZDKeyWord", "ZDKeyword", "ZDkeyword", "zdkeyword"],
+      "function": "searchKeyWord",
+      "description": "Search Zendesk tickets by specific key words",
+      "helptext": "<b>/ZDKeyWord</b> KEYWORD",
+      "param":"KEYWORD is the key word to look up",
+      "example":"/ZDKeyWord RSA Cert",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["KB", "kb", "ZDKB", "ZDkb", "zdkb"],
+      "function": "searchKb",
+      "description": "List all Knowledge Base article with that WORD",
+      "helptext": "<b>/ZDKB</b> WORD",
+      "param": "WORD is the search word for the article",
+      "example": "/ZDKB performance",
+      "category": "Info lookup",
+      "permission": "All"
+    },
+    {
+      "triggers": ["escalatedaccounts"],
+      "function": "escalatedaccounts",
+      "description": "Search Zendesk Organization which are been escalated on the Support front and give the escalation reason(s)",
+      "helptext": "<b>/escalatedaccounts</b>",
+      "param":"None",
+      "example":"/escalatedaccounts",
+      "category": "Info lookup",
+      "permission": "All"
+    }
+  ]
+}

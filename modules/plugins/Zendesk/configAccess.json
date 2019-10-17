@@ -13,9 +13,9 @@
     {
       "triggers": ["ticketCreate", "ticketcreate", "ZDTicket", "ZDticket", "zdticket"],
       "function": "TicketCreate",
-      "description": "Create a new Zendesk ticket with subject & description. Ticket created as a Zendesk agent)",
+      "description": "Create a new Zendesk ticket with subject and description. Ticket created as a Zendesk agent)",
       "helptext": "<b>/ZDTicket</b> SUBJECT | DESCR",
-      "param":"SUBJECT & DESCRIPTION are texts. They are separated by a | character",
+      "param":"SUBJECT and DESCRIPTION are texts. They are separated by a | character",
       "example":"/ZDTicket ticket-subject | ticket_description",
       "category": "Create/update",
       "permission": "Zendesk Agent"
@@ -63,9 +63,9 @@
     {
       "triggers": ["requestCreate", "requestcreate", "ZDRequest", "ZDrequest", "zdrequest"],
       "function": "RequestCreate",
-      "description": "Create a new Zendesk request with subject & description. Caller is the requester. If @User is included, @User is the requester",
+      "description": "Create a new Zendesk request with subject and description. Caller is the requester. If @User is included, @User is the requester",
       "helptext": "<b>/ZDRequest</b> [@USER] | SUBJECT | DESCR",
-      "param":" SUBJECT & DESCRIPTION are texts and are separated by a | character. @USER is an @mention (optional)",
+      "param":" SUBJECT and DESCRIPTION are texts and are separated by a | character. @USER is an @mention (optional)",
       "example":"/ZDRequest request_subject | request_description <br></br>/ZDRequest @Joe Smith | request_subject | request_description",
       "category": "Create/update",
       "permission": "Zendesk Agent/Zendesk End-user"
@@ -73,9 +73,9 @@
     {
       "triggers": ["ticketUpdate", "ticketupdate", "ZDUpdate", "ZDupdate", "zdupdate"],
       "function": "ticketUpdate",
-      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment & update ticket status <br></br>End user: Add a public comment",
+      "description": "Add comment to an existing Zendesk ticket <br></br>Agent: Add a private/public comment and update ticket status <br></br>End user: Add a public comment",
       "helptext": "<b>/ZDUpdate</b> TICKET_ID | TXT [| STATUS| MODE]",
-      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS & MODE are only for Agent",
+      "param":"TICKET_ID is Zendesk ticket ID <br></br>TXT is the comment to be added <br></br>STATUS is  open, new, pending, solved, closed,... <br></br>MODE is 'public' or 'private' <br></br>STATUS and MODE are only for Agent",
       "example":"/ZDUpdate 222 | txt <br></br>/ZDUpdate 222 | txt | open | private <br></br>/ZDUpdate 222 | txt | closed | public",
       "category": "Create/update",
       "permission": "Zendesk Agent/Zendesk End-user"

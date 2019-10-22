@@ -6706,7 +6706,7 @@ def showZD (messageDetail):
     botlog.LogSymphonyInfo("Bot Call: Show Zendesk ticket")
     botlog.LogSymphonyInfo("##############################")
 
-    #TODO external use requests and internal use tickets
+    ## external use requests and internal use tickets
 
     ### FOR EXTERNAL POD TICKET RETRIEVAL
     # try:
@@ -6750,7 +6750,7 @@ def showZD (messageDetail):
     # if str(companyName) not in (_configDef['AuthCompany']['PodList']):
     if str(companyName) in (_configDef['AuthExtCompany']['PodList']):
 
-        print("companyName " + str(companyName))
+        #print("companyName " + str(companyName))
 
         streamType = (messageDetail.ChatRoom.Type)
         #print(streamType)
@@ -6853,7 +6853,7 @@ def showZD (messageDetail):
                     wrongZDID += zdid + " "
 
             if isnext:
-                print("inside isnext")
+                #print("inside isnext")
 
                 # try:
                 data = json.dumps(request_raw, indent=2)
@@ -6950,7 +6950,7 @@ def showZD (messageDetail):
                     org_Name = str(d["organizations"][0]["name"])
                     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                     orgName = str(org_name_temp)
-                    print("orgName " + str(orgName))
+                    #print("orgName " + str(orgName))
 
                     if str(companyName) == str(orgName):
                         showOrgTicket = True
@@ -6974,7 +6974,7 @@ def showZD (messageDetail):
                         org_Name = str(d["organizations"][0]["name"])
                         org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         orgName = str(org_name_temp)
-                        print("orgName" + str(orgName))
+                        #print("orgName" + str(orgName))
 
                         if str(companyName) == str(orgName):
                             showOrgTicket = True
@@ -7133,22 +7133,22 @@ def showZD (messageDetail):
 
 
         if not showOrgTicket and wrongID:
-            print("A")
+            #print("A")
             return messageDetail.ReplyToChatV2(reply + "<p></p>This ticket is not from " + companyName + ": <b>" + str(cannotShowZDID) + "</b> and there is no such Zendesk ticket number: <b>" + str(wrongZDID) + "</b>")
 
         if not showOrgTicket:
             if index == len(message_split) - 1:
-                print("B")
+                #print("B")
                 return messageDetail.ReplyToChatV2(reply + "<p></p><b>This ticket is not from " + companyName + ": " + str(cannotShowZDID) + "</b>")
         #try:
         if wrongID:
             if index == len(message_split) - 1:
-                print("C")
+                #print("C")
                 return messageDetail.ReplyToChatV2(reply + "<p></p><b>There is no such Zendesk ticket number: " + str(wrongZDID) + "</b>")
         #except:
         else:
             if index == len(message_split) - 1:
-                print("else")
+                #print("else")
                 #messageDetail.ReplyToChatV2(reply)
                 #messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + reply + "</body></card>")
                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -7157,7 +7157,7 @@ def showZD (messageDetail):
     #     print("Second try")
 
     else:
-        print("Inside Else")
+        #print("Inside Else")
         try:
             commandCallerUID = messageDetail.FromUserId
 
@@ -7356,7 +7356,7 @@ def showZD (messageDetail):
 
         #if callerCheck in AccessFile and isAllowed:
         if companyName in _configDef['AuthCompany']['PodList']:
-            print("Inside AuthCompany")
+            #print("Inside AuthCompany")
             try:
                 streamType = (messageDetail.ChatRoom.Type)
                 #print(streamType)
@@ -8120,6 +8120,7 @@ def showTicketComments (messageDetail):
         UniqueToken = ""
         showComment = ""
         isMe = ""
+
         commandCallerUID = messageDetail.FromUserId
 
         connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
@@ -8141,79 +8142,345 @@ def showTicketComments (messageDetail):
         d_org = json.loads(str(dataRender))
 
         for index_org in range(len(d_org["users"])):
-            firstName = str(d_org["users"][index_org]["firstName"])
-            lastName = str(d_org["users"][index_org]["lastName"])
-            displayName = str(d_org["users"][index_org]["displayName"])
-            #companyName = d_org["users"][index_org]["company"]
-            companyNameTemp = d_org["users"][index_org]["company"]
-            companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
-            companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            companyName = d_org["users"][index_org]["company"]
+            botlog.LogSymphonyInfo("Call is coming from Company/Pod name: " + str(companyName))
 
-            #################################################
+        ############
 
+        if companyName in _configDef['AuthExtCompany']['PodList']:
+            # print("External Pod: " + str(companyName))
+
+            streamType = (messageDetail.ChatRoom.Type)
+            #print(streamType)
+
+            botlog.LogSymphonyInfo("The calling user is either not added to the Zendesk Agent List or he/she is not an Agent on the Zendesk Instance.")
+            showRequest = (messageDetail.Command.MessageText)
+            message_split = str(showRequest).split()
             try:
-                emailAddress = str(d_org["users"][index_org]["emailAddress"])
-                #print("User is connected: " + emailAddress)
-                emailZendesk = emailAddress
-                connectionRequired = False
+                ticketID = str(message_split[0])
             except:
-                connectionRequired = True
+                return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
 
-        #if connectionRequired:
+    ########################
 
-            data_lenght = len(dataComp)
+            ## if using _configDef['ZendeskBot'] need to add it to the configDef part in main config.json:
+            ##   "ZendeskBot": "ZendeskBot@ZendeskBot.com",
 
-            if data_lenght > 450:
-                try:
-                    query = "type:user " + str(emailAddress)
-                except:
-                    query = "type:user " + str(firstName) + " " + str(lastName)
-                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
-            elif data_lenght < 450:
-                try:
-                    #query = "type:user " + emailAddress + " organization:" + companyName
-                    query = "type:user " + str(emailAddress)
-                except:
-                    #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
-                    query = "type:user " + str(firstName) + " " + str(lastName)
-                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+            ## This is used to simulate an agent call as end user, this user is not in the Bot Agent List (access file)
+            #base64Encoded = base64.b64encode(bytes((_configDef['ZendeskBot'] + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+            # base64Encoded = base64.b64encode(bytes((emailZendesk + "/token:" + _configDef['zdesk_config']['zdesk_password']), 'utf-8'))
+            # base64Enc = (base64Encoded.decode("utf-8"))
+            # print(str(base64Enc))
+            # base = ("Basic " + base64Enc)
+            # print(str(base))
+            #
+            # headers = {
+            #     'email_address': emailZendesk + "/token",
+            #     'password': (_configDef['zdesk_config']['zdesk_password']),
+            #     'authorization': base,
+            #     'cache-control': "no-cache",
+            #     'content-type': "application/json"
+            # }
+    #######################
+
+            #Check the ticket to retrive calling company before proceeding
+            #############
+            try:
+                conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
+                ## Global access
+                headers = {
+                    'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                    'password': _configDef['zdesk_config']['zdesk_password'],
+                    'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                    'cache-control': "no-cache",
+                    'Content-Type': 'application/json',
+                    'zdesk_token': True
+                }
+
+                conn.request("GET", "/api/v2/tickets/" + ticketID + ".json", headers=headers)
+                res = conn.getresponse()
+                data_raw = res.read()
+                data = remove_emoji(data_raw)
+                #request_raw = data.decode("utf-8")
+                request_raw = str(data)
+
+                ticketDoesNotExist = "{\"error\":\"RecordNotFound","description\":\"Not found\"}"
+
+                if request_raw.startswith(ticketDoesNotExist):
+                    return messageDetail.ReplyToChatV2("<b>There is no such Zendesk ticket number: " + str(ticketID) + "</b>")
+                else:
+                    # isnext = True
+                    botlog.LogSymphonyInfo("Rendering the data from Zendesk for the requested ticket")
+                    # messageDetail.ReplyToChat("Rendering the data from Zendesk for the requested ticket")
+            except:
+                return messageDetail.ReplyToChatV2("There is no such Zendesk ticket number: <b>" + str(ticketID) + "</b>")
+
+            data = json.dumps(request_raw, indent=2)
+            data_dict = ast.literal_eval(data)
+            d = json.loads(data_dict)
+
+            requestrequester_id = str(d["ticket"]["requester_id"])
+
+            # Convert the Zendesk ID to company name
+            conn.request("GET", "/api/v2/users/" + str(requestrequester_id) + "/organizations.json", headers=headers)
+            res = conn.getresponse()
+            companyID = res.read()
+            compNameRaw = str(companyID.decode("utf-8"))
+
+            data = json.dumps(compNameRaw, indent=2)
+            data_dict = ast.literal_eval(data)
+            d = json.loads(data_dict)
+            org_Name = str(d["organizations"][0]["name"])
+            org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
+            orgName = str(org_name_temp)
+            # print("orgName " + str(orgName))
+
+            if str(companyName) == str(orgName):
+                showOrgTicket = True
             else:
-                return messageDetail.ReplyToChat("No user information available")
+                showOrgTicket = False
 
-                botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
-            results = zendesk.search(query=query)
-            #print(results)
+            #############
 
-            if str(results).startswith(
-                    "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
-            elif str(results).startswith(
-                    "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
-                return messageDetail.ReplyToChat(
-                    "This organisation/company does not exist in Zendesk or name is misspelled.")
+            if showOrgTicket:
+
+                headers = {
+                    'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
+                    'password': _configDef['zdesk_config']['zdesk_password'],
+                    'authorization': _configDef['zdesk_config']['zdesk_auth'],
+                    'cache-control': "no-cache",
+                    'Content-Type': 'application/json',
+                }
+
+                url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/requests/" + str(ticketID) + "/comments"
+                # url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/requests/" + str(ticketID) + "/comments?sort_order=desc"
+                # url = _configDef['zdesk_config']['zdesk_url'] + "/api/v2/tickets/" + str(ticketID) + "/comments?sort_order=desc"
+
+                response = requests.request("GET", url, headers=headers)
+
+                data = response.json()
+                # print(data)
+
+                invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
+
+                invalidReq = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
+
+                if str(data).startswith(invalid):
+                    return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
+
+                if str(data).startswith(invalidReq):
+                    return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
+
+                # messageDetail.ReplyToChatV2("Rendering the comments for Zendesk Ticket: <b>" + ticketID + "</b> as an <b>End-User</b>, please wait.")
+
+
+                ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
+
+                messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
+
+                table_body = ""
+
+                file = ""
+                full_file =""
+                hasFile = True
+                for result in data['comments']:
+                    author_id = str(result["author_id"])
+                    body = str(result["body"]).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;").replace("\n\n \n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n\n", "<br/><br/>").replace("\n\n \n\n \n", "<br/><br/>").replace("\n\n \n\n", "<br/><br/>").replace("\n\n", "<br/><br/>").replace("\n", "<br/>")
+                    #print(str(body))
+                    public = str(result["public"])
+                    attachments = str(result["attachments"])
+
+                    ####################################
+
+                    data_dict = ast.literal_eval(attachments)
+                    dataRender = json.dumps(data_dict, indent=2)
+                    d = json.loads(dataRender)
+                    #print("d: " + str(d))
+
+                    if str(d) == "[]":
+                        full_file = "No Attachment"
+                        hasFile = False
+
+                    else:
+                        full_file = ""
+                        for index in range(len(d)):
+
+                            if hasFile:
+                                botlog.LogSymphonyInfo("No attachment")
+                            else:
+                                file_name = d[index]["file_name"]
+                                #print(str(file_name))
+                                content_url = d[index]["content_url"]
+                                #print(str(content_url))
+                                sizefile = d[index]["size"]
+                                file = "<a href=\"" + str(content_url) + "\">" + str(file_name) + "</a> (" + size(sizefile)+")"
+                                full_file += file + " "
+                                #print(full_file)
+
+                    ####################################
+
+                    created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
+
+                    try:
+                        # To get the name of the requester given the requesterID
+                        conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
+                        res = conn.getresponse()
+                        userRequesterId = res.read()
+                        tempUserRequester = str(userRequesterId.decode('utf-8'))
+
+                        data = json.dumps(tempUserRequester, indent=2)
+                        data_dict = ast.literal_eval(data)
+                        d = json.loads(data_dict)
+                        req_name = str(d["user"]["name"])
+                        author_id = req_name
+                    except:
+                        try:
+                            botlog.LogSymphonyInfo("Inside second try for author name value in showTicketComments")
+                            # To get the name of the requester given the requesterID
+                            conn.request("GET", "/api/v2/users/" + str(author_id), headers=headers)
+                            res = conn.getresponse()
+                            userRequesterId = res.read()
+                            tempUserRequester = str(userRequesterId.decode('utf-8'))
+
+                            data = json.dumps(tempUserRequester, indent=2)
+                            data_dict = ast.literal_eval(data)
+                            d = json.loads(data_dict)
+                            req_name = str(d["user"]["name"])
+                            author_id = req_name
+                        except:
+                            author_id = "N/A"
+
+                        # messageDetail.ReplyToChat("Cannot get requester info")
+
+                    table_body = ""
+                    table_header += "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                                   "<td style='border:1px solid black;text-align:left' colspan=\"2\">" + str(body) + "</td></tr><tr>" \
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>AUTHOR</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(author_id) + "</td></tr><tr>" \
+                                   "<td style='width:3%;border:1px solid blue;border-bottom: double blue;text-align:center'>TYPE</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(public) + "</td></tr><tr>" \
+                                   "<td style='width:10%;border:1px solid blue;border-bottom: double blue;text-align:center'>ATTACHMENT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(full_file) + "</td></tr><tr>"\
+                                   "<td style='width:6%;border:1px solid blue;border-bottom: double blue;text-align:center'>CREATED AT</td>" \
+                                   "<td style='border:1px solid black;text-align:center'>" + str(created_at) + "</td></tr><tr>" \
+                                   "</tr></thead><tbody></tbody></table>"
+
+                    # Checking for unique words (Tokens)
+                    UniqueToken = len(set(table_header.split()))
+
+                    commentLenght = len(str(table_body))
+                    #print(str(commentLenght))
+
+                    limitReached = False
+                    #if commentLenght >= 70000:
+                    if commentLenght >= int(_configDef['limit']['character']) or UniqueToken >= int(_configDef['limit']['token']):
+                        limitReached = True
+                        if limitMessageNeeded:
+                            messageDetail.ReplyToChatV2_noBotLog("This Zendesk Ticket exceed the character limit and therefore will show the update/comment in separate message")
+                        #break
+
+                    if limitReached:
+                        limitMessageNeeded = False
+                        #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                        reply = str(table_bodyFull)
+                        messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        commentLenght = ""
+                        table_header = ""
+                        UniqueToken = ""
+                        table_bodyFull = ""
+                        counter = False
+
+                if table_header == "":
+                    limitMessageNeeded = False
+                    botlog.LogSymphonyInfo("There is no result for this search")
+                else:
+                    limitMessageNeeded = False
+                    #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Please find the comments for Ticket ID " + str(ticketLink) + " below</header><body>" + str(table_header) + "</body></card>")
+                    reply = str(table_bodyFull)
+                    return messageDetail.ReplyToChatV2_noBotLog(str(reply))
             else:
+                reply= "This Support ticket is not from your organization"
+                return messageDetail.ReplyToChatV2_noBotLog(str(reply))
+        else:
+            # print("Internal Symphony or access list")
+        ############
+            for index_org in range(len(d_org["users"])):
+                firstName = str(d_org["users"][index_org]["firstName"])
+                lastName = str(d_org["users"][index_org]["lastName"])
+                displayName = str(d_org["users"][index_org]["displayName"])
+                #companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-                data = json.dumps(results, indent=2)
-                d = json.loads(data)
+                #################################################
 
-                for index in range(len(d["results"])):
-                    #name = d["results"][index]["name"]
-                    #email = str(d["results"][index]["email"])
-                    role = str(d["results"][index]["role"])
-                    #print(role)
-                    #botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
+                try:
+                    emailAddress = str(d_org["users"][index_org]["emailAddress"])
+                    #print("User is connected: " + emailAddress)
+                    emailZendesk = emailAddress
+                    connectionRequired = False
+                except:
+                    connectionRequired = True
 
-                    if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
-                        isAllowed = True
+            #if connectionRequired:
+
+                data_lenght = len(dataComp)
+
+                if data_lenght > 450:
+                    try:
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+                elif data_lenght < 450:
+                    try:
+                        #query = "type:user " + emailAddress + " organization:" + companyName
+                        query = "type:user " + str(emailAddress)
+                    except:
+                        #query = "type:user " + firstName + " " + lastName + " organization:" + companyName
+                        query = "type:user " + str(firstName) + " " + str(lastName)
+                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+                else:
+                    return messageDetail.ReplyToChat("No user information available")
+
+                    botlog.LogSymphonyInfo("Query used to search user on Zendesk: " + str(query))
+                results = zendesk.search(query=query)
+                #print(results)
+
+                if str(results).startswith(
+                        "{'results': [], 'facets': None, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This user does not exist on Zendesk, the name is misspelled or does not belong to this organisation.")
+                elif str(results).startswith(
+                        "{'results': [], 'facets': {'type': {'entry': 0, 'ticket': 0, 'organization': 0, 'user': 0, 'article': 0, 'group': 0}}, 'next_page': None, 'previous_page': None, 'count': 0}"):
+                    return messageDetail.ReplyToChat(
+                        "This organisation/company does not exist in Zendesk or name is misspelled.")
+                else:
+
+                    data = json.dumps(results, indent=2)
+                    d = json.loads(data)
+
+                    for index in range(len(d["results"])):
+                        #name = d["results"][index]["name"]
+                        #email = str(d["results"][index]["email"])
+                        role = str(d["results"][index]["role"])
                         #print(role)
-                        botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
+                        #botlog.LogSymphonyInfo("The calling user is a Zendesk " + role)
 
-            #################################################
+                        if role == "Administrator" or role == "admin" or role == "Agent" or role == "agent":
+                            isAllowed = True
+                            #print(role)
+                            botlog.LogSymphonyInfo("Role of the calling user: " + str(role))
 
-        botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-        callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
+                #################################################
+
+            botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+            callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
 
         if callerCheck in AccessFile and isAllowed:
             botlog.LogSymphonyInfo("Inside access list: User has Agent access with the bot and is " + str(role) + " on Zendesk")
@@ -8607,9 +8874,12 @@ def showTicketComments (messageDetail):
             data = response.json()
             #print(data)
 
+            invalidTicket = "{'error': 'RecordNotFound', 'description': 'Not found'}"
             invalid = "{'error': {'title': 'Invalid attribute', 'message': 'You passed an invalid value for the ticket_id attribute. Invalid parameter: ticket_id must be an integer'}}"
-
             invalidReq = "{'error': {'title': 'Forbidden', 'message': 'You do not have access to this page. Please contact the account owner of this help desk for further help.'}}"
+
+            if str(data).startswith(invalidTicket):
+                return messageDetail.ReplyToChatV2("This Ticket ID, " + str(ticketID) + ", does not exist on Zendesk")
 
             if str(data).startswith(invalid):
                 return messageDetail.ReplyToChat("Please use this format: <b>/ZDComments ticketid</b>")
@@ -8617,12 +8887,10 @@ def showTicketComments (messageDetail):
             if str(data).startswith(invalidReq):
                 return messageDetail.ReplyToChat("You are not not a Zendesk Agent or not part of the Zendesk Agent List")
 
-            messageDetail.ReplyToChatV2("You are not a <b>Zendesk Agent</b> or not part of the Bot <b>Zendesk Agent List</b>, the following will show all <b>public updates</b>. Rendering the comments for Zendesk Ticket: <b>" + ticketID + "</b> as an <b>End-User</b>, please wait.")
-
-
             ticketLink = "<b><a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketID) + "\">" + str(ticketID) + "</a></b>"
 
-            messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
+            messageDetail.ReplyToChatV2("You are not a <b>Zendesk Agent</b> or not part of the Bot <b>Zendesk Agent List</b>, the following will show all <b>public updates</b>. Rendering the comments for Zendesk Ticket: <b>" + ticketLink + "</b> as an <b>End-User</b>, please wait.")
+            # messageDetail.ReplyToChatV2_noBotLog("Rendering all the comments/updates for Zendesk Ticket: " + str(ticketLink) + ", please wait.")
 
             table_body = ""
 

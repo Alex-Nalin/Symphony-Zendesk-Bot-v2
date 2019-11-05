@@ -44,8 +44,10 @@ def Main():
 
         messages = datafeed.PollDataFeed(botSession.DataFeedId)
 
+        #print(datetime.datetime.now())
         #For Tasker
         now = datetime.datetime.now()
+        #print("Now: " + str(now))
         week = datetime.datetime.today().weekday()
 
         if messages is not None:
@@ -63,6 +65,7 @@ def Main():
 
 
             now = datetime.datetime.now()
+            #print(str(now))
             ## Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
             #week = datetime.datetime.today().weekday()
 

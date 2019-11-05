@@ -21,6 +21,17 @@ _symSessionHost = _config['symphonyinfo']['sessionTokenHost']
 _symSessionPort = _config['symphonyinfo']['sessionTokenPort']
 _symSessionEP = Template(_config['symphonyinfo']['sessionEndpoint'])
 
+##################################
+######### FOR RSA AUTH ###########
+authType = _config['botinfo']['authType']
+
+BotUserName = _config['botinfo']['botUserName']
+RsaSessionAuthEP = _config['symphonyinfo']['podURL'] + '/login/pubkey/authenticate'
+RsaKeyAuthEP = _config['symphonyinfo']['kmHost'] + '/relay/pubkey/authenticate'
+RsaPrivateKeyPath = os.path.abspath(_config['botinfo']['certificatePath'] + '/' +
+                                    _config['botinfo']['rsaPrivateKeyFile'])
+####################################
+
 SessionAuthEP = _symSessionEP.substitute(host=_symSessionHost, port=_symSessionPort)
 
 _symKMHost = _config['symphonyinfo']['keyManagerHost']

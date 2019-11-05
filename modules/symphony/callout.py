@@ -2,6 +2,8 @@ from datetime import datetime
 from datetime import timedelta
 import json
 import requests
+from jose import jwt
+import datetime
 from requests_toolbelt import MultipartEncoder
 import traceback
 import types
@@ -22,12 +24,58 @@ v2KeyAuthToken = None
 
 def GetSessionToken():
     #botlog.LogConsoleInfo(config.SessionAuthEP)
-    return GetSymphonyAuthToken(config.SessionAuthEP)
+    ##return GetSymphonyAuthToken(config.SessionAuthEP)
+    if config.authType == 'rsa':
+        return GetRSAAuthToken(config.RsaSessionAuthEP)
+    else: # Cert Auth
+        return GetSymphonyAuthToken(config.SessionAuthEP)
 
 
 def GetKeyManagerToken():
     #botlog.LogConsoleInfo(config.KeyManagerEP)
-    return GetSymphonyAuthToken(config.KeyManagerEP)
+    ##return GetSymphonyAuthToken(config.KeyManagerEP)
+
+    if config.authType == 'rsa':
+        return GetRSAAuthToken(config.RsaKeyAuthEP)
+    else: # Cert Auth
+        return GetSymphonyAuthToken(config.KeyManagerEP)
+
+def GetRSAAuthToken(authEndpoint):
+    """
+    Get the session token by calling API using jwt token
+    """
+
+    data = {
+        'token': create_jwt()
+    }
+    response = agentSession.post(authEndpoint, json=data)
+
+    if response.status_code == 200:
+        data = json.loads(response.text)
+        return data['token']
+    else:
+        return ''
+
+
+def create_jwt():
+    """
+    Create a jwt token with payload dictionary. Encode with
+    RSA private key using RS512 algorithm
+    :return: A jwt token valid for < 290 seconds
+    """
+    with open(config.RsaPrivateKeyPath, 'r') as f:
+        content = f.readlines()
+        private_key = ''.join(content)
+        expiration_date = int(datetime.datetime.now(datetime.timezone.utc)
+                              .timestamp() + (5*58))
+        payload = {
+            'sub': config.BotUserName,
+            'exp': expiration_date
+        }
+        encoded = jwt.encode(payload, private_key, algorithm='RS512')
+        f.close()
+        return encoded
+
 
 
 def GetSymphonyAuthToken(authEndpoint):
@@ -163,10 +211,10 @@ def PostV2(endpoint, body):
     global v2KeyAuthToken
     global agentV2Session
 
-    if v2SessionToken is None or v2LastAuth is None or datetime.now() > v2LastAuth + timedelta(days=2):
+    if v2SessionToken is None or v2LastAuth is None or datetime.datetime.now() > v2LastAuth + timedelta(days=2):
         v2SessionToken = GetSessionToken()
         v2KeyAuthToken = GetKeyManagerToken()
-        v2LastAuth = datetime.now()
+        v2LastAuth = datetime.datetime.now()
 
     encoder = MultipartEncoder(fields=body)
     v2Headers = BuildHeaders(v2SessionToken, v2KeyAuthToken, encoder.content_type)
@@ -182,10 +230,10 @@ def PostV2_data(endpoint, body):
     global v2KeyAuthToken
     global agentV2Session
 
-    if v2SessionToken is None or v2LastAuth is None or datetime.now() > v2LastAuth + timedelta(days=2):
+    if v2SessionToken is None or v2LastAuth is None or datetime.datetime.now() > v2LastAuth + timedelta(days=2):
         v2SessionToken = GetSessionToken()
         v2KeyAuthToken = GetKeyManagerToken()
-        v2LastAuth = datetime.now()
+        v2LastAuth = datetime.datetime.now()
 
     encoder = MultipartEncoder(fields=body)
     v2Headers = BuildHeaders(v2SessionToken, v2KeyAuthToken, encoder.content_type)
@@ -236,3 +284,4 @@ class JSONData:
 
 class MethodNotImplementedException(Exception):
     pass
+

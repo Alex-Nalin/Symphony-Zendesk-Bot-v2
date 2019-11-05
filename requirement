@@ -14,3 +14,4 @@ wkhtmltopdf
 mimetypes
 python-magic
 python-magic-bin
+python-jose

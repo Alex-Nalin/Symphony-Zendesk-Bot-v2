@@ -15246,6 +15246,9 @@ def listAllAccess(messageDetail):
     botlog.LogSymphonyInfo("Bot Call: List All Access")
     botlog.LogSymphonyInfo("#########################")
 
+    numberCheck = 0
+    backColor = _configDef['tableBackColor']
+
     try:
         commandCallerUID = messageDetail.FromUserId
 
@@ -15288,12 +15291,18 @@ def listAllAccess(messageDetail):
             try:
 
                 table_body = ""
-                table_header = "<table style='table-layout:auto;max-width:75%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='table-layout:auto;max-width:50%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:50%'>ZENDESK AGENT ACCESS LIST</td>" \
                                "</tr></thead><tbody>"
 
                 for access in sorted(AccessFile):
-                    table_body += "<tr>" \
+                    numberCheck +=1
+                    if (numberCheck % 2) == 0:
+                        table_body += "<tr style='background-color:#" + backColor + "'>" \
+                                      "<td>" + access +"</td>" \
+                                       "</tr>"
+                    else:
+                        table_body += "<tr>" \
                                   "<td>" + access +"</td>" \
                                   "</tr>"
 

@@ -22,6 +22,7 @@ Temp/*.png
 
 # Application config files
 modules/plugins/wordcloud/config.json
+config_bak.json
 config.json
 config_Symp.json
 config_corp.json

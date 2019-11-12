@@ -100,6 +100,9 @@ def SymphonyZendeskBotHelp(messageDetail):
     botlog.LogSymphonyInfo("Bot Call - Help")
     botlog.LogSymphonyInfo("###############")
 
+    numberCheck = 0
+    backColor = _configDef['tableBackColor']
+
     try:
         commandCallerUID = messageDetail.FromUserId
 
@@ -201,6 +204,7 @@ def SymphonyZendeskBotHelp(messageDetail):
             # Seems we need to set this to a colour the first time to work
             perm_bg_color = "green"
             for index in range(len(_configZenAdmin["commands"])):
+                numberCheck += 1
 
                 caterory = _configZenAdmin["commands"][index]["category"]
 
@@ -235,7 +239,17 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_a = str(_configZenAdmin["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_a = str(_configZenAdmin["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
@@ -250,6 +264,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             for index in range(len(_moreconfig["commands"])):
 
+                numberCheck += 1
                 caterory = _moreconfig["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -283,7 +298,17 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
@@ -419,6 +444,7 @@ def SymphonyZendeskBotHelp(messageDetail):
             perm_bg_color = "green"
             for index in range(len(_configZenAccess["commands"])):
 
+                numberCheck += 1
                 caterory = _configZenAccess["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -452,7 +478,18 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_a = str(_configZenAccess["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_a = str(_configZenAccess["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
@@ -467,6 +504,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             for index in range(len(_moreconfig["commands"])):
 
+                numberCheck += 1
                 caterory = _moreconfig["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -500,7 +538,18 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
@@ -635,6 +684,7 @@ def SymphonyZendeskBotHelp(messageDetail):
             perm_bg_color = "green"
             for index in range(len(_configZenINT["commands"])):
 
+                numberCheck += 1
                 caterory = _configZenINT["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -666,7 +716,17 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_a = str(_configZenINT["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_a = str(_configZenINT["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
@@ -682,6 +742,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             for index in range(len(_moreconfig["commands"])):
 
+                numberCheck += 1
                 caterory = _moreconfig["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -713,7 +774,17 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
@@ -851,6 +922,7 @@ def SymphonyZendeskBotHelp(messageDetail):
             perm_bg_color = "green"
             for index in range(len(_configZenEXT["commands"])):
 
+                numberCheck += 1
                 caterory = _configZenEXT["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -882,7 +954,18 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_a = str(_configZenEXT["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_a = str(_configZenEXT["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                    table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_a) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_a) + "</td>" \
+                              "</tr>"
+
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_a) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_a) + "</td>" \
@@ -898,6 +981,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             for index in range(len(_moreconfig["commands"])):
 
+                numberCheck += 1
                 caterory = _moreconfig["commands"][index]["category"]
 
                 if caterory == "Info lookup":
@@ -929,7 +1013,18 @@ def SymphonyZendeskBotHelp(messageDetail):
                 cat_b = str(_moreconfig["commands"][index]["category"]).replace("&", "&amp;").replace('"', "&quot;")
                 perm_b = str(_moreconfig["commands"][index]["permission"]).replace("&", "&amp;").replace('"', "&quot;")
 
-                table_body += "<tr>" \
+                if (numberCheck % 2) == 0:
+                        table_body += "<tr style='background-color:#" + backColor + "'>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
+                              "<td style='border:1px solid black;text-align:left'>" + str(desc_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + caterory_bg_color + " tempo-text-color--white\">" + str(cat_b) + "</td>" \
+                              "<td class=\"tempo-bg-color--" + perm_bg_color + " tempo-text-color--white\">" + str(perm_b) + "</td>" \
+                              "</tr>"
+
+                else:
+                    table_body += "<tr>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(helptext_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(param_b) + "</td>" \
                               "<td style='border:1px solid black;text-align:left'>" + str(example_b) + "</td>" \
@@ -3631,6 +3726,8 @@ def findAcronym(messageDetail):
 
 def listAllAcronyms(messageDetail):
 
+    backColor = _configDef['tableBackColor']
+
     try:
 
         botlog.LogSymphonyInfo("Bot Call: List All Acronyms")
@@ -3677,18 +3774,25 @@ def listAllAcronyms(messageDetail):
             try:
                 sortDict(messageDetail)
                 table_body = ""
-                table_header = "<table style='max-width:100%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
+                table_header = "<table style='max-width:50%'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
                                "<td style='max-width:10%'>Acronym</td>" \
                                "</tr></thead><tbody>"
-
+                numberCheck = 0
                 for acronym in AcronymsDictionary:
-                    table_body += "<tr>" \
+                    numberCheck += 1
+                    if (numberCheck % 2) == 0:
+                        table_body += "<tr style='background-color:#" + backColor + "'>" \
+                                    "<td>" + acronym + " - " + str(AcronymsDictionary[acronym]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
+                                    "</tr>"
+                    else:
+                        table_body += "<tr>" \
                                   "<td>" + acronym + " - " + str(AcronymsDictionary[acronym]).replace("\n  \n", "<br/><br/>").replace("\n", "<br/>").replace("\u200b","") + "</td>" \
                                   "</tr>"
 
                 table_body += "</tbody></table>"
 
                 reply = table_header + table_body
+                #print(str(reply))
                 #return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
                 return messageDetail.ReplyToChatV2_noBotLog("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>Acronyms List</header><body>" + reply + "</body></card>")
 

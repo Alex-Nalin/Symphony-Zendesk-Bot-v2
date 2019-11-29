@@ -3,7 +3,7 @@ Bot written from the Symphony-Ares bot base.
 # Symphony Zendesk Bot
 A multi-function bot for use with the Symphony communications platform
 
-Symphony Zendesk Bot is an example of a multi-function command and chat-bot for the Symphony communications platform. It was written using Python 3.5.
+Symphony Zendesk Bot is an example of a multi-function command and chat-bot for the Symphony communications platform. It was written using Python 3.8.
 
 The main purpose of Symphony Zendesk Bot is to assist the Support team and other Symphony Teams with their daily work
 

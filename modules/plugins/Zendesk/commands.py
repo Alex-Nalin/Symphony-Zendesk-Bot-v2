@@ -20,7 +20,7 @@ from string import punctuation
 import mimetypes
 
 global setEnableDisable
-Print("test")
+print("test")
 
 
 #Grab the config.json main parameters

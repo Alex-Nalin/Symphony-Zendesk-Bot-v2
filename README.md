@@ -3,7 +3,7 @@ Bot written from the Symphony-Ares bot base.
 # Symphony Zendesk Bot
 A multi-function bot for use with the Symphony communications platform
 
-Symphony Zendesk Bot is an example of a multi-function command and chat-bot for the Symphony communications platform. It was written using Python 3.5.
+Symphony Zendesk Bot is an example of a multi-function command and chat-bot for the Symphony communications platform. It was written using Python 3.8.
 
 The main purpose of Symphony Zendesk Bot is to assist the Support team and other Symphony Teams with their daily work
 
@@ -33,15 +33,32 @@ These are the functions added for this to integrate to Zendesk Support Ticket Ma
 
 ## Requirements
 
-The bot was built using Pycharm on Ubuntu 17.04 and runs against Python 3.5, though it likely will run against Python 2.7 with minor modifications. 
+The bot was built using Pycharm on Windows 10 and runs against Python 3.8, though it likely will run against Python 2.7 with minor modifications. 
 
-* Python 3.5 
+* Python 3.8 
 
     * requests - http://docs.python-requests.org/en/master/
     * lxml - http://lxml.de/
     * cryptography.io - https://cryptography.io/en/latest/
     * Redis - https://pypi.python.org/pypi/redis
     * RQ - http://python-rq.org/
+    * requests-toolbelt
+    * cryptography
+    * rq
+    * google-api-python-client
+    * python-dateutil
+    * pandas
+    * zdesk
+    * hurry.filesize
+    * pdfkit
+    * wkhtmltopdf
+    * mimetypes
+    * python-magic
+    * python-magic-bin
+    * python-jose
+    * BeautifulSoup
+    * bs4
+    
 
 * Redis 2.6.0 or better
 
@@ -58,6 +75,8 @@ The bot was built using Pycharm on Ubuntu 17.04 and runs against Python 3.5, tho
 * Access to your POD's REST endpoints
 
 ## Installation
+
+You will need to install the following if you want to have the Help converted to PDF: https://github.com/JazzCore/python-pdfkit/wiki/Installing-wkhtmltopdf
 
 Installation of the bot is somewhat manual today. 
 

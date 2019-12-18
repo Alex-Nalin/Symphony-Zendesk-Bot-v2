@@ -15,3 +15,5 @@ mimetypes
 python-magic
 python-magic-bin
 python-jose
+BeautifulSoup
+bs4

@@ -90,6 +90,9 @@ def searchCompanyTickets(messageDetail):
         table_header = ""
         allTicket = ""
         table_bodyFull = ""
+        tableDisp = ""
+        tableStruc = ""
+        tableStrucBody = ""
         myTicketLenght = ""
         UniqueToken = ""
         counter = True
@@ -105,6 +108,8 @@ def searchCompanyTickets(messageDetail):
         sevv = ""
         totTickets = 0
         all = True
+        numberCheck = 0
+        backColor = _configDef['tableBackColor']
 
         headers = {
             'username': _configDef['zdesk_config']['zdesk_email'] + "/token",
@@ -145,7 +150,6 @@ def searchCompanyTickets(messageDetail):
         ## If company is not in the list, change the company name searched for by their internal company name, Else check that user is allowed to run that search in Symphony
         # if str(companyName) not in (_configDef['AuthCompany']['PodList']):
         if str(companyName) in (_configDef['AuthExtCompany']['PodList']):
-
             callername = messageDetail.Sender.Name
             # status = ""
             # indexB= ""
@@ -157,25 +161,16 @@ def searchCompanyTickets(messageDetail):
             status_message = ""
 
             statusCheck = str(len(message_split))
-            #print(statusCheck)
-
             streamType = (messageDetail.ChatRoom.Type)
-            #print(streamType)
-
             streamId = (messageDetail.StreamId)
-            #print(streamId)
 
             if streamId in _configDef['searchorgticket_streamid']:
                 showSearchOrgTicket = True
-                #print("inside allowed room")
             else:
                 showSearchOrgTicket = False
-                #print("inside not allowed room")
-            #print(showComment)
 
             # Parse the messages received
             for index in range(len(message_split)):
-                #print("index: "+ str(index))
 
                 if str(message_split[index][:4]) == "Open" or str(message_split[index][:6]) == "Opened" or str(message_split[index][:4]) == "open" or str(message_split[index][:6]) == "opened":
                     status = "status:open "
@@ -214,35 +209,28 @@ def searchCompanyTickets(messageDetail):
                     # isIMRequired = False
 
                 organization = str(companyName)
-                print(str(organization))
 
                 if isIMRequired and index == int(statusCheck) - 1:
                     sendUser = True
                     notNeeded = True
 
                     if showSearchOrgTicket:
-                        #print("A")
                         messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         botlog.LogSystemInfo("Allowed room via streamid in Config")
                         sendUser = False
 
                     elif streamType == "IM":
-                        #print("B")
                         messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                     else:
-                        #print("C")
                         messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
                         messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                 else:
-                    #print("D")
                     if index == int(statusCheck) - 1:
-                        #print("E")
                         messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
                 org_render_raw = str(organization)#.replace(" ", "_")
                 # org_render = org_render_raw[:-1]
                 org_render = org_render_raw
-                #print(str(org_render))
 
                 # query = (str(status) + "type:ticket sort:desc organization:" + str(organization))
                 # query = (str(status) + "type:ticket sort:desc organization:" + str(org_render))
@@ -250,7 +238,6 @@ def searchCompanyTickets(messageDetail):
                 #botlog.LogSystemInfo(query)
 
                 org_length = len(str(organization))-1
-                #print(str(org_length))
 
                 if index == 1:
                     #botlog.LogSymphonyInfo("Search query: " + str(query))
@@ -274,19 +261,26 @@ def searchCompanyTickets(messageDetail):
                     # querystring = {"query": ""+ query + "", "sort_by": "status", "sort_order": "desc"}
                     querystring = {"query": ""+ str(query)}
                     botlog.LogSystemInfo(str(querystring))
-                    #print(querystring)
 
                     response = requests.request("GET", str(url), headers=headers, params=querystring)
                     data = response.json()
-                    #print(str(data))
+
                 except:
                     return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
     #################################
 
+            tableStruc = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>ID</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>Severity</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:50%;text-align:center'>Subject</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Requester</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Assignee</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Updated</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Status</td></tr></thead>"
+
             for result in data['results']:
                 totTickets += 1
-
-                #print(result["priority"])
+                numberCheck += 1
 
                 try:
                     assignee_flag = False
@@ -431,6 +425,30 @@ def searchCompanyTickets(messageDetail):
                 #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
                 allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
+                if (numberCheck % 2) == 0:
+
+                    tableStrucBody += "<tr style='background-color:#" + backColor + "'>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                      "</tr>"
+                else:
+                    tableStrucBody += "<tr>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                  "</tr>"
+
+                # tableDisp = tableStruc + allTicket + "</tr></thead><tbody></tbody></table>"
+                tableDisp = tableStruc + tableStrucBody + "<tbody></tbody></table>"
 
                 # Checking for unique words (Tokens)
                 UniqueToken = len(set(table_header.split()))
@@ -455,7 +473,8 @@ def searchCompanyTickets(messageDetail):
                 if sendUser:
                     if limitReached:
                         #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         myTicketLenght = ""
@@ -463,11 +482,13 @@ def searchCompanyTickets(messageDetail):
                         UniqueToken = ""
                         table_bodyFull = ""
                         allTicket = ""
+                        tableDisp = ""
                         counter = False
                 else:
                     if limitReached:
                         #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         myTicketLenght = ""
@@ -475,6 +496,7 @@ def searchCompanyTickets(messageDetail):
                         UniqueToken = ""
                         table_bodyFull = ""
                         allTicket = ""
+                        tableDisp = ""
                         counter = False
 
             if sendUser and limitReached == False:
@@ -482,7 +504,8 @@ def searchCompanyTickets(messageDetail):
                     return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
                 else:
                     #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                     messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -492,7 +515,8 @@ def searchCompanyTickets(messageDetail):
                     return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
                 else:
                     #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                    table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                     reply = str(table_bodyFull)
                     #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                     messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -500,9 +524,11 @@ def searchCompanyTickets(messageDetail):
 
 
         ######### INTERNAL
-
         table_header = ""
         allTicket = ""
+        tableStruc = ""
+        tableDisp = ""
+        tableStrucBody = ""
         table_bodyFull = ""
         myTicketLenght = ""
         UniqueToken = ""
@@ -519,6 +545,8 @@ def searchCompanyTickets(messageDetail):
         sevv = ""
         totTickets = 0
         all = True
+        numberCheck = 0
+        backColor = _configDef['tableBackColor']
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -700,7 +728,6 @@ def searchCompanyTickets(messageDetail):
         try:
             # if callerCheck in AccessFile and isAllowed:
             if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
-
                 callername = messageDetail.Sender.Name
                 # status = ""
                 # indexB= ""
@@ -712,25 +739,16 @@ def searchCompanyTickets(messageDetail):
                 status_message = ""
 
                 statusCheck = str(len(message_split))
-                #print(statusCheck)
-
                 streamType = (messageDetail.ChatRoom.Type)
-                #print(streamType)
-
                 streamId = (messageDetail.StreamId)
-                #print(streamId)
 
                 if streamId in _configDef['searchorgticket_streamid']:
                     showSearchOrgTicket = True
-                    #print("inside allowed room")
                 else:
                     showSearchOrgTicket = False
-                    #print("inside not allowed room")
-                #print(showComment)
 
                 # Parse the messages received
                 for index in range(len(message_split)):
-                    #print("index: "+ str(index))
 
                     if str(message_split[index][:4]) == "Open" or str(message_split[index][:6]) == "Opened" or str(message_split[index][:4]) == "open" or str(message_split[index][:6]) == "opened":
                         status = "status:open "
@@ -773,35 +791,28 @@ def searchCompanyTickets(messageDetail):
                         notNeeded = True
 
                         if showSearchOrgTicket:
-                            #print("A")
                             messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                             botlog.LogSystemInfo("Allowed room via streamid in Config")
                             sendUser = False
 
                         elif streamType == "IM":
-                            #print("B")
                             messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         else:
-                            #print("C")
                             messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
                             messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                     else:
-                        #print("D")
                         if index == int(statusCheck) - 1:
-                            #print("E")
                             messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
                     org_render_raw = str(organization)#.replace(" ", "_")
                     org_render = org_render_raw[:-1]
-                    #print(str(org_render))
 
                     # query = (str(status) + "type:ticket sort:desc organization:" + str(organization))
                     # query = (str(status) + "type:ticket sort:desc organization:" + str(org_render))
                     query = (str(status) + "type:ticket sort:desc organization:" + "\"" + str(org_render) + "\"")
-                    #botlog.LogSystemInfo(query)
+                    botlog.LogSystemInfo(query)
 
                     org_length = len(str(organization))-1
-                    #print(str(org_length))
 
                     if index == 1:
                         #botlog.LogSymphonyInfo("Search query: " + str(query))
@@ -834,8 +845,18 @@ def searchCompanyTickets(messageDetail):
                         return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
         #################################
 
+                tableStruc = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>ID</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>Severity</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:50%;text-align:center'>Subject</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Requester</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Assignee</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Updated</td>" \
+                    "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Status</td></tr></thead>"
+
                 for result in data['results']:
                     totTickets += 1
+                    numberCheck += 1
 
                     #print(result["priority"])
 
@@ -982,6 +1003,30 @@ def searchCompanyTickets(messageDetail):
                     #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
                     allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
+                    if (numberCheck % 2) == 0:
+                        tableStrucBody += "<tr style='background-color:#" + backColor + "'>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                      "</tr>"
+                    else:
+                        tableStrucBody += "<tr>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                      "</tr>"
+
+                    # tableDisp = tableStruc + allTicket + "</tr></thead><tbody></tbody></table>"
+                    tableDisp = tableStruc + tableStrucBody + "<tbody></tbody></table>"
+                    #print(str(tableDisp))
 
                     # Checking for unique words (Tokens)
                     UniqueToken = len(set(table_header.split()))
@@ -1006,7 +1051,8 @@ def searchCompanyTickets(messageDetail):
                     if sendUser:
                         if limitReached:
                             #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             myTicketLenght = ""
@@ -1014,11 +1060,14 @@ def searchCompanyTickets(messageDetail):
                             UniqueToken = ""
                             table_bodyFull = ""
                             allTicket = ""
+                            tableDisp = ""
+                            tableStrucBody = ""
                             counter = False
                     else:
                         if limitReached:
                             #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
                             myTicketLenght = ""
@@ -1026,6 +1075,8 @@ def searchCompanyTickets(messageDetail):
                             UniqueToken = ""
                             table_bodyFull = ""
                             allTicket = ""
+                            tableDisp = ""
+                            tableStrucBody = ""
                             counter = False
 
                 if sendUser and limitReached == False:
@@ -1033,7 +1084,8 @@ def searchCompanyTickets(messageDetail):
                         return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
                     else:
                         #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -1043,7 +1095,9 @@ def searchCompanyTickets(messageDetail):
                         return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
                     else:
                         #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                        table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
+
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -1054,8 +1108,7 @@ def searchCompanyTickets(messageDetail):
                 botlog.LogSymphonyInfo("You aren't authorised to use this command.")
         except:
             try:
-                botlog.LogSymphonyInfo("Inside seccond try for ZDOrgTicket.")
-
+                botlog.LogSymphonyInfo("Inside second try for ZDOrgTicket.")
                  # if callerCheck in AccessFile and isAllowed:
                 if companyName in _configDef['AuthCompany']['PodList'] and isAllowed:
 
@@ -1136,22 +1189,17 @@ def searchCompanyTickets(messageDetail):
                             notNeeded = True
 
                             if showSearchOrgTicket:
-                                #print("A")
                                 messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                                 botlog.LogSystemInfo("Allowed room via streamid in Config")
                                 sendUser = False
 
                             elif streamType == "IM":
-                                #print("B")
                                 messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                             else:
-                                #print("C")
                                 messageDetail.ReplyToChatV2_noBotLog("You have queried <b> " + str(status_message) + " Zendesk tickets</b> for <b>" + str(organization) + "</b>, I will message you 1:1 with the result")
                                 messageDetail.ReplyToSenderv2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
                         else:
-                            #print("D")
                             if index == int(statusCheck) - 1:
-                                #print("E")
                                 messageDetail.ReplyToChatV2_noBotLog("Pulling <b> " + str(status_message) + " tickets</b> from Zendesk for <b>" + str(organization) + "</b>, rendering the result now, please wait.")
 
                         org_render_raw = str(organization)#.replace(" ", "_")
@@ -1165,7 +1213,6 @@ def searchCompanyTickets(messageDetail):
                         #print(str(org_length))
 
                         if index == 1:
-                            #print("F")
                             #botlog.LogSymphonyInfo("Search query: " + str(query))
                             if org_length < 2:
                                 return messageDetail.ReplyToChatV2("No results for " + str(organization) + " please make sure to enter the full company name as known on your Zendesk instance")
@@ -1194,10 +1241,18 @@ def searchCompanyTickets(messageDetail):
                         except:
                             return messageDetail.ReplyToChat("I was not able to run the zendesk query, please try again")
             #################################
+                    tableStruc = "<table style='border-collapse:collapse;border:2px solid black;table-layout:auto;width:100%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--black tempo-bg-color--black\">" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>ID</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>Severity</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:50%;text-align:center'>Subject</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Requester</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Assignee</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Updated</td>" \
+                         "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Status</td></tr></thead>"
 
                     for result in data['results']:
                         totTickets += 1
-                        #print(result["priority"])
+                        numberCheck += 1
 
                         try:
                             assignee_flag = False
@@ -1342,6 +1397,32 @@ def searchCompanyTickets(messageDetail):
                         #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
                         allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
+                        if (numberCheck % 2) == 0:
+                            tableStrucBody += "<tr style='background-color:#" + backColor + "'>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                      "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                      "</tr>"
+
+                        else:
+                            tableStrucBody += "<tr>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + "<a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a></td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(sevv) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:left'>" + str(ticketSubject) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(requester) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(assignee) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(updated) + "</td>" \
+                                  "<td style='border:1px solid black;text-align:center'>" + str(result["status"]) + "</td>" \
+                                  "</tr>"
+
+                        # tableDisp = tableStruc + allTicket + "</tr></thead><tbody></tbody></table>"
+                        tableDisp = tableStruc + tableStrucBody + "<tbody></tbody></table>"
+                        #print(str(tableDisp))
+
                         # Checking for unique words (Tokens)
                         UniqueToken = len(set(table_header.split()))
                         #print(str(UniqueToken))
@@ -1365,7 +1446,8 @@ def searchCompanyTickets(messageDetail):
                         if sendUser:
                             if limitReached:
                                 #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                                 reply = str(table_bodyFull)
                                 messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                                 myTicketLenght = ""
@@ -1373,11 +1455,14 @@ def searchCompanyTickets(messageDetail):
                                 UniqueToken = ""
                                 table_bodyFull = ""
                                 allTicket = ""
+                                tableDisp = ""
+                                tableStrucBody = ""
                                 counter = False
                         else:
                             if limitReached:
                                 #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                                table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                                 reply = str(table_bodyFull)
                                 messageDetail.ReplyToChatV2_noBotLog(str(reply))
                                 myTicketLenght = ""
@@ -1385,6 +1470,8 @@ def searchCompanyTickets(messageDetail):
                                 UniqueToken = ""
                                 table_bodyFull = ""
                                 allTicket = ""
+                                tableDisp = ""
+                                tableStrucBody = ""
                                 counter = False
 
                     if sendUser and limitReached == False:
@@ -1392,7 +1479,8 @@ def searchCompanyTickets(messageDetail):
                             return messageDetail.ReplyToSenderv2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony /ZDOrgTicket symphony")
                         else:
                             #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                             messageDetail.ReplyToSenderv2_noBotLog(str(reply))
@@ -1402,7 +1490,8 @@ def searchCompanyTickets(messageDetail):
                             return messageDetail.ReplyToChatV2_noBotLog("There is no result for this search. Please make to use one the following search format: /ZDOrgTicket solved symphony or /ZDOrgTicket symphony")
                         else:
                             #table_bodyFull += ("<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
-                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            # table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(allTicket) + "</header><body>" + str(table_header) + "</body></card>")
+                            table_bodyFull += ("<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header>" + str(tableDisp) + "</header><body>" + str(table_header) + "</body></card>")
                             reply = str(table_bodyFull)
                             #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                             messageDetail.ReplyToChatV2_noBotLog(str(reply))
@@ -2848,7 +2937,7 @@ def searchUserTickets(messageDetail):
                 #callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
         except:
             try:
-                botlog.LogSymphonyInfo("Inside second try for getting callinguser data")
+                botlog.LogSymphonyInfo("Inside second try for getting calling user data")
                 commandCallerUID = messageDetail.FromUserId
                 # Calling the API endpoint to get display name
                 connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])

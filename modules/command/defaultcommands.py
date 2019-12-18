@@ -3493,9 +3493,9 @@ def joke(messageDetail):
                     render = data.split("\":")
 
                     jokeData_raw = render[2][:-8]
-                    print(jokeData_raw)
+                    #print(jokeData_raw)
                     jokeData = str(jokeData_raw).replace("\\u2013",",").replace("\\u2019", "'").replace("\\u2028", "").replace("\\u201c","").replace("\\u201d", "").replace("\\r\\n", " ").replace("\\n", "").replace('\\"', "")
-                    print("Joke: " + str(jokeData))
+                    #print("Joke: " + str(jokeData))
 
                 except:
                     return messageDetail.ReplyToChat("Please try Joke later.")
@@ -3524,9 +3524,9 @@ def joke(messageDetail):
                     render = data.split("\":")
 
                     jokeData_raw = render[2][:-8]
-                    print(jokeData_raw)
+                    #print(jokeData_raw)
                     jokeData = str(jokeData_raw).replace("\\u2013",",").replace("\\u2019", "'").replace("\\u2028", "").replace("\\u201c","").replace("\\u201d", "").replace("\\r\\n", " ").replace("\\n", "").replace('\\"', "")
-                    print("Joke: " + str(jokeData))
+                    #print("Joke: " + str(jokeData))
 
                 except:
                     return messageDetail.ReplyToChat("Please try Joke later.")

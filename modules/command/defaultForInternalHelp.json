@@ -76,12 +76,12 @@
     },
     {
       "name": "weather",
-      "triggers": ["Weather", "weather", "Forecast", "forecast", "Cast", "cast"],
+      "triggers": ["Weather", "weather"],
       "function": "weather",
       "helptext": "<b>/weather</b>",
-      "description": "Gives the weather forecast for the given location from 1 to 7 days.",
+      "description": "Gives the current weather for the given location",
       "param":"location + days to forecast",
-      "example":"/weather london or /weather london 5",
+      "example":"/weather london or /weather new_york",
       "category": "Info lookup",
       "scope": "Internal",
       "permission": "Authorised List"

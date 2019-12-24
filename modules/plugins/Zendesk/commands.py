@@ -20,8 +20,6 @@ from string import punctuation
 import mimetypes
 
 global setEnableDisable
-print("test")
-
 
 #Grab the config.json main parameters
 _configPathdDefault = os.path.abspath('config.json')

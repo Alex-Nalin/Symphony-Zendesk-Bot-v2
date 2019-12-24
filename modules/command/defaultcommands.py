@@ -3563,13 +3563,12 @@ def weather(messageDetail):
                 except:
                     messageDetail.ReplyToChat("Loading the weather forecast")
 
-                url = "http://api.weatherstack.com/current"
+                url = _configDef['weather']['API_URL']
 
                 querystring = {"access_key": _configDef['weather']['API_Key'], "query": str(location), "units": "m"}
 
                 headers = {
                     'Cache-Control': "no-cache",
-                    'Host': "api.weatherstack.com"
                 }
 
                 response = requests.request("GET", url, headers=headers, params=querystring)

@@ -68,6 +68,7 @@ class SymphonyUser:
             self.Id = str(user.id)  # userId
             self.FirstName = user.firstName if hasattr(user, 'firstName') else 'Unknown'  # fname
             self.LastName = user.lastName if hasattr(user, 'lastName') else 'Unknown'  # lname
+            self.Fullname = f'{self.FirstName} {self.LastName}'
             try:
                 self.Email = user.emailAddress  # email
             except:

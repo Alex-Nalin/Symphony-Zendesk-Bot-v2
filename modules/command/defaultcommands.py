@@ -127,13 +127,18 @@ def SymphonyZendeskBotHelp(messageDetail):
 
         for index_org in range(len(d_org["users"])):
             firstName = str(d_org["users"][index_org]["firstName"])
+            botlog.LogSymphonyInfo(str(firstName))
             lastName = str(d_org["users"][index_org]["lastName"])
+            botlog.LogSymphonyInfo(str(lastName))
             displayName = str(d_org["users"][index_org]["displayName"])
+            botlog.LogSymphonyInfo(str(displayName))
             #companyName = d_org["users"][index_org]["company"]
             companyNameTemp = d_org["users"][index_org]["company"]
             companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
             companyName = str(companyTemp)
+            botlog.LogSymphonyInfo(str(companyName))
             userID = str(d_org["users"][index_org]["id"])
+            botlog.LogSymphonyInfo(str(userID))
     except:
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -155,6 +160,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(str(dataRender))
+            botlog.LogSymphonyInfo(str(d_org))
 
             for index_org in range(len(d_org["users"])):
                 firstName = str(d_org["users"][index_org]["firstName"])
@@ -168,8 +174,8 @@ def SymphonyZendeskBotHelp(messageDetail):
         except:
             botlog.LogSymphonyInfo("I was not able to validate the user access, please try again")
 
-    botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-    callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+    botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " (" + str(displayName) + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
+    callerCheck = (str(firstName) + " " + str(lastName) + " - " + str(displayName) + " - " + str(companyName) + " - " + str(userID))
 
 
     ########### FOR ADMIN OF THE BOT - HELP FILE - SHOWS ALL COMMANDS:
@@ -1160,6 +1166,7 @@ def botStream(messageDetail):
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
+            botlog.LogSymphonyInfo(str(d_org))
 
             for index_org in range(len(d_org["users"])):
                 firstName = str(d_org["users"][index_org]["firstName"])
@@ -1275,6 +1282,7 @@ def botStream(messageDetail):
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
+                botlog.LogSymphonyInfo(str(d_org))
 
                 for index_org in range(len(d_org["users"])):
                     firstName = str(d_org["users"][index_org]["firstName"])
@@ -1401,6 +1409,7 @@ def botMessageBlast(messageDetail):
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
+            botlog.LogSymphonyInfo(str(d_org))
 
             for index_org in range(len(d_org["users"])):
                 firstName = str(d_org["users"][index_org]["firstName"])
@@ -1577,6 +1586,7 @@ def SendStatusCheck(messageDetail):
 
     dataRender = json.dumps(data_dict, indent=2)
     d_org = json.loads(str(dataRender))
+    botlog.LogSymphonyInfo(str(d_org))
 
     for index_org in range(len(d_org["users"])):
         firstName = str(d_org["users"][index_org]["firstName"])
@@ -4033,8 +4043,8 @@ def findAcronym(messageDetail):
         except:
             return messageDetail.ReplyToChat("Cannot validate user access")
 
-        if callerCheck in AccessFile:
-
+        # if callerCheck in AccessFile:
+        if companyName in _configDef['AuthCompany']['PodList']:
             try:
                 Acronym = str((messageDetail.Command.MessageText)[1:]).strip()
 
@@ -4091,8 +4101,8 @@ def listAllAcronyms(messageDetail):
         except:
             return messageDetail.ReplyToChat("Cannot validate user access")
 
-        if callerCheck in AccessFile:
-
+        # if callerCheck in AccessFile:
+        if companyName in _configDef['AuthCompany']['PodList']:
             try:
                 sortDict(messageDetail)
                 table_body = ""
@@ -4141,6 +4151,8 @@ def sortDict(messageDetail):
 
 
 def wikiSearch(messageDetail):
+    ## https://cse.google.com/cse/create/new
+    ## https://developers.google.com/custom-search/v1/overview
 
     try:
         commandCallerUID = messageDetail.FromUserId
@@ -4200,8 +4212,8 @@ def wikiSearch(messageDetail):
             return messageDetail.ReplyToChat("Cannot validate user access")
 
 
-    if callerCheck in AccessFile:
-
+    # if callerCheck in AccessFile:
+    if companyName in _configDef['AuthCompany']['PodList']:
         botlog.LogSymphonyInfo("Bot Call: Wiki Search")
         try:
             request_raw = (messageDetail.Command.MessageText)
@@ -4212,7 +4224,7 @@ def wikiSearch(messageDetail):
 
             try:
                 service = build("customsearch", "v1", developerKey=my_api_key)
-                res = service.cse().list(q=request, cx=my_cse_id, num=3).execute()
+                res = service.cse().list(q=request, cx=my_cse_id, num=5).execute()
                 results = res['items']
                 #print(str(results))
             except:
@@ -4227,6 +4239,7 @@ def wikiSearch(messageDetail):
             for result in results:
                 link_raw = result["link"]
                 link = str(link_raw).replace(_configDef['Wiki']['replace'], "")
+                print(str(link))
 
                 table_body += "<tr>" \
                               "<td><a href =\"" + link_raw + "\">" + link + "</a></td>" \

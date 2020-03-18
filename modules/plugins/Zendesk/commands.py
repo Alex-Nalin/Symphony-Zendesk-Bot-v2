@@ -191,6 +191,10 @@ def searchCompanyTickets(messageDetail):
                     status = "status:pending "
                     status_message = "pending"
                     isIMRequired = False
+                elif str(message_split[index][:4]) == "Hold" or str(message_split[index][:4]) == "hold":
+                    status = "status:hold "
+                    status_message = "hold"
+                    isIMRequired = False
                 elif str(message_split[index][:10]) == "Unresolved" or str(message_split[index][:10]) == "unresolved":
                     status = "status<solved "
                     status_message = "unresolved"
@@ -769,6 +773,10 @@ def searchCompanyTickets(messageDetail):
                         status = "status:pending "
                         status_message = "pending"
                         isIMRequired = False
+                    elif str(message_split[index][:4]) == "Hold" or str(message_split[index][:4]) == "hold":
+                        status = "status:hold "
+                        status_message = "hold"
+                        isIMRequired = False
                     elif str(message_split[index][:10]) == "Unresolved" or str(message_split[index][:10]) == "unresolved":
                         status = "status<solved "
                         status_message = "unresolved"
@@ -1161,6 +1169,10 @@ def searchCompanyTickets(messageDetail):
                         elif str(message_split[index][:7]) == "Pending" or str(message_split[index][:7]) == "pending":
                             status = "status:pending "
                             status_message = "pending"
+                            isIMRequired = False
+                        elif str(message_split[index][:4]) == "Hold" or str(message_split[index][:4]) == "hold":
+                            status = "status:hold "
+                            status_message = "hold"
                             isIMRequired = False
                         elif str(message_split[index][:10]) == "Unresolved" or str(message_split[index][:10]) == "unresolved":
                             status = "status<solved "
@@ -1772,6 +1784,10 @@ def searchCompanyTicketsCategory(messageDetail):
             elif str(message_split[index][:7]) == "Pending" or str(message_split[index][:7]) == "pending":
                 status = "status:pending "
                 status_message = "pending"
+                isIMRequired = False
+            elif str(message_split[index][:4]) == "Hold" or str(message_split[index][:4]) == "hold":
+                status = "status:hold "
+                status_message = "hold"
                 isIMRequired = False
             elif str(message_split[index][:10]) == "Unresolved" or str(message_split[index][:10]) == "unresolved":
                 status = "status<solved "
@@ -3189,6 +3205,9 @@ def searchUserTickets(messageDetail):
                     elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
                         status = "status:pending "
                         status_message = "pending"
+                    elif str(message_split[index][:4]).strip() == "Hold" or str(message_split[index][:4]).strip() == "hold":
+                        status = "status:hold "
+                        status_message = "hold"
                     elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
                         status = "status<solved "
                         status_message = "unresolved"
@@ -3790,6 +3809,9 @@ def searchUserTickets(messageDetail):
                         elif str(message_split[index][:7]).strip() == "Pending" or str(message_split[index][:7]).strip() == "pending":
                             status = "status:pending "
                             status_message = "pending"
+                        elif str(message_split[index][:4]).strip() == "Hold" or str(message_split[index][:4]).strip() == "hold":
+                            status = "status:hold "
+                            status_message = "hold"
                         elif str(message_split[index][:10]).strip() == "Unresolved" or str(message_split[index][:10]).strip() == "unresolved":
                             status = "status<solved "
                             status_message = "unresolved"

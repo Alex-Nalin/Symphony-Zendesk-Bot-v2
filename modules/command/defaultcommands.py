@@ -1590,9 +1590,9 @@ def SendStatusCheck(messageDetail):
     botlog.LogSymphonyInfo(str(d_org))
 
     for index_org in range(len(d_org["users"])):
-        firstName = str(d_org["users"][index_org]["firstName"])
-        lastName = str(d_org["users"][index_org]["lastName"])
-        displayName = str(d_org["users"][index_org]["displayName"])
+        #firstName = str(d_org["users"][index_org]["firstName"])
+        #lastName = str(d_org["users"][index_org]["lastName"])
+        #displayName = str(d_org["users"][index_org]["displayName"])
         #companyName = d_org["users"][index_org]["company"]
         companyNameTemp = d_org["users"][index_org]["company"]
         companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")

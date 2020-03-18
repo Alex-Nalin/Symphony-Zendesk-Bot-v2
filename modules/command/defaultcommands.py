@@ -124,6 +124,7 @@ def SymphonyZendeskBotHelp(messageDetail):
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(str(dataRender))
+        botlog.LogSymphonyInfo(str(d_org))
 
         for index_org in range(len(d_org["users"])):
             firstName = str(d_org["users"][index_org]["firstName"])

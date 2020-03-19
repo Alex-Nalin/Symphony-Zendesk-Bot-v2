@@ -120,7 +120,8 @@ def SymphonyZendeskBotHelp(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        #data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(str(dataRender))
@@ -157,7 +158,8 @@ def SymphonyZendeskBotHelp(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(str(dataRender))
@@ -1163,7 +1165,8 @@ def botStream(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -1279,7 +1282,8 @@ def botStream(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -1406,7 +1410,8 @@ def botMessageBlast(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -1493,7 +1498,8 @@ def botMessageBlast(messageDetail):
 #             resComp = connComp.getresponse()
 #             dataComp = resComp.read()
 #             data_raw = str(dataComp.decode('utf-8'))
-#             data_dict = ast.literal_eval(data_raw)
+#             #data_dict = ast.literal_eval(data_raw)
+#             data_dict = json.loads(str(data_raw))
 #
 #             dataRender = json.dumps(data_dict, indent=2)
 #             d_org = json.loads(dataRender)
@@ -1583,16 +1589,17 @@ def SendStatusCheck(messageDetail):
     resComp = connComp.getresponse()
     dataComp = resComp.read()
     data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
+    #data_dict = ast.literal_eval(data_raw)
+    data_dict = json.loads(str(data_raw))
 
     dataRender = json.dumps(data_dict, indent=2)
     d_org = json.loads(str(dataRender))
     botlog.LogSymphonyInfo(str(d_org))
 
     for index_org in range(len(d_org["users"])):
-        #firstName = str(d_org["users"][index_org]["firstName"])
-        #lastName = str(d_org["users"][index_org]["lastName"])
-        #displayName = str(d_org["users"][index_org]["displayName"])
+        firstName = str(d_org["users"][index_org]["firstName"])
+        lastName = str(d_org["users"][index_org]["lastName"])
+        displayName = str(d_org["users"][index_org]["displayName"])
         #companyName = d_org["users"][index_org]["company"]
         companyNameTemp = d_org["users"][index_org]["company"]
         companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
@@ -1642,7 +1649,8 @@ def SendSymphonyEchoV2(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -1685,7 +1693,8 @@ def GetGoogleTranslation(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -1769,7 +1778,8 @@ def GetAlphaVantageStockQuote(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -1832,7 +1842,8 @@ def GetGiphyImage(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -1956,7 +1967,8 @@ def QoD (messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -2152,7 +2164,8 @@ def QoDTask ():
 #         resComp = connComp.getresponse()
 #         dataComp = resComp.read()
 #         data_raw = str(dataComp.decode('utf-8'))
-#         data_dict = ast.literal_eval(data_raw)
+#         #data_dict = ast.literal_eval(data_raw)
+#         data_dict = json.loads(str(data_raw))
 #
 #         dataRender = json.dumps(data_dict, indent=2)
 #         d_org = json.loads(dataRender)
@@ -2179,7 +2192,8 @@ def QoDTask ():
 #         resComp = connComp.getresponse()
 #         dataComp = resComp.read()
 #         data_raw = str(dataComp.decode('utf-8'))
-#         data_dict = ast.literal_eval(data_raw)
+#         #data_dict = ast.literal_eval(data_raw)
+#         data_dict = json.loads(str(data_raw))
 #
 #         dataRender = json.dumps(data_dict, indent=2)
 #         d_org = json.loads(dataRender)
@@ -3371,7 +3385,8 @@ def weather(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -3398,7 +3413,8 @@ def weather(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -3692,7 +3708,8 @@ def funQuote(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -3776,7 +3793,6 @@ def funQuote(messageDetail):
 def joke(messageDetail):
 
     try:
-
         commandCallerUID = messageDetail.FromUserId
 
         connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
@@ -3784,7 +3800,8 @@ def joke(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -3802,74 +3819,74 @@ def joke(messageDetail):
         botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
         callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
-        # if callerCheck in AccessFile:
-        if companyName in _configDef['AuthCompany']['PodList']:
-
-            botlog.LogSymphonyInfo("Bot Call: Joke")
-
-            try:
-
-                try:
-                    conn = http.client.HTTPSConnection(_configDef['Jokes']['URL'])
-
-                    headers = {
-                        'accept': "application/json",
-                        'user-agent': _configDef['Jokes']['user-agent'],
-                        'cache-control': "no-cache"
-                    }
-
-                    conn.request("GET", "/", headers=headers)
-
-                    res = conn.getresponse()
-                    data = res.read().decode("utf-8")
-
-                    render = data.split("\":")
-
-                    jokeData_raw = render[2][:-8]
-                    #print(jokeData_raw)
-                    jokeData = str(jokeData_raw).replace("\\u2013",",").replace("\\u2019", "'").replace("\\u2028", "").replace("\\u201c","").replace("\\u201d", "").replace("\\r\\n", " ").replace("\\n", "").replace('\\"', "")
-                    #print("Joke: " + str(jokeData))
-
-                except:
-                    return messageDetail.ReplyToChat("Please try Joke later.")
-
-                return messageDetail.ReplyToChatV2_noBotLog("Here's a joke for you <b> " + jokeData + "</b>")
-            except:
-                botlog.LogSymphonyInfo("Joke did not work")
     except:
         try:
-            botlog.LogSymphonyInfo("Inside Second Joke")
-            try:
-                try:
-                    conn = http.client.HTTPSConnection(_configDef['Jokes']['URL'])
+            commandCallerUID = messageDetail.FromUserId
 
-                    headers = {
-                        'accept': "application/json",
-                        'user-agent': _configDef['Jokes']['user-agent'],
-                        'cache-control': "no-cache"
-                    }
+            connComp.request("GET", "/pod/v3/users?uid=" + commandCallerUID, headers=headersCompany)
 
-                    conn.request("GET", "/", headers=headers)
+            resComp = connComp.getresponse()
+            dataComp = resComp.read()
+            data_raw = str(dataComp.decode('utf-8'))
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
-                    res = conn.getresponse()
-                    data = res.read().decode("utf-8")
+            dataRender = json.dumps(data_dict, indent=2)
+            d_org = json.loads(dataRender)
 
-                    render = data.split("\":")
+            for index_org in range(len(d_org["users"])):
+                firstName = d_org["users"][index_org]["firstName"]
+                lastName = d_org["users"][index_org]["lastName"]
+                displayName = d_org["users"][index_org]["displayName"]
+                # companyName = d_org["users"][index_org]["company"]
+                companyNameTemp = d_org["users"][index_org]["company"]
+                companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"',
+                                                                                                      "&quot;").replace(
+                    "'", "&apos;").replace(">", "&gt;")
+                companyName = str(companyTemp)
+                userID = str(d_org["users"][index_org]["id"])
 
-                    jokeData_raw = render[2][:-8]
-                    #print(jokeData_raw)
-                    jokeData = str(jokeData_raw).replace("\\u2013",",").replace("\\u2019", "'").replace("\\u2028", "").replace("\\u201c","").replace("\\u201d", "").replace("\\r\\n", " ").replace("\\n", "").replace('\\"', "")
-                    #print("Joke: " + str(jokeData))
+            botlog.LogSymphonyInfo(firstName + " " + lastName + " (" + displayName + ") from Company/Pod name: " + str(
+                companyName) + " with UID: " + str(userID))
+            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
 
-                except:
-                    return messageDetail.ReplyToChat("Please try Joke later.")
-
-                return messageDetail.ReplyToChatV2_noBotLog("Here's a joke for you <b> " + jokeData + "</b>")
-            except:
-                botlog.LogSymphonyInfo("Joke did not work")
         except:
-            botlog.LogSymphonyInfo("Joke did not work entirely")
+            return messageDetail.ReplyToChat("Please try Joke later.")
 
+    # if callerCheck in AccessFile:
+    if companyName in _configDef['AuthCompany']['PodList']:
+
+        botlog.LogSymphonyInfo("Bot Call: Joke")
+
+        try:
+
+            try:
+                conn = http.client.HTTPSConnection(_configDef['Jokes']['URL'])
+
+                headers = {
+                    'accept': "application/json",
+                    'user-agent': _configDef['Jokes']['user-agent'],
+                    'cache-control': "no-cache"
+                }
+
+                conn.request("GET", "/", headers=headers)
+
+                res = conn.getresponse()
+                data = res.read().decode("utf-8")
+
+                render = data.split("\":")
+
+                jokeData_raw = render[2][:-8]
+                #print(jokeData_raw)
+                jokeData = str(jokeData_raw).replace("\\u2013",",").replace("\\u2019", "'").replace("\\u2028", "").replace("\\u201c","").replace("\\u201d", "").replace("\\r\\n", " ").replace("\\n", "").replace('\\"', "")
+                #print("Joke: " + str(jokeData))
+
+            except:
+                return messageDetail.ReplyToChat("Please try Joke later.")
+
+            return messageDetail.ReplyToChatV2_noBotLog("Here's a joke for you <b> " + jokeData + "</b>")
+        except:
+            botlog.LogSymphonyInfo("Joke did not work")
 
 def addAcronym(messageDetail):
 
@@ -3893,7 +3910,8 @@ def addAcronym(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -3957,7 +3975,8 @@ def removeAcronym(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -4022,7 +4041,8 @@ def findAcronym(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -4081,7 +4101,8 @@ def listAllAcronyms(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -4163,7 +4184,8 @@ def wikiSearch(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -4191,7 +4213,8 @@ def wikiSearch(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -4317,7 +4340,8 @@ def whois(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -4358,7 +4382,8 @@ def whois(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -4447,7 +4472,8 @@ def whois(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -4537,7 +4563,8 @@ def streamCheck(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -4791,7 +4818,8 @@ def UIDCheck(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -4840,7 +4868,8 @@ def UIDCheck(messageDetail):
                     resComp = connComp.getresponse()
                     dataComp = resComp.read()
                     data_raw = str(dataComp.decode('utf-8'))
-                    data_dict = ast.literal_eval(data_raw)
+                    # data_dict = ast.literal_eval(data_raw)
+                    data_dict = json.loads(str(data_raw))
 
                     dataRender = json.dumps(data_dict, indent=2)
                     d_org = json.loads(dataRender)
@@ -4945,7 +4974,8 @@ def UIDCheck(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -5047,7 +5077,8 @@ def UIDCheck(messageDetail):
 #             resComp = connComp.getresponse()
 #             dataComp = resComp.read()
 #             data_raw = str(dataComp.decode('utf-8'))
-#             data_dict = ast.literal_eval(data_raw)
+#             #data_dict = ast.literal_eval(data_raw)
+#             data_dict = json.loads(str(data_raw))
 #
 #             dataRender = json.dumps(data_dict, indent=2)
 #             d_org = json.loads(dataRender)
@@ -5082,7 +5113,8 @@ def UIDCheck(messageDetail):
 #                 resComp = connComp.getresponse()
 #                 dataComp = resComp.read()
 #                 data_raw = str(dataComp.decode('utf-8'))
-#                 data_dict = ast.literal_eval(data_raw)
+#                 #data_dict = ast.literal_eval(data_raw)
+#                 data_dict = json.loads(str(data_raw))
 #
 #                 dataRender = json.dumps(data_dict, indent=2)
 #                 d_org = json.loads(dataRender)
@@ -5168,7 +5200,8 @@ def UIDCheck(messageDetail):
 #             resComp = connComp.getresponse()
 #             dataComp = resComp.read()
 #             data_raw = str(dataComp.decode('utf-8'))
-#             data_dict = ast.literal_eval(data_raw)
+#             #data_dict = ast.literal_eval(data_raw)
+#             data_dict = json.loads(str(data_raw))
 #
 #             dataRender = json.dumps(data_dict, indent=2)
 #             d_org = json.loads(dataRender)
@@ -5233,7 +5266,8 @@ def UIDCheck(messageDetail):
 #             resComp = connComp.getresponse()
 #             dataComp = resComp.read()
 #             data_raw = str(dataComp.decode('utf-8'))
-#             data_dict = ast.literal_eval(data_raw)
+#             #data_dict = ast.literal_eval(data_raw)
+#             data_dict = json.loads(str(data_raw))
 #
 #             dataRender = json.dumps(data_dict, indent=2)
 #             d_org = json.loads(dataRender)
@@ -5290,7 +5324,8 @@ def UIDCheck(messageDetail):
 #             resComp = connComp.getresponse()
 #             dataComp = resComp.read()
 #             data_raw = str(dataComp.decode('utf-8'))
-#             data_dict = ast.literal_eval(data_raw)
+#             #data_dict = ast.literal_eval(data_raw)
+#             data_dict = json.loads(str(data_raw))
 #
 #             dataRender = json.dumps(data_dict, indent=2)
 #             d_org = json.loads(dataRender)
@@ -5437,7 +5472,8 @@ def atMentionRoom(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -5476,10 +5512,10 @@ def atMentionRoom(messageDetail):
         res = conn.getresponse()
         data_raw = res.read().decode("utf-8")
 
-        data = json.dumps(data_raw, indent=2)
-        data_dict = ast.literal_eval(data)
-        userAccess = json.loads(data_dict)
-        #print(str(userAccess))
+        data_dict = json.loads(str(data_raw))
+
+        dataRender = json.dumps(data_dict, indent=2)
+        userAccess = json.loads(dataRender)
 
         table_body = ""
         table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:25%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \

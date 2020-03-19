@@ -136,7 +136,8 @@ def searchCompanyTickets(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -303,9 +304,12 @@ def searchCompanyTickets(messageDetail):
                     res = conn.getresponse()
                     userRequesterId = res.read()
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_req = json.loads(data_dict)
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserRequester))
+                    data = json.dumps(data_dict, indent=2)
+                    d_req = json.loads(data)
+
                     req_name = str(d_req["user"]["name"])
                     requesterName = req_name
                 except:
@@ -321,10 +325,11 @@ def searchCompanyTickets(messageDetail):
                     res = conn.getresponse()
                     userAssigneeId = res.read()
                     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
                     data = json.dumps(tempUserAssignee, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_assign = json.loads(data_dict)
+                    # data_dict = ast.literal_eval(data)
+                    d_assign = json.loads(str(data))
+
+                    # d_assign = json.loads(data_dict)
                     assign_name = str(d_assign["user"]["name"])
                     assigneeName = str(assign_name)
 
@@ -559,7 +564,8 @@ def searchCompanyTickets(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -647,7 +653,8 @@ def searchCompanyTickets(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -885,9 +892,12 @@ def searchCompanyTickets(messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(data_dict)
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+
+                        d_req = json.loads(data)
                         req_name = str(d_req["user"]["name"])
                         requesterName = req_name
                     except:
@@ -903,10 +913,12 @@ def searchCompanyTickets(messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d_assign = json.loads(str(data))
 
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_assign = json.loads(data_dict)
                         assign_name = str(d_assign["user"]["name"])
                         assigneeName = str(assign_name)
 
@@ -1283,9 +1295,12 @@ def searchCompanyTickets(messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_req = json.loads(data_dict)
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d_req = json.loads(data)
+
                             req_name = str(d_req["user"]["name"])
                             requesterName = req_name
                         except:
@@ -1301,10 +1316,12 @@ def searchCompanyTickets(messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d_assign = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_assign = json.loads(data_dict)
                             assign_name = str(d_assign["user"]["name"])
                             assigneeName = str(assign_name)
 
@@ -1559,7 +1576,8 @@ def searchCompanyTicketsCategory(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -1647,7 +1665,8 @@ def searchCompanyTicketsCategory(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -2188,9 +2207,12 @@ def searchCompanyTicketsCategory(messageDetail):
                 res = conn.getresponse()
                 userRequesterId = res.read()
                 tempUserRequester = str(userRequesterId.decode('utf-8'))
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_req = json.loads(data_dict)
+                # data = json.dumps(tempUserRequester, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserRequester))
+                data = json.dumps(data_dict, indent=2)
+                d_req = json.loads(data)
+
                 req_name = str(d_req["user"]["name"])
                 requesterName = req_name
             except:
@@ -2206,10 +2228,12 @@ def searchCompanyTicketsCategory(messageDetail):
                 res = conn.getresponse()
                 userAssigneeId = res.read()
                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                # data = json.dumps(tempUserAssignee, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserAssignee))
+                data = json.dumps(data_dict, indent=2)
+                d_assign = json.loads(str(data))
 
-                data = json.dumps(tempUserAssignee, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_assign = json.loads(data_dict)
                 assign_name = str(d_assign["user"]["name"])
                 assigneeName = str(assign_name)
 
@@ -2407,7 +2431,8 @@ def escalatedaccounts(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -2495,7 +2520,8 @@ def escalatedaccounts(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -2737,9 +2763,12 @@ def searchCompanyTicketsTask(organization, stream_id):
             res = conn.getresponse()
             userRequesterId = res.read()
             tempUserRequester = str(userRequesterId.decode('utf-8'))
-            data = json.dumps(tempUserRequester, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_req = json.loads(data_dict)
+            # data = json.dumps(tempUserRequester, indent=2)
+            # data_dict = ast.literal_eval(data)
+            data_dict = json.loads(str(tempUserRequester))
+            data = json.dumps(data_dict, indent=2)
+            d_req = json.loads(data)
+
             req_name = str(d_req["user"]["name"])
             requesterName = req_name
         except:
@@ -2755,10 +2784,12 @@ def searchCompanyTicketsTask(organization, stream_id):
             res = conn.getresponse()
             userAssigneeId = res.read()
             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+            # data = json.dumps(tempUserAssignee, indent=2)
+            # data_dict = ast.literal_eval(data)
+            data_dict = json.loads(str(tempUserAssignee))
+            data = json.dumps(data_dict, indent=2)
+            d_assign = json.loads(str(data))
 
-            data = json.dumps(tempUserAssignee, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_assign = json.loads(data_dict)
             assign_name = str(d_assign["user"]["name"])
             assigneeName = str(assign_name)
 
@@ -2929,7 +2960,8 @@ def searchUserTickets(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -2968,7 +3000,8 @@ def searchUserTickets(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -3056,7 +3089,8 @@ def searchUserTickets(messageDetail):
                             resComp = connComp.getresponse()
                             dataComp = resComp.read()
                             data_raw = str(dataComp.decode('utf-8'))
-                            data_dict = ast.literal_eval(data_raw)
+                            # data_dict = ast.literal_eval(data_raw)
+                            data_dict = json.loads(str(data_raw))
 
                             dataRender = json.dumps(data_dict, indent=2)
                             d_org = json.loads(dataRender)
@@ -3162,10 +3196,11 @@ def searchUserTickets(messageDetail):
                                         res = conn.getresponse()
                                         companyID = res.read()
                                         compNameRaw = str(companyID.decode("utf-8"))
+                                        data_dict = json.loads(str(compNameRaw))
+                                        data = json.dumps(data_dict, indent=2)
+                                        # data_dict = ast.literal_eval(data)
+                                        d_org = json.loads(data)
 
-                                        data = json.dumps(compNameRaw, indent=2)
-                                        data_dict = ast.literal_eval(data)
-                                        d_org = json.loads(data_dict)
                                         try:
                                             org_Name = str(d_org["organizations"][0]["name"])
                                             org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -3310,9 +3345,12 @@ def searchUserTickets(messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(data_dict)
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d_req = json.loads(data)
+
                         req_name = str(d_req["user"]["name"])
                         requesterName = req_name
                     except:
@@ -3323,9 +3361,12 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_req = json.loads(data_dict)
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d_req = json.loads(data)
+
                             req_name = str(d_req["user"]["name"])
                             requesterName = req_name
                         except:
@@ -3341,10 +3382,12 @@ def searchUserTickets(messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d_assign = json.loads(str(data))
 
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_assign = json.loads(data_dict)
                         assign_name = str(d_assign["user"]["name"])
                         assigneeName = assign_name
 
@@ -3358,10 +3401,12 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d_assign = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_assign = json.loads(data_dict)
                             assign_name = str(d_assign["user"]["name"])
                             assigneeName = assign_name
 
@@ -3377,10 +3422,11 @@ def searchUserTickets(messageDetail):
                         res = conn.getresponse()
                         companyID = res.read()
                         compNameRaw = str(companyID.decode("utf-8"))
+                        data_dict = json.loads(str(compNameRaw))
+                        data = json.dumps(data_dict, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        d = json.loads(data)
 
-                        data = json.dumps(compNameRaw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         org_Name = str(d["organizations"][0]["name"])
                         org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         orgName = str(org_name_temp)
@@ -3393,10 +3439,11 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             companyID = res.read()
                             compNameRaw = str(companyID.decode("utf-8"))
+                            data_dict = json.loads(str(compNameRaw))
+                            data = json.dumps(data_dict, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            d = json.loads(data)
 
-                            data = json.dumps(compNameRaw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             org_Name = str(d["organizations"][0]["name"])
                             org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                             orgName = str(org_name_temp)
@@ -3662,7 +3709,8 @@ def searchUserTickets(messageDetail):
                                 resComp = connComp.getresponse()
                                 dataComp = resComp.read()
                                 data_raw = str(dataComp.decode('utf-8'))
-                                data_dict = ast.literal_eval(data_raw)
+                                # data_dict = ast.literal_eval(data_raw)
+                                data_dict = json.loads(str(data_raw))
 
                                 dataRender = json.dumps(data_dict, indent=2)
                                 d_org = json.loads(dataRender)
@@ -3767,10 +3815,10 @@ def searchUserTickets(messageDetail):
                                             res = conn.getresponse()
                                             companyID = res.read()
                                             compNameRaw = str(companyID.decode("utf-8"))
-
-                                            data = json.dumps(compNameRaw, indent=2)
-                                            data_dict = ast.literal_eval(data)
-                                            d_org = json.loads(data_dict)
+                                            data_dict = json.loads(str(compNameRaw))
+                                            data = json.dumps(data_dict, indent=2)
+                                            # data_dict = ast.literal_eval(data)
+                                            d_org = json.loads(data)
                                             try:
                                                 org_Name = str(d_org["organizations"][0]["name"])
                                                 org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -3914,9 +3962,12 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_req = json.loads(data_dict)
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d_req = json.loads(data)
+
                             req_name = str(d_req["user"]["name"])
                             requesterName = req_name
                         except:
@@ -3927,9 +3978,12 @@ def searchUserTickets(messageDetail):
                                 res = conn.getresponse()
                                 userRequesterId = res.read()
                                 tempUserRequester = str(userRequesterId.decode('utf-8'))
-                                data = json.dumps(tempUserRequester, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d_req = json.loads(data_dict)
+                                # data = json.dumps(tempUserRequester, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserRequester))
+                                data = json.dumps(data_dict, indent=2)
+                                d_req = json.loads(data)
+
                                 req_name = str(d_req["user"]["name"])
                                 requesterName = req_name
                             except:
@@ -3945,10 +3999,12 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d_assign = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_assign = json.loads(data_dict)
                             assign_name = str(d_assign["user"]["name"])
                             assigneeName = assign_name
 
@@ -3962,10 +4018,12 @@ def searchUserTickets(messageDetail):
                                 res = conn.getresponse()
                                 userAssigneeId = res.read()
                                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                                # data = json.dumps(tempUserAssignee, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserAssignee))
+                                data = json.dumps(data_dict, indent=2)
+                                d_assign = json.loads(str(data))
 
-                                data = json.dumps(tempUserAssignee, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d_assign = json.loads(data_dict)
                                 assign_name = str(d_assign["user"]["name"])
                                 assigneeName = assign_name
 
@@ -3982,10 +4040,11 @@ def searchUserTickets(messageDetail):
                             res = conn.getresponse()
                             companyID = res.read()
                             compNameRaw = str(companyID.decode("utf-8"))
+                            data_dict = json.loads(str(compNameRaw))
+                            data = json.dumps(data_dict, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            d = json.loads(data)
 
-                            data = json.dumps(compNameRaw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             org_Name = str(d["organizations"][0]["name"])
                             org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                             orgName = str(org_name_temp)
@@ -3998,10 +4057,11 @@ def searchUserTickets(messageDetail):
                                 res = conn.getresponse()
                                 companyID = res.read()
                                 compNameRaw = str(companyID.decode("utf-8"))
+                                data_dict = json.loads(str(compNameRaw))
+                                data = json.dumps(data_dict, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                d = json.loads(data)
 
-                                data = json.dumps(compNameRaw, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 org_Name = str(d["organizations"][0]["name"])
                                 org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                                 orgName = str(org_name_temp)
@@ -6349,7 +6409,8 @@ def searchKeyWord(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(str(dataRender))
@@ -6444,7 +6505,8 @@ def searchKeyWord(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(str(dataRender))
@@ -6583,9 +6645,12 @@ def searchKeyWord(messageDetail):
                 res = conn.getresponse()
                 userRequesterId = res.read()
                 tempUserRequester = str(userRequesterId.decode('utf-8'))
-                data = json.dumps(tempUserRequester, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_req = json.loads(data_dict)
+                # data = json.dumps(tempUserRequester, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserRequester))
+                data = json.dumps(data_dict, indent=2)
+                d_req = json.loads(data)
+
                 req_name = str(d_req["user"]["name"])
                 requesterName = req_name
             except:
@@ -6596,9 +6661,12 @@ def searchKeyWord(messageDetail):
                     res = conn.getresponse()
                     userRequesterId = res.read()
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_req = json.loads(data_dict)
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserRequester))
+                    data = json.dumps(data_dict, indent=2)
+                    d_req = json.loads(data)
+
                     req_name = str(d_req["user"]["name"])
                     requesterName = req_name
                 except:
@@ -6614,10 +6682,12 @@ def searchKeyWord(messageDetail):
                 res = conn.getresponse()
                 userAssigneeId = res.read()
                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                # data = json.dumps(tempUserAssignee, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserAssignee))
+                data = json.dumps(data_dict, indent=2)
+                d_assign = json.loads(str(data))
 
-                data = json.dumps(tempUserAssignee, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_assign = json.loads(data_dict)
                 assign_name = str(d_assign["user"]["name"])
                 assigneeName = assign_name
 
@@ -6631,10 +6701,12 @@ def searchKeyWord(messageDetail):
                     res = conn.getresponse()
                     userAssigneeId = res.read()
                     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                    # data = json.dumps(tempUserAssignee, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserAssignee))
+                    data = json.dumps(data_dict, indent=2)
+                    d_assign = json.loads(str(data))
 
-                    data = json.dumps(tempUserAssignee, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_assign = json.loads(data_dict)
                     assign_name = str(d_assign["user"]["name"])
                     assigneeName = assign_name
 
@@ -6846,7 +6918,8 @@ def showZD (messageDetail):
     resComp = connComp.getresponse()
     dataComp = resComp.read()
     data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
+    # data_dict = ast.literal_eval(data_raw)
+    data_dict = json.loads(str(data_raw))
 
     dataRender = json.dumps(data_dict, indent=2)
     d_org = json.loads(dataRender)
@@ -6966,9 +7039,13 @@ def showZD (messageDetail):
                 #print("inside isnext")
 
                 # try:
-                data = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
+                data_dict = json.loads(str(request_raw))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(data)
+
+                # data = json.dumps(request_raw, indent=2)
+                # data_dict = ast.literal_eval(data)
+                # d = json.loads(data_dict)
 
                 #for index in range(len(request_raw["request"])):
                 # requestid = str(d["request"]["id"])
@@ -7053,10 +7130,11 @@ def showZD (messageDetail):
                     res = conn.getresponse()
                     companyID = res.read()
                     compNameRaw = str(companyID.decode("utf-8"))
+                    data_dict = json.loads(str(compNameRaw))
+                    data = json.dumps(data_dict, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    d = json.loads(data)
 
-                    data = json.dumps(compNameRaw, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
                     org_Name = str(d["organizations"][0]["name"])
                     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                     orgName = str(org_name_temp)
@@ -7077,10 +7155,11 @@ def showZD (messageDetail):
                         res = conn.getresponse()
                         companyID = res.read()
                         compNameRaw = str(companyID.decode("utf-8"))
+                        data_dict = json.loads(str(compNameRaw))
+                        data = json.dumps(data_dict, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        d = json.loads(data)
 
-                        data = json.dumps(compNameRaw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         org_Name = str(d["organizations"][0]["name"])
                         org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                         orgName = str(org_name_temp)
@@ -7104,10 +7183,12 @@ def showZD (messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
 
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         req_name = str(d["user"]["name"])
                         requesterName = req_name
                     except:
@@ -7118,10 +7199,12 @@ def showZD (messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(data)
 
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             req_name = str(d["user"]["name"])
                             requesterName = req_name
                         except:
@@ -7137,10 +7220,12 @@ def showZD (messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(str(data))
 
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         assign_name = str(d["user"]["name"])
                         assigneeName = assign_name
                     except:
@@ -7153,10 +7238,12 @@ def showZD (messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             assign_name = str(d["user"]["name"])
                             assigneeName = assign_name
 
@@ -7284,7 +7371,8 @@ def showZD (messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(str(dataRender))
@@ -7382,7 +7470,8 @@ def showZD (messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(str(dataRender))
@@ -7565,9 +7654,13 @@ def showZD (messageDetail):
                     if isnext:
 
                         # try:
-                        data = json.dumps(request_raw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
+                        # data = json.dumps(request_raw, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        # d = json.loads(data_dict)
+
+                        data_dict = json.loads(str(request_raw))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
 
                         #for index in range(len(request_raw["request"])):
                         # requestid = str(d["request"]["id"])
@@ -7651,10 +7744,12 @@ def showZD (messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(data)
 
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             req_name = str(d["user"]["name"])
                             requesterName = req_name
                         except:
@@ -7665,10 +7760,12 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 userRequesterId = res.read()
                                 tempUserRequester = str(userRequesterId.decode('utf-8'))
+                                # data = json.dumps(tempUserRequester, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserRequester))
+                                data = json.dumps(data_dict, indent=2)
+                                d = json.loads(data)
 
-                                data = json.dumps(tempUserRequester, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 req_name = str(d["user"]["name"])
                                 requesterName = req_name
                             except:
@@ -7684,10 +7781,12 @@ def showZD (messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             assign_name = str(d["user"]["name"])
                             assigneeName = assign_name
                         except:
@@ -7700,10 +7799,12 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 userAssigneeId = res.read()
                                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                                # data = json.dumps(tempUserAssignee, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserAssignee))
+                                data = json.dumps(data_dict, indent=2)
+                                d = json.loads(str(data))
 
-                                data = json.dumps(tempUserAssignee, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 assign_name = str(d["user"]["name"])
                                 assigneeName = assign_name
 
@@ -7721,10 +7822,11 @@ def showZD (messageDetail):
                             res = conn.getresponse()
                             companyID = res.read()
                             compNameRaw = str(companyID.decode("utf-8"))
+                            data_dict = json.loads(str(compNameRaw))
+                            data = json.dumps(data_dict, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            d = json.loads(data)
 
-                            data = json.dumps(compNameRaw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             org_Name = str(d["organizations"][0]["name"])
                             org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                             orgName = str(org_name_temp)
@@ -7738,10 +7840,11 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 companyID = res.read()
                                 compNameRaw = str(companyID.decode("utf-8"))
+                                data_dict = json.loads(str(compNameRaw))
+                                data = json.dumps(data_dict, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                d = json.loads(data)
 
-                                data = json.dumps(compNameRaw, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 org_Name = str(d["organizations"][0]["name"])
                                 org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                                 orgName = str(org_name_temp)
@@ -7937,9 +8040,13 @@ def showZD (messageDetail):
                         if isnext:
 
                             # try:
-                            data = json.dumps(request_raw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
+                            # data = json.dumps(request_raw, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            # d = json.loads(data_dict)
+
+                            data_dict = json.loads(str(request_raw))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(data)
 
                             #for index in range(len(request_raw["request"])):
                             # requestid = str(d["request"]["id"])
@@ -8023,10 +8130,12 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 userRequesterId = res.read()
                                 tempUserRequester = str(userRequesterId.decode('utf-8'))
+                                # data = json.dumps(tempUserRequester, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserRequester))
+                                data = json.dumps(data_dict, indent=2)
+                                d = json.loads(data)
 
-                                data = json.dumps(tempUserRequester, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 req_name = str(d["user"]["name"])
                                 requesterName = req_name
                             except:
@@ -8037,10 +8146,12 @@ def showZD (messageDetail):
                                     res = conn.getresponse()
                                     userRequesterId = res.read()
                                     tempUserRequester = str(userRequesterId.decode('utf-8'))
+                                    # data = json.dumps(tempUserRequester, indent=2)
+                                    # data_dict = ast.literal_eval(data)
+                                    data_dict = json.loads(str(tempUserRequester))
+                                    data = json.dumps(data_dict, indent=2)
+                                    d = json.loads(data)
 
-                                    data = json.dumps(tempUserRequester, indent=2)
-                                    data_dict = ast.literal_eval(data)
-                                    d = json.loads(data_dict)
                                     req_name = str(d["user"]["name"])
                                     requesterName = req_name
                                 except:
@@ -8056,10 +8167,12 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 userAssigneeId = res.read()
                                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                                # data = json.dumps(tempUserAssignee, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                data_dict = json.loads(str(tempUserAssignee))
+                                data = json.dumps(data_dict, indent=2)
+                                d = json.loads(str(data))
 
-                                data = json.dumps(tempUserAssignee, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 assign_name = str(d["user"]["name"])
                                 assigneeName = assign_name
                             except:
@@ -8072,10 +8185,12 @@ def showZD (messageDetail):
                                     res = conn.getresponse()
                                     userAssigneeId = res.read()
                                     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                                    # data = json.dumps(tempUserAssignee, indent=2)
+                                    # data_dict = ast.literal_eval(data)
+                                    data_dict = json.loads(str(tempUserAssignee))
+                                    data = json.dumps(data_dict, indent=2)
+                                    d = json.loads(str(data))
 
-                                    data = json.dumps(tempUserAssignee, indent=2)
-                                    data_dict = ast.literal_eval(data)
-                                    d = json.loads(data_dict)
                                     assign_name = str(d["user"]["name"])
                                     assigneeName = assign_name
 
@@ -8093,10 +8208,11 @@ def showZD (messageDetail):
                                 res = conn.getresponse()
                                 companyID = res.read()
                                 compNameRaw = str(companyID.decode("utf-8"))
+                                data_dict = json.loads(str(compNameRaw))
+                                data = json.dumps(data_dict, indent=2)
+                                # data_dict = ast.literal_eval(data)
+                                d = json.loads(data)
 
-                                data = json.dumps(compNameRaw, indent=2)
-                                data_dict = ast.literal_eval(data)
-                                d = json.loads(data_dict)
                                 org_Name = str(d["organizations"][0]["name"])
                                 org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                                 orgName = str(org_name_temp)
@@ -8110,10 +8226,11 @@ def showZD (messageDetail):
                                     res = conn.getresponse()
                                     companyID = res.read()
                                     compNameRaw = str(companyID.decode("utf-8"))
+                                    data_dict = json.loads(str(compNameRaw))
+                                    data = json.dumps(data_dict, indent=2)
+                                    # data_dict = ast.literal_eval(data)
+                                    d = json.loads(data)
 
-                                    data = json.dumps(compNameRaw, indent=2)
-                                    data_dict = ast.literal_eval(data)
-                                    d = json.loads(data_dict)
                                     org_Name = str(d["organizations"][0]["name"])
                                     org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
                                     orgName = str(org_name_temp)
@@ -8246,7 +8363,8 @@ def showTicketComments (messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(str(dataRender))
@@ -8326,9 +8444,13 @@ def showTicketComments (messageDetail):
             except:
                 return messageDetail.ReplyToChatV2("There is no such Zendesk ticket number: <b>" + str(ticketID) + "</b>")
 
-            data = json.dumps(request_raw, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
+            # data = json.dumps(request_raw, indent=2)
+            # data_dict = ast.literal_eval(data)
+            # d = json.loads(data_dict)
+
+            data_dict = json.loads(str(request_raw))
+            data = json.dumps(data_dict, indent=2)
+            d = json.loads(data)
 
             requestrequester_id = str(d["ticket"]["requester_id"])
 
@@ -8337,10 +8459,11 @@ def showTicketComments (messageDetail):
             res = conn.getresponse()
             companyID = res.read()
             compNameRaw = str(companyID.decode("utf-8"))
+            data_dict = json.loads(str(compNameRaw))
+            data = json.dumps(data_dict, indent=2)
+            # data_dict = ast.literal_eval(data)
+            d = json.loads(data)
 
-            data = json.dumps(compNameRaw, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
             org_Name = str(d["organizations"][0]["name"])
             org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"',"&quot;").replace("'", "&apos;").replace(">", "&gt;")
             orgName = str(org_name_temp)
@@ -8403,7 +8526,8 @@ def showTicketComments (messageDetail):
 
                     ####################################
 
-                    data_dict = ast.literal_eval(attachments)
+                    # data_dict = ast.literal_eval(attachments)
+                    data_dict = json.loads(str(attachments))
                     dataRender = json.dumps(data_dict, indent=2)
                     d = json.loads(dataRender)
                     #print("d: " + str(d))
@@ -8438,10 +8562,12 @@ def showTicketComments (messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
 
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         req_name = str(d["user"]["name"])
                         author_id = req_name
                     except:
@@ -8452,10 +8578,12 @@ def showTicketComments (messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(data)
 
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             req_name = str(d["user"]["name"])
                             author_id = req_name
                         except:
@@ -8697,7 +8825,8 @@ def showTicketComments (messageDetail):
 
                 ####################################
 
-                data_dict = ast.literal_eval(attachments)
+                # data_dict = ast.literal_eval(attachments)
+                data_dict = json.loads(attachments)
                 dataRender = json.dumps(data_dict, indent=2)
                 d = json.loads(dataRender)
                 #print("d: " + str(d))
@@ -8732,10 +8861,12 @@ def showTicketComments (messageDetail):
                     res = conn.getresponse()
                     userRequesterId = res.read()
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserRequester))
+                    data = json.dumps(data_dict, indent=2)
+                    d = json.loads(data)
 
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
                     req_name = str(d["user"]["name"])
                     author_id = req_name
                 except:
@@ -8746,10 +8877,12 @@ def showTicketComments (messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
 
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         req_name = str(d["user"]["name"])
                         author_id = req_name
                     except:
@@ -9016,7 +9149,8 @@ def showTicketComments (messageDetail):
 
                 ####################################
 
-                data_dict = ast.literal_eval(attachments)
+                # data_dict = ast.literal_eval(attachments)
+                data_dict = json.loads(attachments)
                 dataRender = json.dumps(data_dict, indent=2)
                 d = json.loads(dataRender)
                 #print("d: " + str(d))
@@ -9051,10 +9185,12 @@ def showTicketComments (messageDetail):
                     res = conn.getresponse()
                     userRequesterId = res.read()
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserRequester))
+                    data = json.dumps(data_dict, indent=2)
+                    d = json.loads(data)
 
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d = json.loads(data_dict)
                     req_name = str(d["user"]["name"])
                     author_id = req_name
                 except:
@@ -9065,10 +9201,12 @@ def showTicketComments (messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
 
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         req_name = str(d["user"]["name"])
                         author_id = req_name
                     except:
@@ -9148,7 +9286,8 @@ def userZD(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -9243,7 +9382,8 @@ def userZD(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -9485,9 +9625,15 @@ def userZD(messageDetail):
                     else:
                         noOrgUserFlag = False
 
-                    data = json.dumps(tempOrganizationsID, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_req = json.loads(str(data_dict))
+                    data_dict = json.loads(str(tempOrganizationsID))
+                    data = json.dumps(data_dict, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    d_req = json.loads(data)
+
+                    # data = json.dumps(tempOrganizationsID, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    # d_req = json.loads(str(data_dict))
+
                     try:
                         org_Name = str(d_req["organizations"][0]["name"])
                         org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -9549,7 +9695,8 @@ def userZD(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -9786,10 +9933,14 @@ def userZD(messageDetail):
                         else:
                             noOrgUserFlag = False
 
+                        data_dict = json.loads(str(tempOrganizationsID))
+                        data = json.dumps(data_dict, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        d_req = json.loads(data)
 
-                        data = json.dumps(tempOrganizationsID, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(str(data_dict))
+                        # data = json.dumps(tempOrganizationsID, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        # d_req = json.loads(str(data_dict))
                         try:
                             org_Name = str(d_req["organizations"][0]["name"])
                             org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -9866,7 +10017,8 @@ def recentZD(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -10017,10 +10169,12 @@ def recentZD(messageDetail):
                     res = conn.getresponse()
                     userRequesterId = res.read()
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
+                    # data = json.dumps(tempUserRequester, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserRequester))
+                    data = json.dumps(data_dict, indent=2)
+                    d_req = json.loads(data)
 
-                    data = json.dumps(tempUserRequester, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_req = json.loads(data_dict)
                     requesterName = str(d_req["user"]["name"])
 
                 except:
@@ -10034,10 +10188,10 @@ def recentZD(messageDetail):
                     res = conn.getresponse()
                     companyID = res.read()
                     compNameRaw = str(companyID.decode("utf-8"))
-
-                    data = json.dumps(compNameRaw, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_org = json.loads(data_dict)
+                    data_dict = json.loads(str(compNameRaw))
+                    data = json.dumps(data_dict, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    d_org = json.loads(data)
 
                     try:
                         org_Name = str(d_org["organizations"][0]["name"])
@@ -10057,10 +10211,12 @@ def recentZD(messageDetail):
                     res = conn.getresponse()
                     userAssigneeId = res.read()
                     tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                    # data = json.dumps(tempUserAssignee, indent=2)
+                    # data_dict = ast.literal_eval(data)
+                    data_dict = json.loads(str(tempUserAssignee))
+                    data = json.dumps(data_dict, indent=2)
+                    d_assign = json.loads(str(data))
 
-                    data = json.dumps(tempUserAssignee, indent=2)
-                    data_dict = ast.literal_eval(data)
-                    d_assign = json.loads(data_dict)
                     assign_name = str(d_assign["user"]["name"])
                     assigneeName = assign_name
 
@@ -10227,7 +10383,8 @@ def recentZD(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -10378,10 +10535,12 @@ def recentZD(messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d_req = json.loads(data)
 
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(data_dict)
                         requesterName = str(d_req["user"]["name"])
 
                     except:
@@ -10395,10 +10554,10 @@ def recentZD(messageDetail):
                         res = conn.getresponse()
                         companyID = res.read()
                         compNameRaw = str(companyID.decode("utf-8"))
-
-                        data = json.dumps(compNameRaw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_org = json.loads(data_dict)
+                        data_dict = json.loads(str(compNameRaw))
+                        data = json.dumps(data_dict, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        d_org = json.loads(data)
 
                         try:
                             org_Name = str(d_org["organizations"][0]["name"])
@@ -10418,10 +10577,12 @@ def recentZD(messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d_assign = json.loads(str(data))
 
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_assign = json.loads(data_dict)
                         assign_name = str(d_assign["user"]["name"])
                         assigneeName = assign_name
 
@@ -10589,7 +10750,8 @@ def TicketCreate(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -10679,10 +10841,10 @@ def TicketCreate(messageDetail):
                         res = conn.getresponse()
                         companyID = res.read()
                         compNameRaw = str(companyID.decode("utf-8"))
-
-                        data = json.dumps(compNameRaw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_org = json.loads(data_dict)
+                        data_dict = json.loads(str(compNameRaw))
+                        data = json.dumps(data_dict, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        d_org = json.loads(data)
                         try:
                             org_Name = str(d_org["organizations"][0]["name"])
                             org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -10826,8 +10988,9 @@ def TicketCreate(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
 
+            data_dict = json.loads(str(data_raw))
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
 
@@ -10916,10 +11079,10 @@ def TicketCreate(messageDetail):
                             res = conn.getresponse()
                             companyID = res.read()
                             compNameRaw = str(companyID.decode("utf-8"))
-
-                            data = json.dumps(compNameRaw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_org = json.loads(data_dict)
+                            data_dict = json.loads(str(compNameRaw))
+                            data = json.dumps(data_dict, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            d_org = json.loads(data)
                             try:
                                 org_Name = str(d_org["organizations"][0]["name"])
                                 org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -11095,7 +11258,8 @@ def RequestCreate(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -11170,7 +11334,8 @@ def RequestCreate(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -11277,10 +11442,10 @@ def RequestCreate(messageDetail):
                             res = conn.getresponse()
                             companyID = res.read()
                             compNameRaw = str(companyID.decode("utf-8"))
-
-                            data = json.dumps(compNameRaw, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_org = json.loads(data_dict)
+                            data_dict = json.loads(str(compNameRaw))
+                            data = json.dumps(data_dict, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            d_org = json.loads(data)
                             try:
                                 org_Name = str(d_org["organizations"][0]["name"])
                                 org_name_temp = str(org_Name).replace("<", "&lt;").replace("\"", "&quot;").replace("&","&amp;").replace("'", "&apos;").replace(">", "&gt;")
@@ -11388,9 +11553,13 @@ def RequestCreate(messageDetail):
                 data = res.read()
                 request_raw = data.decode("utf-8")
 
-                data_raw = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data_raw)
-                d = json.loads(data_dict)
+                # data_raw = json.dumps(request_raw, indent=2)
+                # data_dict = ast.literal_eval(data_raw)
+                # d = json.loads(data_dict)
+
+                data_dict = json.loads(str(request_raw))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(data)
 
                 requestid = str(d["ticket"]["id"])
                 requeststatus = str(d["ticket"]["status"])
@@ -11446,9 +11615,13 @@ def RequestCreate(messageDetail):
                 data = res.read()
                 request_raw = data.decode("utf-8")
 
-                data_raw = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data_raw)
-                d = json.loads(data_dict)
+                # data_raw = json.dumps(request_raw, indent=2)
+                # data_dict = ast.literal_eval(data_raw)
+                # d = json.loads(data_dict)
+
+                data_dict = json.loads(str(request_raw))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(data)
 
                 requestid = str(d["request"]["id"])
                 requeststatus = str(d["request"]["status"])
@@ -11490,10 +11663,12 @@ def RequestCreate(messageDetail):
             res = conn.getresponse()
             userRequesterId = res.read()
             tempUserRequester = str(userRequesterId.decode('utf-8'))
+            # data = json.dumps(tempUserRequester, indent=2)
+            # data_dict = ast.literal_eval(data)
+            data_dict = json.loads(str(tempUserRequester))
+            data = json.dumps(data_dict, indent=2)
+            d = json.loads(data)
 
-            data = json.dumps(tempUserRequester, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
             req_name = str(d["user"]["name"])
             requesterName = req_name
 
@@ -11504,10 +11679,12 @@ def RequestCreate(messageDetail):
                 res = conn.getresponse()
                 userAssigneeId = res.read()
                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                # data = json.dumps(tempUserAssignee, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserAssignee))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(str(data))
 
-                data = json.dumps(tempUserAssignee, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
                 assign_name = str(d["user"]["name"])
                 assigneeName = assign_name
 
@@ -11531,10 +11708,11 @@ def RequestCreate(messageDetail):
             res = conn.getresponse()
             companyID = res.read()
             compNameRaw = str(companyID.decode("utf-8"))
+            data_dict = json.loads(str(compNameRaw))
+            data = json.dumps(data_dict, indent=2)
+            # data_dict = ast.literal_eval(data)
+            d = json.loads(data)
 
-            data = json.dumps(compNameRaw, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
             try:
                 org_Name = str(d["organizations"][0]["name"])
                 org_name_temp = str(org_Name).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
@@ -11769,10 +11947,9 @@ def RequestCreate(messageDetail):
                 res = conn.getresponse()
                 data = res.read()
                 request_raw = data.decode("utf-8")
-
-                data_raw = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data_raw)
-                d = json.loads(data_dict)
+                data_dict = json.loads(str(request_raw))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(data)
 
                 requestid = str(d["ticket"]["id"])
                 requeststatus = str(d["ticket"]["status"])
@@ -11827,10 +12004,9 @@ def RequestCreate(messageDetail):
                 res = conn.getresponse()
                 data = res.read()
                 request_raw = data.decode("utf-8")
-
-                data_raw = json.dumps(request_raw, indent=2)
-                data_dict = ast.literal_eval(data_raw)
-                d = json.loads(data_dict)
+                data_dict = json.loads(str(request_raw))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(data)
 
                 requestid = str(d["request"]["id"])
                 requeststatus = str(d["request"]["status"])
@@ -11873,10 +12049,12 @@ def RequestCreate(messageDetail):
             res = conn.getresponse()
             userRequesterId = res.read()
             tempUserRequester = str(userRequesterId.decode('utf-8'))
+            # data = json.dumps(tempUserRequester, indent=2)
+            # data_dict = ast.literal_eval(data)
+            data_dict = json.loads(str(tempUserRequester))
+            data = json.dumps(data_dict, indent=2)
+            d = json.loads(data)
 
-            data = json.dumps(tempUserRequester, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
             req_name = str(d["user"]["name"])
             requesterName = req_name
 
@@ -11887,10 +12065,12 @@ def RequestCreate(messageDetail):
                 res = conn.getresponse()
                 userAssigneeId = res.read()
                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                # data = json.dumps(tempUserAssignee, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserAssignee))
+                data = json.dumps(data_dict, indent=2)
+                d = json.loads(str(data))
 
-                data = json.dumps(tempUserAssignee, indent=2)
-                data_dict = ast.literal_eval(data)
-                d = json.loads(data_dict)
                 assign_name = str(d["user"]["name"])
                 assigneeName = assign_name
 
@@ -11914,10 +12094,10 @@ def RequestCreate(messageDetail):
             res = conn.getresponse()
             companyID = res.read()
             compNameRaw = str(companyID.decode("utf-8"))
-
-            data = json.dumps(compNameRaw, indent=2)
-            data_dict = ast.literal_eval(data)
-            d = json.loads(data_dict)
+            data_dict = json.loads(str(compNameRaw))
+            data = json.dumps(data_dict, indent=2)
+            # data_dict = ast.literal_eval(data)
+            d = json.loads(data)
 
             try:
                 org_Name = str(d["organizations"][0]["name"])
@@ -12071,7 +12251,8 @@ def newTicketToday(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -12164,7 +12345,8 @@ def newTicketToday(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -12312,9 +12494,13 @@ def newTicketToday(messageDetail):
         if str(reply).startswith("{\"results\":[],\"facets\":null,\"next_page\":null,\"previous_page\":null,\"count\":0}"):
             return messageDetail.ReplyToChatV2("No Zendesk ticket was created on " + ticketdate)
 
-        data = json.dumps(reply, indent=2)
-        data_dict = ast.literal_eval(data)
-        d_tick = json.loads(data_dict)
+        data_dict = json.loads(str(reply))
+        data = json.dumps(data_dict, indent=2)
+        d_tick = json.loads(data)
+
+        # data = json.dumps(reply, indent=2)
+        # data_dict = ast.literal_eval(data)
+        # d_tick = json.loads(data_dict)
         #print(d_tick)
 
         index = 1
@@ -12404,10 +12590,12 @@ def newTicketToday(messageDetail):
             res = conn.getresponse()
             userRequesterId = res.read()
             tempUserRequester = str(userRequesterId.decode('utf-8'))
+            # data = json.dumps(tempUserRequester, indent=2)
+            # data_dict = ast.literal_eval(data)
+            data_dict = json.loads(str(tempUserRequester))
+            data = json.dumps(data_dict, indent=2)
+            d_req = json.loads(data)
 
-            data = json.dumps(tempUserRequester, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_req = json.loads(data_dict)
             req_name = str(d_req["user"]["name"])
             requesterName = req_name
             #print(requesterName)
@@ -12420,10 +12608,12 @@ def newTicketToday(messageDetail):
                 res = conn.getresponse()
                 userAssigneeId = res.read()
                 tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                # data = json.dumps(tempUserAssignee, indent=2)
+                # data_dict = ast.literal_eval(data)
+                data_dict = json.loads(str(tempUserAssignee))
+                data = json.dumps(data_dict, indent=2)
+                d_user = json.loads(str(data))
 
-                data = json.dumps(tempUserAssignee, indent=2)
-                data_dict = ast.literal_eval(data)
-                d_user = json.loads(data_dict)
                 assign_name = str(d_user["user"]["name"])
                 assigneeName = assign_name
                 #print(assigneeName)
@@ -12441,10 +12631,10 @@ def newTicketToday(messageDetail):
             res = conn.getresponse()
             companyID = res.read()
             compNameRaw = str(companyID.decode("utf-8"))
-
-            data = json.dumps(compNameRaw, indent=2)
-            data_dict = ast.literal_eval(data)
-            d_org = json.loads(data_dict)
+            data_dict = json.loads(str(compNameRaw))
+            data = json.dumps(data_dict, indent=2)
+            # data_dict = ast.literal_eval(data)
+            d_org = json.loads(data)
             #print(str(d_org))
 
             try:
@@ -13008,7 +13198,8 @@ def ticketUpdate(messageDetail):
     resComp = connComp.getresponse()
     dataComp = resComp.read()
     data_raw = str(dataComp.decode('utf-8'))
-    data_dict = ast.literal_eval(data_raw)
+    # data_dict = ast.literal_eval(data_raw)
+    data_dict = json.loads(str(data_raw))
 
     dataRender = json.dumps(data_dict, indent=2)
     d_org = json.loads(dataRender)
@@ -13876,7 +14067,8 @@ def assignTicket(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)
@@ -13984,7 +14176,8 @@ def assignTicket(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -14168,7 +14361,8 @@ def assignTicket(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -14265,9 +14459,13 @@ def assignTicket(messageDetail):
                             "<b>There is no such Zendesk ticket number: " + str(ticketID) + "</b>")
 
                     try:
-                        data = json.dumps(request_raw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
+                        data_dict = json.loads(str(request_raw))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
+
+                        # data = json.dumps(request_raw, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        # d = json.loads(data_dict)
 
                         # for index in range(len(request_raw["request"])):
                         # requestid = str(d["request"]["id"])
@@ -14286,10 +14484,12 @@ def assignTicket(messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(str(data))
 
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
                         #print(d)
 
                         assign_name = str(d["user"]["name"])
@@ -14306,10 +14506,12 @@ def assignTicket(messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(str(data))
 
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
                             # print(d)
 
                             assign_name = str(d["user"]["name"])
@@ -14618,9 +14820,14 @@ def assignTicket(messageDetail):
                             "<b>There is no such Zendesk ticket number: " + str(ticketID) + "</b>")
 
                     try:
-                        data = json.dumps(request_raw, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
+
+                        data_dict = json.loads(str(request_raw))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(data)
+
+                        # data = json.dumps(request_raw, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        # d = json.loads(data_dict)
 
                         # for index in range(len(request_raw["request"])):
                         # requestid = str(d["request"]["id"])
@@ -14639,10 +14846,11 @@ def assignTicket(messageDetail):
                         res = conn.getresponse()
                         userAssigneeId = res.read()
                         tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                        data = json.dumps(tempUserAssignee, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d = json.loads(data_dict)
+                        # data = json.dumps(tempUserAssignee, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserAssignee))
+                        data = json.dumps(data_dict, indent=2)
+                        d = json.loads(str(data))
                         #print(d)
 
                         assign_name = str(d["user"]["name"])
@@ -14659,10 +14867,11 @@ def assignTicket(messageDetail):
                             res = conn.getresponse()
                             userAssigneeId = res.read()
                             tempUserAssignee = str(userAssigneeId.decode('utf-8'))
-
-                            data = json.dumps(tempUserAssignee, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d = json.loads(data_dict)
+                            # data = json.dumps(tempUserAssignee, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserAssignee))
+                            data = json.dumps(data_dict, indent=2)
+                            d = json.loads(str(data))
                             # print(d)
 
                             assign_name = str(d["user"]["name"])
@@ -14923,7 +15132,8 @@ def addAccess(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -14983,7 +15193,8 @@ def addAccess(messageDetail):
                         resComp = connComp.getresponse()
                         dataComp = resComp.read()
                         data_raw = str(dataComp.decode('utf-8'))
-                        data_dict = ast.literal_eval(data_raw)
+                        # data_dict = ast.literal_eval(data_raw)
+                        data_dict = json.loads(str(data_raw))
 
                         dataRender = json.dumps(data_dict, indent=2)
                         d_org = json.loads(dataRender)
@@ -15060,7 +15271,8 @@ def addAccess(messageDetail):
                             resComp = connComp.getresponse()
                             dataComp = resComp.read()
                             data_raw = str(dataComp.decode('utf-8'))
-                            data_dict = ast.literal_eval(data_raw)
+                            # data_dict = ast.literal_eval(data_raw)
+                            data_dict = json.loads(str(data_raw))
 
                             dataRender = json.dumps(data_dict, indent=2)
                             d_org = json.loads(dataRender)
@@ -15151,7 +15363,8 @@ def removeAccess(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -15210,7 +15423,8 @@ def removeAccess(messageDetail):
                         resComp = connComp.getresponse()
                         dataComp = resComp.read()
                         data_raw = str(dataComp.decode('utf-8'))
-                        data_dict = ast.literal_eval(data_raw)
+                        # data_dict = ast.literal_eval(data_raw)
+                        data_dict = json.loads(str(data_raw))
 
                         dataRender = json.dumps(data_dict, indent=2)
                         d_org = json.loads(dataRender)
@@ -15283,7 +15497,8 @@ def removeAccess(messageDetail):
                             resComp = connComp.getresponse()
                             dataComp = resComp.read()
                             data_raw = str(dataComp.decode('utf-8'))
-                            data_dict = ast.literal_eval(data_raw)
+                            # data_dict = ast.literal_eval(data_raw)
+                            data_dict = json.loads(str(data_raw))
 
                             dataRender = json.dumps(data_dict, indent=2)
                             d_org = json.loads(dataRender)
@@ -15378,7 +15593,8 @@ def listAllAccess(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -15451,7 +15667,8 @@ def createZendeskUser(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -15492,7 +15709,8 @@ def createZendeskUser(messageDetail):
                 resComp = connComp.getresponse()
                 dataComp = resComp.read()
                 data_raw = str(dataComp.decode('utf-8'))
-                data_dict = ast.literal_eval(data_raw)
+                # data_dict = ast.literal_eval(data_raw)
+                data_dict = json.loads(str(data_raw))
 
                 dataRender = json.dumps(data_dict, indent=2)
                 d_org = json.loads(dataRender)
@@ -15528,9 +15746,14 @@ def createZendeskUser(messageDetail):
                 data = res.read().decode("utf-8")
                 #print("User Info on Zendesk: " + data)
 
-                data_parser = json.dumps(data, indent=2)
-                data_dict = ast.literal_eval(data_parser)
-                d_req = json.loads(data_dict)
+                # data_parser = json.dumps(data, indent=2)
+                # data_dict = ast.literal_eval(data_parser)
+                # d_req = json.loads(data_dict)
+
+                data_dict = json.loads(str(data))
+                data_new = json.dumps(data_dict, indent=2)
+                d_req = json.loads(data_new)
+
                 ZD_id = str(d_req["user"]["id"])
                 ZD_name = str(d_req["user"]["name"])
                 ZD_email = str(d_req["user"]["email"])
@@ -15572,7 +15795,8 @@ def searchKb(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -15660,9 +15884,12 @@ def searchKb(messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(data_dict)
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d_req = json.loads(data)
+
                         req_name = str(d_req["user"]["name"])
                         kb_author_name = req_name
                     except:
@@ -15673,9 +15900,12 @@ def searchKb(messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_req = json.loads(data_dict)
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d_req = json.loads(data)
+
                             req_name = str(d_req["user"]["name"])
                             kb_author_name = req_name
                         except:
@@ -15767,9 +15997,12 @@ def searchKb(messageDetail):
                         res = conn.getresponse()
                         userRequesterId = res.read()
                         tempUserRequester = str(userRequesterId.decode('utf-8'))
-                        data = json.dumps(tempUserRequester, indent=2)
-                        data_dict = ast.literal_eval(data)
-                        d_req = json.loads(data_dict)
+                        # data = json.dumps(tempUserRequester, indent=2)
+                        # data_dict = ast.literal_eval(data)
+                        data_dict = json.loads(str(tempUserRequester))
+                        data = json.dumps(data_dict, indent=2)
+                        d_req = json.loads(data)
+
                         req_name = str(d_req["user"]["name"])
                         kb_author_name = req_name
                     except:
@@ -15780,9 +16013,12 @@ def searchKb(messageDetail):
                             res = conn.getresponse()
                             userRequesterId = res.read()
                             tempUserRequester = str(userRequesterId.decode('utf-8'))
-                            data = json.dumps(tempUserRequester, indent=2)
-                            data_dict = ast.literal_eval(data)
-                            d_req = json.loads(data_dict)
+                            # data = json.dumps(tempUserRequester, indent=2)
+                            # data_dict = ast.literal_eval(data)
+                            data_dict = json.loads(str(tempUserRequester))
+                            data = json.dumps(data_dict, indent=2)
+                            d_req = json.loads(data)
+
                             req_name = str(d_req["user"]["name"])
                             kb_author_name = req_name
                         except:
@@ -15843,7 +16079,8 @@ def querySFDC(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        data_dict = ast.literal_eval(data_raw)
+        # data_dict = ast.literal_eval(data_raw)
+        data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
@@ -15931,7 +16168,8 @@ def querySFDC(messageDetail):
             resComp = connComp.getresponse()
             dataComp = resComp.read()
             data_raw = str(dataComp.decode('utf-8'))
-            data_dict = ast.literal_eval(data_raw)
+            # data_dict = ast.literal_eval(data_raw)
+            data_dict = json.loads(str(data_raw))
 
             dataRender = json.dumps(data_dict, indent=2)
             d_org = json.loads(dataRender)

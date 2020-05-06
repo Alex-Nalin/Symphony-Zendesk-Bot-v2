@@ -5456,7 +5456,7 @@ def atMentionRoom(messageDetail):
     try:
         commandCallerUID = messageDetail.FromUserId
         roomStreamID = messageDetail.StreamId
-        print(str(roomStreamID))
+        #print(str(roomStreamID))
 
         connComp = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
         sessionTok = callout.GetSessionToken()
@@ -5471,37 +5471,53 @@ def atMentionRoom(messageDetail):
         resComp = connComp.getresponse()
         dataComp = resComp.read()
         data_raw = str(dataComp.decode('utf-8'))
-        # data_dict = ast.literal_eval(data_raw)
         data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         d_org = json.loads(dataRender)
 
         for index_org in range(len(d_org["users"])):
-            firstName = str(d_org["users"][index_org]["firstName"])
-            lastName = str(d_org["users"][index_org]["lastName"])
-            displayName = str(d_org["users"][index_org]["displayName"])
-            #companyName = d_org["users"][index_org]["company"]
+            # firstName = str(d_org["users"][index_org]["firstName"])
+            # lastName = str(d_org["users"][index_org]["lastName"])
+            # displayName = str(d_org["users"][index_org]["displayName"])
+            # #companyName = d_org["users"][index_org]["company"]
             companyNameTemp = d_org["users"][index_org]["company"]
             companyTemp = str(companyNameTemp).replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;").replace("'", "&apos;").replace(">", "&gt;")
             companyName = str(companyTemp)
-            userID = str(d_org["users"][index_org]["id"])
+            init_userID = str(d_org["users"][index_org]["id"])
 
-            botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(userID))
-            callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(userID))
+            # botlog.LogSymphonyInfo(str(firstName) + " " + str(lastName) + " from Company/Pod name: " + str(companyName) + " with UID: " + str(init_userID))
+            # callerCheck = (firstName + " " + lastName + " - " + displayName + " - " + companyName + " - " + str(init_userID))
 
     except:
-        #return messageDetail.ReplyToChat("Cannot validate user access")
         return botlog.LogSymphonyInfo("Cannot validate user access")
 
-    if callerCheck in (_configDef['AuthUser']['AdminList']):
+    # if callerCheck in (_configDef['AuthUser']['AdminList']):
+    if companyName in _configDef['AuthCompany']['PodList']:
 
-        message = (messageDetail.Command.MessageText)
+        originator = "<mention uid=\"" + str(init_userID) + "\"/>"
+        bot_email = botconfig.BotEmailAddress
+        mentions = ""
+
+        connComp.request("GET", "/pod/v3/users?email=" + bot_email, headers=headersCompany)
+
+        resComp = connComp.getresponse()
+        dataComp = resComp.read()
+        data_raw = str(dataComp.decode('utf-8'))
+        data_dict = json.loads(str(data_raw))
+
+        dataRender = json.dumps(data_dict, indent=2)
+        d_org = json.loads(dataRender)
+
+        for index_org in range(len(d_org["users"])):
+            bot_userID = str(d_org["users"][index_org]["id"])
+
+        # message = (messageDetail.Command.MessageText)
+        # print(message)
 
         conn = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
 
         headers = {
-            #'sessiontoken': callout.GetSessionToken(),
             'sessiontoken':sessionTok,
             'cache-control': "no-cache"
         }
@@ -5510,33 +5526,22 @@ def atMentionRoom(messageDetail):
 
         res = conn.getresponse()
         data_raw = res.read().decode("utf-8")
-
         data_dict = json.loads(str(data_raw))
 
         dataRender = json.dumps(data_dict, indent=2)
         userAccess = json.loads(dataRender)
 
-        table_body = ""
-        table_header = "<table style='border-collapse:collapse;border:2px solid black;table-layout:fixed;max-width:25%;box-shadow: 5px 5px'><thead><tr style='background-color:#4D94FF;color:#ffffff;font-size:1rem' class=\"tempo-text-color--white tempo-bg-color--black\">" \
-                       "<td style='border:1px solid blue;border-bottom: double blue;width:60%;text-align:center'>DISPLAY NAME</td>" \
-                       "<td style='border:1px solid blue;border-bottom: double blue;width:40%;text-align:center'>USER ID?</td>" \
-                       "</tr></thead><tbody>"
-
         for index in range(len(userAccess["members"])):
-
-            displayName = str(userAccess["members"][index]["user"]["displayName"])
             userId = str(userAccess["members"][index]["user"]["userId"])
 
-            table_body += "<tr>" \
-                          "<td style='border:1px solid black;text-align:center'>" + str(displayName) + "</td>" \
-                          "<td style='border:1px solid black;text-align:center'>" + str(userId) + "</td>" \
-                          "</tr>"
+            if (str(userId) == str(init_userID)) or (str(userId) == str(bot_userID)):
+                botlog.LogSymphonyInfo("ignored ids")
+            else:
+                mentions += "<mention uid=\"" + userId + "\"/> "
 
-        table_body += "</tbody></table>"
-        render = table_header + table_body
+        mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header> Room @mentioned by " + str(originator) + ", please see message</header><body>" + mentions + "</body></card>"
 
-        return messageDetail.ReplyToChatV2_noBotLog(
-            "<card iconSrc =\"https://thumb.ibb.co/csXBgU/Symphony2018_App_Icon_Mobile.png\" accent=\"tempo-bg-color--blue\"><header>Please find the result below</header><body>" + render + "</body></card>")
+        return messageDetail.ReplyToChatV2_noBotLog(mention_card)
 
 
     else:

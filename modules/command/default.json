@@ -1,18 +1,6 @@
 {
   "commands": [
     {
-      "name": "atMentionRoom",
-      "triggers": ["Room", "room"],
-      "function": "atMentionRoom",
-      "helptext": "<b>/room</b> MSG",
-      "description": "@mentions all users of the current room and sends a message (MSG) ",
-      "param":"None",
-      "example":"/room Hi all",
-      "category": "Miscellaneous",
-      "scope": "Internal",
-      "permission": "Bot Admin"
-    },
-    {
       "name": "ZDStream",
       "triggers": ["ZDStream", "ZDstream", "zdstream"],
       "function": "botStream",
@@ -60,6 +48,19 @@
       "scope": "External",
       "category": "Miscellaneous",
       "permission": "All"
+    },
+    {
+      "name": "mention",
+      "triggers": ["all", "here", "everyone", "room"],
+      "function": "atMentionRoom",
+      "helptext": "<b>/all</b>",
+      "description": "@mentions all members of a stream/room to look at posted message",
+      "param":"None",
+      "example":"/all This is an important message bla bla",
+      "category": "Miscellaneous",
+      "scope": "Internal",
+      "permission": "All",
+      "immediate": true
     },
     {
       "name": "addAcronym",

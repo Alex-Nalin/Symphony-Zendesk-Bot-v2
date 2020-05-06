@@ -26,6 +26,19 @@
       "permission": "All"
     },
     {
+      "name": "mention",
+      "triggers": ["all", "here", "everyone", "room"],
+      "function": "atMentionRoom",
+      "helptext": "<b>/all</b>",
+      "description": "@mentions all members of a stream/room to look at posted message",
+      "param":"None",
+      "example":"/all This is an important message bla bla",
+      "category": "Miscellaneous",
+      "scope": "Internal",
+      "permission": "All",
+      "immediate": true
+    },
+    {
       "name": "echo",
       "triggers": ["echo"],
       "function": "SendSymphonyEchoV2",

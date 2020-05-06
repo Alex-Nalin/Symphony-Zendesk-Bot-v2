@@ -3732,12 +3732,11 @@ def funQuote(messageDetail):
 
             botlog.LogSymphonyInfo("Bot Call: Fun Quote")
             try:
-
                 try:
-                    conn = http.client.HTTPSConnection(_configDef['x-mashape']['URL'])
+                    conn = http.client.HTTPSConnection(_configDef['rapidapi']['URL'])
 
                     headers = {
-                        'x-mashape-key': _configDef['x-mashape']['API_Key'],
+                        'x-rapidapi-key': _configDef['rapidapi']['API_Key'],
                         'cache-control': "no-cache"
                     }
 
@@ -3763,10 +3762,10 @@ def funQuote(messageDetail):
             botlog.LogSymphonyInfo("Inside Second FunQuote")
             try:
                 try:
-                    conn = http.client.HTTPSConnection(_configDef['x-mashape']['URL'])
+                    conn = http.client.HTTPSConnection(_configDef['rapidapi']['URL'])
 
                     headers = {
-                        'x-mashape-key': _configDef['x-mashape']['API_Key'],
+                        'x-rapidapi-key': _configDef['rapidapi']['API_Key'],
                         'cache-control': "no-cache"
                     }
 

@@ -118,7 +118,26 @@ class SymphonyUser:
             self.Name = user.displayName  # fname + ' ' + lname
             self.Company = user.company  # company
             self.IsValidSender = IsValidSendingUser(self.Email)
-        self.FullName = self.FirstName + ' ' + self.LastName
+        try:
+            #print(1)
+            self.FullName = self.FirstName + ' ' + self.LastName
+            #print(self.FullName)
+        except:
+            #print(1.1)
+            try:
+                #print(2)
+                self.FullName = "N/A" + ' ' + self.LastName
+                #print(self.FullName)
+            except:
+                #print(2.1)
+                try:
+                    #print(3)
+                    self.FullName = self.FirstName + ' ' + "N/A"
+                    #print(self.FullName)
+                except:
+                    #print(3.1)
+                    self.FullName = "N/A" + ' ' + "N/A"
+                    #print(self.FullName)
 
 # def sendBotConnectionRequest_test(messageDetail):
 #     return messageDetail.ReplyToChat("You are not connected to the Bot, please accept the connection request.")

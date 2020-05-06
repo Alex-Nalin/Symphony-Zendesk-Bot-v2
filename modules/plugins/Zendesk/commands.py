@@ -555,6 +555,7 @@ def searchCompanyTickets(messageDetail):
         all = True
         numberCheck = 0
         backColor = _configDef['tableBackColor']
+        report_body = ""
 
         try:
             commandCallerUID = messageDetail.FromUserId
@@ -868,6 +869,9 @@ def searchCompanyTickets(messageDetail):
                     "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Updated</td>" \
                     "<td style='border:1px solid blue;border-bottom: double blue;width:10%;text-align:center'>Status</td></tr></thead>"
 
+                report_header = tableStruc
+                print(report_header)
+
                 for result in data['results']:
                     totTickets += 1
                     numberCheck += 1
@@ -1018,7 +1022,6 @@ def searchCompanyTickets(messageDetail):
                                         "<td style='border:1px solid blue;border-bottom: double blue;width:5%;text-align:center'>SEVERITY</td>" \
                                         "<td style='border:1px solid black;text-align:center'>" + str(sev) + " " + "</td></tr></thead><tbody></tbody></table>"
 
-
                     #allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a> : " + str(ticketSubject) + " (assignee: " + str(assignee) + " updated: " + str(updated) + " status <b>" + str(result["status"]) + "</b>) <br/>"
                     allTicket += "- <a href=\"" + (_configDef['zdesk_config']['zdesk_link']) + str(ticketid) + "\">" + str(ticketid) + "</a><b> "  + str(sevv) +  " </b> : " + str(ticketSubject) + " (requester: " + str(requester) + " assignee: " + str(assignee) + " updated: <b>" + str(updated) + "</b> status <b>" + str(result["status"]) + "</b>) <br/>"
 
@@ -1046,6 +1049,9 @@ def searchCompanyTickets(messageDetail):
                     # tableDisp = tableStruc + allTicket + "</tr></thead><tbody></tbody></table>"
                     tableDisp = tableStruc + tableStrucBody + "<tbody></tbody></table>"
                     #print(str(tableDisp))
+
+                    report_body = tableStrucBody
+                    print(report_body)
 
                     # Checking for unique words (Tokens)
                     UniqueToken = len(set(table_header.split()))
@@ -1080,6 +1086,8 @@ def searchCompanyTickets(messageDetail):
                             table_bodyFull = ""
                             allTicket = ""
                             tableDisp = ""
+                            report_body += tableStrucBody
+                            print("inside 1 " + str(report_body))
                             tableStrucBody = ""
                             counter = False
                     else:
@@ -1095,8 +1103,49 @@ def searchCompanyTickets(messageDetail):
                             table_bodyFull = ""
                             allTicket = ""
                             tableDisp = ""
+                            report_body += tableStrucBody
+                            print("inside 2 " + str(report_body))
                             tableStrucBody = ""
                             counter = False
+
+                    #report_body += tableStrucBody
+
+                report = str(report_header) + "" + str(report_body)
+                print(report)
+                print(" -->> REPORT")
+
+                ##
+
+                report_head = "<html><head><title>Symphony Report</title></head><body>" + str(report) + "</body></html>"
+                # print(str(report_head))
+
+                f = open('Temp/report.html', 'w')
+                f.write(str(report_head))
+                f.close()
+                upload_raw = os.path.abspath("Temp/report.html")
+                f = open(upload_raw, 'rb')
+                fdata = f.read()
+
+                import pdfkit
+                pdfkit.from_file('Temp/report.html', 'Temp/report.pdf')
+
+                f.close()
+
+                upload_raw1 = os.path.abspath("Temp/report.pdf")
+                f1 = open(upload_raw1, 'rb')
+                fdata1 = f1.read()
+
+                ctype, encoding = mimetypes.guess_type(upload_raw1)
+                att1 = ("Symphony report.pdf", fdata1, ctype)
+
+                att_list = [att1]
+
+                message = "Client Report"
+
+                # botlog.LogSymphonyInfo(messageDetail.MessageRaw)
+                # messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
+
+                ##
 
                 if sendUser and limitReached == False:
                     if table_header == "":
@@ -1108,6 +1157,7 @@ def searchCompanyTickets(messageDetail):
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToSenderv2_noBotLog(str(reply))
                         messageDetail.ReplyToSenderv2_noBotLog(str(reply))
+                        messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
                         return messageDetail.ReplyToSenderv2_noBotLog("There is " + str(totTickets) + " results for this search.")
                 else:
                     if table_header == "":
@@ -1120,6 +1170,7 @@ def searchCompanyTickets(messageDetail):
                         reply = str(table_bodyFull)
                         #return messageDetail.ReplyToChatV2_noBotLog(str(reply))
                         messageDetail.ReplyToChatV2_noBotLog(str(reply))
+                        messaging.SendSymphonyMessageV2_data(messageDetail.StreamId, message, None, att_list)
                         return messageDetail.ReplyToChatV2_noBotLog("There is " + str(totTickets) + " results for this search.")
 
             else:
@@ -8855,20 +8906,25 @@ def showTicketComments (messageDetail):
 
                 created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
 
+                conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
+
                 try:
                     # To get the name of the requester given the requesterID
                     conn.request("GET", "/api/v2/users/" + author_id, headers=headers)
                     res = conn.getresponse()
                     userRequesterId = res.read()
+                    #1print(userRequesterId)
                     tempUserRequester = str(userRequesterId.decode('utf-8'))
                     # data = json.dumps(tempUserRequester, indent=2)
                     # data_dict = ast.literal_eval(data)
                     data_dict = json.loads(str(tempUserRequester))
                     data = json.dumps(data_dict, indent=2)
                     d = json.loads(data)
+                    #print(d)
 
                     req_name = str(d["user"]["name"])
                     author_id = req_name
+                    #print(author_id)
                 except:
                     try:
                         botlog.LogSymphonyInfo("inside second try for requester name value inside showTicketComments")
@@ -9178,6 +9234,8 @@ def showTicketComments (messageDetail):
                 ####################################
 
                 created_at = str(result["created_at"]).replace("T", " ").replace("Z", "")
+
+                conn = http.client.HTTPSConnection(_configDef['zdesk_config']['zdesk_api'])
 
                 try:
                     # To get the name of the requester given the requesterID

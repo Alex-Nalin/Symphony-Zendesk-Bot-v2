@@ -5498,6 +5498,7 @@ def atMentionRoom(messageDetail):
         originator = "<mention uid=\"" + str(init_userID) + "\"/>"
         bot_email = botconfig.BotEmailAddress
         mentions = ""
+        print(bot_email)
 
         connComp.request("GET", "/pod/v3/users?email=" + bot_email, headers=headersCompany)
 
@@ -5511,6 +5512,7 @@ def atMentionRoom(messageDetail):
 
         for index_org in range(len(d_org["users"])):
             bot_userID = str(d_org["users"][index_org]["id"])
+            print(bot_userID)
 
         # message = (messageDetail.Command.MessageText)
         # print(message)
@@ -5522,7 +5524,8 @@ def atMentionRoom(messageDetail):
             'cache-control': "no-cache"
         }
 
-        conn.request("GET", "/pod/v1/admin/stream/" + str(roomStreamID) + "/membership/list", headers=headers)
+        # conn.request("GET", "/pod/v1/admin/stream/" + str(roomStreamID) + "/membership/list", headers=headers)
+        conn.request("GET", "/pod/v2/room/" + str(roomStreamID) + "/membership/list", headers=headers)
 
         res = conn.getresponse()
         data_raw = res.read().decode("utf-8")
@@ -5531,8 +5534,12 @@ def atMentionRoom(messageDetail):
         dataRender = json.dumps(data_dict, indent=2)
         userAccess = json.loads(dataRender)
 
-        for index in range(len(userAccess["members"])):
-            userId = str(userAccess["members"][index]["user"]["userId"])
+        # for index in range(len(userAccess["members"])):
+        #     userId = str(userAccess["members"][index]["user"]["userId"])
+
+        for index in range(len(userAccess)):
+            userId = str(userAccess[index]["id"])
+            print(userId)
 
             if (str(userId) == str(init_userID)) or (str(userId) == str(bot_userID)):
                 botlog.LogSymphonyInfo("ignored ids")

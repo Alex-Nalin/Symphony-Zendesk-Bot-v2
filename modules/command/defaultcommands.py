@@ -1956,6 +1956,50 @@ def GetGiphyImage(messageDetail):
         except:
             botlog.LogSymphonyInfo("Giphy did not work entirely")
 
+
+def loremPicsum(messageDetail):
+
+    try:
+        import requests
+
+        url = "https://picsum.photos/720"
+
+        payload = {}
+        headers = {
+            'Cookie': '__cfduid=dae4f40b0d7e8f99b784293912e35234c1592487512'
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        image_url = response.url
+
+        imageDaily = "<card accent=\"tempo-bg-color--blue\" iconSrc=\"\"><header>Today's random image</header><body><img src=\"" + str(
+            image_url) + "\"></img></body></card>"
+
+        return messageDetail.ReplyToChatV2(str(imageDaily))
+    except:
+        return print("couldn't return random image")
+
+
+def loremPicsumTask():
+    try:
+        import requests
+
+        url = "https://picsum.photos/720"
+
+        payload = {}
+        headers = {
+            'Cookie': '__cfduid=dae4f40b0d7e8f99b784293912e35234c1592487512'
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        image_url = response.url
+
+        imageDaily = "<card accent=\"tempo-bg-color--blue\" iconSrc=\"\"><header>Today's random image</header><body><img src=\"" + str(
+            image_url) + "\"></img></body></card>"
+
+        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], imageDaily)
+    except:
+        return print("couldn't return random image")
+
+
 def QoD (messageDetail):
 
     try:
@@ -2000,7 +2044,7 @@ def QoD (messageDetail):
 
                 isRandom = len(qodcheck) == 0 or qodcheck[0] == ""
 
-                messageDetail.ReplyToChat("Please ponder on the following Quote:")
+                #messageDetail.ReplyToChat("Please ponder on the following Quote:")
 
                 if isRandom:
 
@@ -2021,7 +2065,10 @@ def QoD (messageDetail):
                     checklen = len(qodrawsplit)
 
                     if checklen == 4:
-                        return messageDetail.ReplyToChat("Quote of the Day will be live again tomorrow :)")
+
+                        messageDetail.ReplyToChat("Quote of the Day will be live again tomorrow :)")
+                        loremPicsum(messageDetail)
+
                     else:
 
                         qodrawsplitdata = str(qodrawsplit[5][2:][:-23])
@@ -2029,9 +2076,11 @@ def QoD (messageDetail):
                         qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
                         qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
 
-                        msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+                        #msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+                        msg = "Quote of the Day by " + str(qodrawsplitAuhor) + "<br></br>" + str(qodrawsplitdata).replace("\\r\\n", " ").replace("\\r\\", " ")
 
-                    return messageDetail.ReplyToChatV2(str(msg))
+                    messageDetail.ReplyToChatV2(str(msg))
+                    loremPicsum(messageDetail)
 
                 else:
                     return messageDetail.ReplyToChat("Please just type /qod to get the Quote of the Day")
@@ -2067,7 +2116,9 @@ def QoD (messageDetail):
                     checklen = len(qodrawsplit)
 
                     if checklen == 4:
-                        return messageDetail.ReplyToChat("Quote of the Day will be live again tomorrow :)")
+                        messageDetail.ReplyToChat("Quote of the Day will be live again tomorrow :)")
+                        loremPicsum(messageDetail)
+
                     else:
 
                         qodrawsplitdata = str(qodrawsplit[5][2:][:-23])
@@ -2075,9 +2126,11 @@ def QoD (messageDetail):
                         qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
                         qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
 
-                        msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+                        #msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+                        msg = "Quote of the Day by " + str(qodrawsplitAuhor) + "<br></br>" + str(qodrawsplitdata).replace("\\r\\n", " ").replace("\\r\\", " ")
 
-                    return messageDetail.ReplyToChatV2(str(msg))
+                    messageDetail.ReplyToChatV2(str(msg))
+                    loremPicsum(messageDetail)
 
                 else:
                     return messageDetail.ReplyToChat("Please just type /qod to get the Quote of the Day")
@@ -2116,10 +2169,12 @@ def QoDTask ():
             qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
             qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
 
-            msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+            #msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+            msg = "Quote of the Day by " + str(qodrawsplitAuhor) + "<br></br>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\", " ")
         #messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
         # return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
-        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
+        messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
+        loremPicsumTask()
 
     except:
         conn = http.client.HTTPConnection("quotes.rest")
@@ -2146,9 +2201,11 @@ def QoDTask ():
             qodrawsplitAuhor = str(qodrawsplit[7][2:][:-21])
             qodrawsplitAuhor = qodrawsplitAuhor.replace("\",", "")
 
-            msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+            #msg = "<card accent=\"tempo-bg-color--blue\"><header>Quote of the Day by " + str(qodrawsplitAuhor) + "</header><body>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\"," ") + "</body></card>"
+            msg = "Quote of the Day by " + str(qodrawsplitAuhor) + "<br></br>" + str(qodrawsplitdata).replace("\\r\\n"," ").replace("\\r\\", " ")
+        #messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
         messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream1'], msg)
-        return messaging.SendSymphonyMessageV2(_configDef['quoteOfTheDay']['stream2'], msg)
+        loremPicsumTask()
 
 ##########################
 ## OLD WEATHER API ##

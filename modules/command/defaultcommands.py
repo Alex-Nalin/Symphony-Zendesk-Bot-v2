@@ -5552,10 +5552,13 @@ def atMentionRoom(messageDetail):
     # if callerCheck in (_configDef['AuthUser']['AdminList']):
     if companyName in _configDef['AuthCompany']['PodList']:
 
+        splitter = False
+        thereIsMore = False
+        once = True
+        atMentionLimit = 40
         originator = "<mention uid=\"" + str(init_userID) + "\"/>"
         bot_email = botconfig.BotEmailAddress
         mentions = ""
-        print(bot_email)
 
         connComp.request("GET", "/pod/v3/users?email=" + bot_email, headers=headersCompany)
 
@@ -5569,10 +5572,6 @@ def atMentionRoom(messageDetail):
 
         for index_org in range(len(d_org["users"])):
             bot_userID = str(d_org["users"][index_org]["id"])
-            print(bot_userID)
-
-        # message = (messageDetail.Command.MessageText)
-        # print(message)
 
         conn = http.client.HTTPSConnection(_configDef['symphonyinfo']['pod_hostname'])
 
@@ -5581,7 +5580,6 @@ def atMentionRoom(messageDetail):
             'cache-control': "no-cache"
         }
 
-        # conn.request("GET", "/pod/v1/admin/stream/" + str(roomStreamID) + "/membership/list", headers=headers)
         conn.request("GET", "/pod/v2/room/" + str(roomStreamID) + "/membership/list", headers=headers)
 
         res = conn.getresponse()
@@ -5591,22 +5589,44 @@ def atMentionRoom(messageDetail):
         dataRender = json.dumps(data_dict, indent=2)
         userAccess = json.loads(dataRender)
 
-        # for index in range(len(userAccess["members"])):
-        #     userId = str(userAccess["members"][index]["user"]["userId"])
+
+        counter = 0
+        counterAtmentionedOnly = 0
+        totalUsersInRoom = len(userAccess)
+
+        if int(totalUsersInRoom) > int(atMentionLimit):
+            splitter = True
 
         for index in range(len(userAccess)):
             userId = str(userAccess[index]["id"])
-            print(userId)
 
             if (str(userId) == str(init_userID)) or (str(userId) == str(bot_userID)):
                 botlog.LogSymphonyInfo("ignored ids")
             else:
+                counter += 1
+                counterAtmentionedOnly += 1
                 mentions += "<mention uid=\"" + userId + "\"/> "
 
-        mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header> Room @mentioned by " + str(originator) + ", please see message</header><body>" + mentions + "</body></card>"
+                if splitter and int(counter) == int(atMentionLimit):
+                    if once:
+                        mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header> Room @mentioned by " + str(originator) + "</header><body>" + mentions + "</body></card>"
+                        messageDetail.ReplyToChatV2_noBotLog(mention_card)
+                        once = False
+                    else:
+                        mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header></header><body>" + mentions + "</body></card>"
+                        messageDetail.ReplyToChatV2_noBotLog(mention_card)
 
-        return messageDetail.ReplyToChatV2_noBotLog(mention_card)
+                    counter = 0
+                    mentions = ""
+                    thereIsMore = True
+                    once = False
+                elif thereIsMore and (int(totalUsersInRoom) == int(counterAtmentionedOnly) + 2):
+                    mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header></header><body>" + mentions + "</body></card>"
+                    messageDetail.ReplyToChatV2_noBotLog(mention_card)
 
+        if splitter == False:
+            mention_card = "<card iconSrc =\"\" accent=\"tempo-bg-color--blue\"><header> Room @mentioned by " + str(originator) + "</header><body>" + mentions + "</body></card>"
+            messageDetail.ReplyToChatV2_noBotLog(mention_card)
 
     else:
         #return messageDetail.ReplyToChat("You aren't authorised to use this command.")

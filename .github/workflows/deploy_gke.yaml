@@ -1,0 +1,69 @@
+# This workflow will build a docker container, publish it to Google Container Registry, and deploy it to GKE when a release is created
+#
+# To configure this workflow:
+#
+# 1. Ensure that your repository contains the necessary configuration for your Google Kubernetes Engine cluster, including deployment.yml, kustomization.yml, service.yml, etc.
+#
+# 2. Set up secrets in your workspace: GKE_PROJECT with the name of the project, GKE_EMAIL with the service account email, GKE_KEY with the Base64 encoded JSON service account key (https://github.com/GoogleCloudPlatform/github-actions/tree/docs/service-account-key/setup-gcloud#inputs).
+#
+# 3. Change the values for the GKE_ZONE, GKE_CLUSTER, IMAGE, REGISTRY_HOSTNAME and DEPLOYMENT_NAME environment variables (below).
+
+name: Build and Deploy to GKE
+
+on: push
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  GKE_PROJECT: sym-bizops-bots
+  GKE_ZONE: us-east1-b
+  GKE_CLUSTER: bizops-bots-prod
+  REGISTRY_HOSTNAME: gcr.io
+  IMAGE: zendesk-bot
+  TAG: ${{ github.sha }}
+  DEPLOYMENT_NAME: zendesk-bot-preview
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, Deploy    
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Setup gcloud CLI
+    - name: Setup GCloud
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        project_id: sym-bizops-bots
+        service_account_key: ${{ secrets.GKE_KEY }}
+        export_default_credentials: true
+
+    # Build the Docker image
+    - name: Docker
+      run: |
+        gcloud auth configure-docker 
+        docker build -t "$REGISTRY_HOSTNAME"/"$GKE_PROJECT"/"$IMAGE":"$TAG" .
+        docker push $REGISTRY_HOSTNAME/$GKE_PROJECT/$IMAGE:$TAG
+
+    # Patch GKE deployments to use the new Docker image
+    - name: Update zendesk-bot-preview
+      run: |
+        DEPLOYMENT_NAME=zendesk-bot-preview
+        gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GKE_PROJECT
+        kubectl scale deployment/$DEPLOYMENT_NAME --replicas=0
+        kubectl set image deployment/$DEPLOYMENT_NAME *="$REGISTRY_HOSTNAME"/"$GKE_PROJECT"/"$IMAGE":"$TAG" --record
+        kubectl scale deployment/$DEPLOYMENT_NAME --replicas=1
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
+        kubectl describe deployment/$DEPLOYMENT_NAME
+
+    - name: Update zendesk-bot-corp
+      run: |
+        DEPLOYMENT_NAME=zendesk-bot-corp
+        gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GKE_PROJECT
+        kubectl scale deployment/$DEPLOYMENT_NAME --replicas=0
+        kubectl set image deployment/$DEPLOYMENT_NAME *="$REGISTRY_HOSTNAME"/"$GKE_PROJECT"/"$IMAGE":"$TAG" --record
+        kubectl scale deployment/$DEPLOYMENT_NAME --replicas=1
+        kubectl rollout status deployment/$DEPLOYMENT_NAME
+        kubectl describe deployment/$DEPLOYMENT_NAME

@@ -4,13 +4,13 @@
       "name": "atMentionRoom",
       "triggers": ["Room", "room"],
       "function": "atMentionRoom",
-      "helptext": "<b>/room</b> MSG",
+      "helptext": "<b>/all</b> MSG",
       "description": "@mentions all users of the current room and sends a message (MSG) ",
       "param":"None",
-      "example":"/room Hi all",
+      "example":"/all This is an important message bla bla",
       "category": "Miscellaneous",
       "scope": "Internal",
-      "permission": "Bot Admin"
+      "permission": "All"
     },
     {
       "name": "ZDStream",

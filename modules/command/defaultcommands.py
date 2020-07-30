@@ -5555,7 +5555,7 @@ def atMentionRoom(messageDetail):
         splitter = False
         thereIsMore = False
         once = True
-        atMentionLimit = 40
+        atMentionLimit = 39
         originator = "<mention uid=\"" + str(init_userID) + "\"/>"
         bot_email = botconfig.BotEmailAddress
         mentions = ""
